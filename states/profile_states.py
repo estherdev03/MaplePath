@@ -1,30 +1,38 @@
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Literal, Union
 
 from pydantic import BaseModel, Field, model_validator
 
 
 # Languages
 class LanguageScore(BaseModel):
-    speaking: float
-    writing: float
-    listening: float
-    reading: float
+    speaking: float | None = None
+    writing: float | None = None
+    listening: float | None = None
+    reading: float | None = None
 
 
 class EnglishScore(BaseModel):
     test_name: Literal["ielts", "pte", "celpip"]
-    score: LanguageScore
+    overal_score: float | None = None
+    detail_scores: LanguageScore | None = None
 
 
 class FrenchScore(BaseModel):
     test_name: Literal["tef", "tcf"]
-    score: LanguageScore
+    overal_score: float | None = None
+    detail_scores: LanguageScore | None
 
 
 class Languages(BaseModel):
-    english: EnglishScore
-    french: FrenchScore
+    english: EnglishScore | None
+    french: FrenchScore | None
+
+    @model_validator(mode="after")
+    def validate_languages(self):
+        if self.english == None and self.french == None:
+            raise ValueError("Either English or French must be provided.")
+        return self
 
 
 # Working experience
@@ -34,34 +42,7 @@ class Experience(BaseModel):
     alberta_years: float = 0
 
 
-# Profile form
-class ProfileFormPayload(BaseModel):
-    age: int | None = None
-    languages: Languages | None = None
-    job_title: str | None = None
-    work_experience: Experience | None = None
-
-
-# Profile payload
-class ProfileUpdatePayload(BaseModel):
-    source: Literal["chat", "form"]
-    profile_version: int | None = 1
-    text: str | None = None
-    profile: ProfileFormPayload | None = None
-
-    @model_validator(mode="after")
-    def validate_input(self):
-        if self.text is None or self.profile is None:
-            raise ValueError("Either text or profile must be provided.")
-        return self
-
-
-# Profile update event
-class ProfileUpdateEvent(BaseModel):
-    event_type: Literal["profile_update"]
-    payload: ProfileUpdatePayload
-
-
+# CRS
 class CRSBreakdown(BaseModel):
     age: int = 0
     education: int = 0
@@ -85,6 +66,7 @@ class CRSScore(BaseModel):
     breakdown: CRSBreakdown
 
 
+# Eligibility
 class ProgramEligibility(BaseModel):
     eligible: bool
     reasons: list[str] = []
@@ -126,8 +108,55 @@ class UserProfile(BaseModel):
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    profile_version: int | None = None
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
         setattr(self, "updated_at", datetime.now(UTC))
+
+
+# Profile payload
+class ProfileConfirmFormPayload(BaseModel):
+    age: int
+    languages: Languages
+    job_title: str
+    work_experience: Experience
+
+
+class ProfileDraftPayload(BaseModel):
+    text: str
+
+
+class ProfileUpdateFormPayload(ProfileConfirmFormPayload):
+    fields_updated: list[str] | None = None
+
+
+class ProfileDraft(BaseModel):
+    age: int | None = None
+    languages: Languages | None = None
+    job_title: str | None = None
+    work_experience: Experience | None = None
+
+    missing_fields: list[str] | None = None
+    warnings: list[str] | None = None
+
+
+# Profile events
+class ProfileDraftEvent(BaseModel):
+    event_type: Literal["profile_draft"]
+    payload: ProfileDraftPayload
+
+
+class ProfileConfirmEvent(BaseModel):
+    event_type: Literal["profile_confirm"]
+    payload: ProfileConfirmFormPayload
+
+
+class ProfileUpdateEvent(BaseModel):
+    event_type: Literal["profile_update"]
+    payload: ProfileUpdateFormPayload
+
+
+# Compound event
+ProfileEvent = Union[ProfileDraftEvent, ProfileConfirmEvent, ProfileUpdateEvent]

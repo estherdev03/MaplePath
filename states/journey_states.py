@@ -7,6 +7,6 @@ class JourneyUpdatePayload(BaseModel):
     pass
 
 
-class JourneyUpdateEvent(BaseModel()):
-    event_type = Literal["journey_update"]
+class JourneyUpdateEvent(BaseModel):
+    event_type: Literal["journey_update"]
     payload: JourneyUpdatePayload
