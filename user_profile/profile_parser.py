@@ -22,7 +22,7 @@ def profile_parser(state: UserState):
 
     - Extract only information explicitly stated in the text.
     - Never infer, assume, estimate, calculate, or invent information.
-    - If a value is not provided, return null.
+    - If a value is not provided, return null, add a missing field and a warning.
     - If information is ambiguous, return null and add a warning.
     - Preserve the original meaning of the source text.
     - Output must strictly conform to the target schema.
@@ -31,7 +31,7 @@ def profile_parser(state: UserState):
     # Field Extraction
 
     ## Age
-    Extract only if explicitly stated.
+    Extract only if explicitly stated. Add WARNING if age is missing or invalid.
 
     Valid:
     - "Age: 29"
@@ -41,7 +41,7 @@ def profile_parser(state: UserState):
     - Graduation year only
 
     ## Job Title
-    Extract the user's most recent or current occupation if clearly stated.
+    Extract the user's most recent or current occupation if clearly stated. If not provided, add missing fields and warnings.
 
     If multiple occupations exist and recency is unclear:
     - return null
@@ -89,6 +89,8 @@ def profile_parser(state: UserState):
     - languages
     - work_experience
     - etc
+                                     
+    Example: missing_fields=['languages.english.detail_scores', 'work_experience.canada_years', 'work_experience.alberta_years', etc]
 
     # Warnings
 
@@ -98,6 +100,8 @@ def profile_parser(state: UserState):
     - incomplete dates
     - partial language results
     - unclear employment history
+                                     
+    Example: warnings=['English language detailed scores were not provided.', 'Canada and Alberta work experience were not explicitly stated.', 'age is missing', etc]
 
     # Output
 

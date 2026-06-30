@@ -25,10 +25,12 @@ graph = graph_builder.compile()
 
 # =============== Example ============================
 text = """
-I'm 25 years old and I'm a software engineer,
-I have 3 years working experience,
-My IELTS is 8.0.
+I'm 28 years old,
+I'm a software engineer,
+I have 2 years working in Alberta, 1 year in Toronto, 1 year in Europe
+My IELTS is 8.5
 """
+
 payload = ProfileDraftPayload(text=text)
 event = ProfileDraftEvent(
     event_type="profile_draft",
