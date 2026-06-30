@@ -7,7 +7,7 @@ Built with LangGraph, FastAPI, PostgreSQL, pgvector, OpenAI, and XGBoost.
 ## Key Features
 - CRS Score Calculation
 - Eligibility Assessment
-- Alberta Policy RAG
+- Alberta Policy RAGg
 - AI Immigration Advisor
 - Draw Forecasting
 - Journey and Deadline Tracking
