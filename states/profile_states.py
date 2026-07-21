@@ -1,11 +1,11 @@
 from datetime import UTC, datetime
 from enum import StrEnum
-from fileinput import isfirstline
 from typing import Literal, Union
 
 from pydantic import BaseModel, Field, model_validator
 
 
+# Enum
 class EducationLevel(StrEnum):
     SECONDARY = "secondary"
     ONE_YEAR = "one_year"
@@ -103,10 +103,44 @@ class Experience(BaseModel):
     alberta_years: float = Field(default=0, ge=0)
 
 
+# Education
+class Education(BaseModel):
+    level: EducationLevel
+    has_COQ: bool = False
+    from_canada: bool = True
+    eca_completed: bool = False
+
+
+class CanadaEducation(BaseModel):
+    completed: bool
+    credential_years: float = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def validate_credential_years(self):
+        if self.completed == False and self.credential_years > 0:
+            raise ValueError("Credential years is invalid if not completed.")
+        return self
+
+
+# Spouse
 class SpouseBreakdown(BaseModel):
     education: int = 0
     language: int = 0
     canadian_experience: int = 0
+
+
+class SpouseProfile(BaseModel):
+    education: Education | None = None
+    languages: Languages | None = None
+    canadian_experience: float = 0
+
+
+# Occupation
+class Occupation(BaseModel):
+    noc_code: str
+    teer: int
+    title: str
+    noc_confidence: float
 
 
 # CRS
@@ -158,31 +192,6 @@ class Eligibility(BaseModel):
     alberta_tech: AlbertaTechEligibility
 
 
-# Education
-class Education(BaseModel):
-    level: EducationLevel
-    has_COQ: bool = False
-    from_canada: bool = True
-    eca_completed: bool = False
-
-
-class CanadaEducation(BaseModel):
-    completed: bool
-    credential_years: float = Field(default=0, ge=0)
-
-    @model_validator(mode="after")
-    def validate_credential_years(self):
-        if self.completed == False and self.credential_years > 0:
-            raise ValueError("Credential years is invalid if not completed.")
-
-
-# Spouse
-class SpouseProfile(BaseModel):
-    education: Education | None = None
-    languages: Languages | None = None
-    canadian_experience: float = 0
-
-
 # Profile payload
 class ProfileConfirmFormPayload(BaseModel):
     age: int
@@ -192,7 +201,6 @@ class ProfileConfirmFormPayload(BaseModel):
     marital_status: MaritalStatus
     education: Education
     canada_education: CanadaEducation
-    arranged_employment: bool = False
     provincial_nomination: bool = False
     sibling_in_can: bool = False
 
@@ -220,7 +228,6 @@ class ProfileDraft(BaseModel):
     work_experience: Experience | None = None
     education: Education | None = None
     canada_education: CanadaEducation | None = None
-    arranged_employment: bool = False
     provincial_nomination: bool = False
     sibling_in_can: bool = False
     marital_status: MaritalStatus | None = None
@@ -228,7 +235,6 @@ class ProfileDraft(BaseModel):
 
     missing_fields: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
-    confidence_score: float = 0.0
 
 
 # Profile events
@@ -251,14 +257,15 @@ class ProfileUpdateEvent(BaseModel):
 ProfileEvent = Union[ProfileDraftEvent, ProfileConfirmEvent, ProfileUpdateEvent]
 
 
-# User state
+# Main user state
 class UserProfile(BaseModel):
     age: int | None = None
 
-    job_title: str | None = None
-    noc_code: str | None = None
-    teer: int | None = None
-    noc_confidence: float | None = None
+    # job_title: str | None = None
+    # noc_code: str | None = None
+    # teer: int | None = None
+    # noc_confidence: float | None = None
+    occupation: Occupation | None = None
 
     languages: Languages | None = None
 
@@ -269,8 +276,6 @@ class UserProfile(BaseModel):
     education: Education | None = None
 
     canada_education: CanadaEducation | None = None
-
-    arranged_employment: bool = False
 
     provincial_nomination: bool = False
 

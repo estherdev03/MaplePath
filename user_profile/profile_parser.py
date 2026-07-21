@@ -115,3 +115,7 @@ def profile_parser(state: UserState):
     """)
     print(response)
     return {}
+
+
+def profile_confirm(state: UserState):
+    pass

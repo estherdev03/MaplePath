@@ -66,13 +66,13 @@ def _tef_listening_to_nclc(score: float | None) -> int:
 
     if score >= 546:
         return 10
-    if score >= 523:
-        return 9
     if score >= 503:
+        return 9
+    if score >= 462:
         return 8
-    if score >= 458:
+    if score >= 434:
         return 7
-    if score >= 398:
+    if score >= 393:
         return 6
     if score >= 352:
         return 5
@@ -94,9 +94,9 @@ def _tef_reading_to_nclc(score: float | None) -> int:
         return 8
     if score >= 434:
         return 7
-    if score >= 375:
+    if score >= 393:
         return 6
-    if score >= 342:
+    if score >= 352:
         return 5
     if score >= 306:
         return 4

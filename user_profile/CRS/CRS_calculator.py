@@ -1,9 +1,22 @@
 from __future__ import annotations
 from states.profile_states import (
+    CLBScore,
     CRSBreakdown,
     CRSScore,
+    CanadaEducation,
+    Education,
+    EducationLevel,
+    EnglishScore,
+    EnglishTest,
+    Experience,
+    FrenchScore,
+    FrenchTest,
+    LanguageScore,
+    Languages,
     MaritalStatus,
+    NCLCScore,
     SpouseBreakdown,
+    SpouseProfile,
     UserProfile,
 )
 from user_profile.CRS.english_convertor import clb_to_points, english_to_clb
@@ -12,6 +25,7 @@ from user_profile.CRS.transferability_calculator import (
     education_can_exp_points_calc,
     education_language_points_calc,
     foreign_can_exp_points_calc,
+    foreign_exp_lang_points_calc,
     trade_lang_points_calc,
 )
 from user_profile.utils.constants import (
@@ -42,6 +56,7 @@ class CRSCalculator:
 
         breakdown.skill_transferability = self._skill_transferability_points(profile)
 
+        # Additional
         breakdown.provincial_nomination = 600 if profile.provincial_nomination else 0
 
         breakdown.canadian_study = self._canadian_study_points(profile)
@@ -50,7 +65,26 @@ class CRSCalculator:
 
         breakdown.sibling_in_canada = 15 if profile.sibling_in_can else 0
 
-        total = sum(breakdown.model_dump().values())
+        if (
+            breakdown.provincial_nomination
+            + breakdown.french_bonus
+            + breakdown.sibling_in_canada
+            + breakdown.canadian_study
+            <= 600
+        ):
+            total = sum(breakdown.model_dump().values())
+        else:
+            # Additional points are capped at 600
+            total = (
+                sum(breakdown.model_dump().values())
+                - (
+                    breakdown.provincial_nomination
+                    + breakdown.french_bonus
+                    + breakdown.sibling_in_canada
+                    + breakdown.canadian_study
+                )
+                + 600
+            )
 
         if profile.marital_status == MaritalStatus.MARRIED:
             return CRSScore(
@@ -118,7 +152,9 @@ class CRSCalculator:
             scores = profile.languages.english.detail_scores
             profile.languages.english.clb_scores = english_to_clb(test_name, scores)
             return clb_to_points(scores=profile.languages.english.clb_scores)
-        if profile.languages.french and not profile.languages.french.is_first_language:
+        elif (
+            profile.languages.french and not profile.languages.french.is_first_language
+        ):
             test_name = profile.languages.french.test_name
             scores = profile.languages.french.detail_scores
             profile.languages.french.nclc_scores = french_to_nclc(test_name, scores)
@@ -226,11 +262,13 @@ class CRSCalculator:
         # education-languages
         education_lang_point = education_language_points_calc(profile)
         education_can_exp_points = education_can_exp_points_calc(profile)
+        foreign_exp_lang_points = foreign_exp_lang_points_calc(profile)
         foreign_can_exp_points = foreign_can_exp_points_calc(profile)
         trade_lang_points = trade_lang_points_calc(profile)
         return (
             education_lang_point
             + education_can_exp_points
+            + foreign_exp_lang_points
             + foreign_can_exp_points
             + trade_lang_points
         )
@@ -279,3 +317,143 @@ class CRSCalculator:
                 # NCLC7+ and (no English result or CLB4-)
                 return 25
         return 0
+
+
+cal = CRSCalculator()
+
+profile = UserProfile(
+    age=29,
+    job_title="Software Engineer",
+    noc_code="21232",
+    teer=1,
+    noc_confidence=0.98,
+    marital_status=MaritalStatus.MARRIED,
+    education=Education(
+        level=EducationLevel.MASTERS,
+        from_canada=False,
+        eca_completed=True,
+    ),
+    canada_education=CanadaEducation(
+        completed=False,
+        credential_years=0,
+    ),
+    work_experience=Experience(
+        foreign_years=3,
+        canada_years=1,
+        alberta_years=1,
+    ),
+    languages=Languages(
+        english=EnglishScore(
+            test_name=EnglishTest.IELTS,
+            overall_score=8.0,
+            detail_scores=LanguageScore(
+                listening=8.5,
+                reading=8.0,
+                writing=7.5,
+                speaking=7.5,
+            ),
+            clb_scores=CLBScore(
+                listening=10,
+                reading=9,
+                writing=10,
+                speaking=10,
+            ),
+            is_first_language=True,
+        ),
+        french=FrenchScore(
+            test_name=FrenchTest.TEF,
+            overall_score=None,
+            detail_scores=LanguageScore(
+                listening=470,
+                reading=470,
+                writing=480,
+                speaking=500,
+            ),
+            nclc_scores=NCLCScore(
+                listening=8,
+                reading=8,
+                writing=8,
+                speaking=8,
+            ),
+            is_first_language=False,
+        ),
+    ),
+    provincial_nomination=True,
+    sibling_in_can=True,
+    spouse=SpouseProfile(
+        education=Education(
+            level=EducationLevel.BACHELOR,
+            from_canada=False,
+            eca_completed=True,
+        ),
+        languages=Languages(
+            english=EnglishScore(
+                test_name=EnglishTest.IELTS,
+                overall_score=6.5,
+                detail_scores=LanguageScore(
+                    listening=6.0,
+                    reading=6.0,
+                    writing=6.0,
+                    speaking=6.0,
+                ),
+                clb_scores=CLBScore(
+                    listening=7,
+                    reading=7,
+                    writing=7,
+                    speaking=7,
+                ),
+                is_first_language=True,
+            ),
+            french=None,
+        ),
+        canadian_experience=1,
+    ),
+)
+
+# profile = UserProfile(
+#     age=32,
+#     job_title="Administrative Assistant",
+#     noc_code="13110",
+#     teer=3,
+#     noc_confidence=0.99,
+#     marital_status=MaritalStatus.SINGLE,
+#     education=Education(
+#         level=EducationLevel.BACHELOR,
+#         from_canada=False,
+#         eca_completed=True,
+#     ),
+#     canada_education=CanadaEducation(
+#         completed=False,
+#         credential_years=0,
+#     ),
+#     work_experience=Experience(
+#         foreign_years=5,
+#         canada_years=0,
+#         alberta_years=0,
+#     ),
+#     languages=Languages(
+#         english=EnglishScore(
+#             test_name=EnglishTest.IELTS,
+#             overall_score=7.5,
+#             detail_scores=LanguageScore(
+#                 listening=8.0,
+#                 reading=7.0,
+#                 writing=7.0,
+#                 speaking=7.0,
+#             ),
+#             clb_scores=CLBScore(
+#                 listening=9,
+#                 reading=9,
+#                 writing=9,
+#                 speaking=9,
+#             ),
+#             is_first_language=True,
+#         ),
+#         french=None,
+#     ),
+#     provincial_nomination=False,
+#     sibling_in_can=False,
+#     spouse=None,
+# )
+
+print(cal.calculate(profile))
