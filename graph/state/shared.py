@@ -42,11 +42,15 @@ class UserProfile(BaseModel):
 
     sibling_in_can: bool = False
 
+    relative_in_can: bool = False
+
     spouse: SpouseProfile | None = None
 
     crs_score: CRSScore | None = None
 
     eligibility: Eligibility | None = None
+
+    current_available_funds: float = 0
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
