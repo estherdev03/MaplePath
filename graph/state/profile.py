@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Literal, Union
@@ -101,6 +102,16 @@ class Experience(BaseModel):
     foreign_years: float = Field(default=0, ge=0)
     canada_years: float = Field(default=0, ge=0)
     alberta_years: float = Field(default=0, ge=0)
+    continuous_fulltime_foreign_years: float = Field(default=0, ge=0)
+    continuous_fulltime_canada_years: float = Field(default=0, ge=0)
+
+    @model_validator(mode="after")
+    def validate_continuous_years(self):
+        if self.continuous_foreign_years > self.foreign_years:
+            raise ValueError("Continuous years cannot be greater than total years!")
+        if self.continuous_canada_years > self.canada_years:
+            raise ValueError("Continuous years cannot be greater than total years!")
+        return self
 
 
 # Education
@@ -133,6 +144,7 @@ class SpouseProfile(BaseModel):
     education: Education | None = None
     languages: Languages | None = None
     canadian_experience: float = 0
+    relative_in_can: bool = False
 
 
 # Occupation
@@ -140,6 +152,7 @@ class Occupation(BaseModel):
     noc_code: str
     teer: int
     title: str
+    is_canada_employed: bool = False
     noc_confidence: float
 
 

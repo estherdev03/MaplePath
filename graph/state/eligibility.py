@@ -11,23 +11,29 @@ class EEProgram(StrEnum):
     FST = "Federal Skilled Trades"
 
 
+class FSWScoreBreakdown(BaseModel):
+    education_pts: int = 0
+    first_lang_pts: int = 0
+    second_lang_pts: int = 0
+    work_exp_pts: int = 0
+    age_pts: int = 0
+    employment_pts: int = 0
+    adaptability: int = 0
+
+
 class FederalSkilledWorkerEligibility(BaseModel):
     # Work experience
-    skilled_work_experience: bool = False
     continuous_work_experience: bool = False
-    work_experience_within_10_years: bool = False
     eligible_teer: bool = False
 
     # Language
     language_requirement_met: bool = False
-    minimum_clb: int = 7
 
     # Education
     education_requirement_met: bool = False
-    eca_required: bool = False
-    eca_completed: bool = False
 
     # Selection factors
+    selection_factor_breakdown: FSWScoreBreakdown | None = None
     selection_factor_score: int = 0
     selection_factor_passed: bool = False
 
