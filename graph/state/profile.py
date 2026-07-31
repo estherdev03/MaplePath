@@ -99,11 +99,15 @@ class Languages(BaseModel):
 
 # Working experience
 class Experience(BaseModel):
-    foreign_years: float = Field(default=0, ge=0)
-    canada_years: float = Field(default=0, ge=0)
-    alberta_years: float = Field(default=0, ge=0)
-    continuous_fulltime_foreign_years: float = Field(default=0, ge=0)
-    continuous_fulltime_canada_years: float = Field(default=0, ge=0)
+    # fulltime work exp only, if part time, convert into fulltime hours
+    foreign_years: float = Field(default=0, ge=0)  # within 10 years
+    canada_years: float = Field(default=0, ge=0)  # within 10 years
+    alberta_years: float = Field(default=0, ge=0)  # within 10 years
+    continuous_fulltime_foreign_years: float = Field(default=0, ge=0)  # within 10 years
+    continuous_fulltime_canada_years: float = Field(default=0, ge=0)  # within 10 years
+    canada_work_exp_within_3_years: float = Field(
+        default=0, ge=0
+    )  # within 3 years, can be from different employers
 
     @model_validator(mode="after")
     def validate_continuous_years(self):

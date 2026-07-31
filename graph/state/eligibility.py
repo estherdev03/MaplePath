@@ -44,19 +44,11 @@ class FederalSkilledWorkerEligibility(BaseModel):
 
 class CanadianExperienceClassEligibility(BaseModel):
     # Canadian work experience
-    canadian_work_experience: bool = False
-    work_experience_within_3_years: bool = False
+    canadian_work_experience_met: bool = False
     eligible_teer: bool = False
 
     # Language
-    required_clb: int = 7
     language_requirement_met: bool = False
-
-    # Education (optional)
-    education_present: bool = False
-
-    # Settlement funds
-    settlement_funds_required: bool = False
 
 
 class FederalSkilledTradesEligibility(BaseModel):
