@@ -15,6 +15,7 @@ from eligibility.constants import (
 from graph.state.eligibility import (
     CanadianExperienceClassEligibility,
     FSWScoreBreakdown,
+    FederalSkilledTradesEligibility,
     FederalSkilledWorkerEligibility,
 )
 from graph.state.profile import EducationLevel
@@ -199,3 +200,56 @@ class EligibilityService:
         skilled_worker_eligibility.selection_factor_breakdown = breakdown
         skilled_worker_eligibility.selection_factor_score = score
         skilled_worker_eligibility.selection_factor_passed = score >= FSW_PASS_SCORE
+
+        return skilled_worker_eligibility
+
+    def canadian_exp_class_evaluator(
+        self, user: UserProfile
+    ) -> CanadianExperienceClassEligibility:
+        can_exp_class_eligibility = CanadianExperienceClassEligibility()
+
+        # work experience
+        if (
+            user.work_experience
+            and user.work_experience.canada_work_exp_within_3_years >= 1
+        ):
+            can_exp_class_eligibility.canadian_work_experience_met = True
+
+        # occupation
+        if user.occupation and user.occupation.teer in [0, 1, 2, 3]:
+            can_exp_class_eligibility.eligible_teer = True
+
+        # languages
+        if user.languages:
+            if user.occupation and user.occupation.teer in [0, 1]:
+                if user.languages.english and user.languages.english.is_first_language:
+                    clb7_or_more = all(
+                        score >= 7 for score in user.languages.english.clb_scores
+                    )
+                    if clb7_or_more:
+                        can_exp_class_eligibility.language_requirement_met = True
+                elif user.languages.french and user.languages.french.is_first_language:
+                    nclc7_or_more = all(
+                        score >= 7 for score in user.languages.french.nclc_scores
+                    )
+                    if nclc7_or_more:
+                        can_exp_class_eligibility.language_requirement_met = True
+            elif user.occupation and user.occupation.teer in [2, 3]:
+                if user.languages.english and user.languages.english.is_first_language:
+                    clb5_or_more = all(
+                        score >= 5 for score in user.languages.english.clb_scores
+                    )
+                    if clb5_or_more:
+                        can_exp_class_eligibility.language_requirement_met = True
+                elif user.languages.french and user.languages.french.is_first_language:
+                    nclc5_or_more = all(
+                        score >= 5 for score in user.languages.french.nclc_scores
+                    )
+                    if nclc5_or_more:
+                        can_exp_class_eligibility.language_requirement_met = True
+        return can_exp_class_eligibility
+
+    def federal_skilled_trades_evaluator(
+        self, user: UserProfile
+    ) -> FederalSkilledTradesEligibility:
+        pass
