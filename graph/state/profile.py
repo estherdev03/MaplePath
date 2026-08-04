@@ -1,6 +1,8 @@
 from __future__ import annotations
 from datetime import UTC, datetime
 from enum import StrEnum
+from re import S
+from turtle import st
 from typing import Literal, Union
 
 from pydantic import BaseModel, Field, model_validator
@@ -108,6 +110,7 @@ class Experience(BaseModel):
     canada_work_exp_within_3_years: float = Field(
         default=0, ge=0
     )  # within 3 years, can be from different employers
+    trade_exp_within_5_years: float = Field(default=0, ge=0)
 
     @model_validator(mode="after")
     def validate_continuous_years(self):
@@ -121,7 +124,7 @@ class Experience(BaseModel):
 # Education
 class Education(BaseModel):
     level: EducationLevel
-    has_COQ: bool = False
+    has_COQ: bool = False  # Certificate of Qualification -> for skill trade
     from_canada: bool = True
     eca_completed: bool = False
 
@@ -153,10 +156,14 @@ class SpouseProfile(BaseModel):
 
 # Occupation
 class Occupation(BaseModel):
+    title: str
     noc_code: str
     teer: int
-    title: str
-    is_canada_employed: bool = False
+    major_group_code: str
+    minor_group_code: str
+    unit_group_code: str
+    submajor_group_code: str
+    have_canada_job_offer: bool = False  # have Canada job offer for at least 1 year
     noc_confidence: float
 
 

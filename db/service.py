@@ -19,22 +19,6 @@ class DatabaseService:
         with self.engine.begin() as conn:
             conn.execute(text(stmt))
 
-    # def init_db(self, base):
-    #     # create extension
-    #     self.create_extention(["vector", "pg_trgm", "unaccent"])
-    #     self.create_extention()
-    #     with self.engine.begin() as conn:
-    #         conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
-    #         conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm"))
-    #         conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent"))
-
-    #     # create tables
-    #     base.metadata.create_all(self.engine)
-
-    #     # init search vector
-    #     with self.engine.begin() as conn:
-    #         conn.execute()
-
     def create_session(self):
         """Create a db session"""
         return self.SessionLocal()

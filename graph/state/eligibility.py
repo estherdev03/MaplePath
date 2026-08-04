@@ -53,8 +53,7 @@ class CanadianExperienceClassEligibility(BaseModel):
 
 class FederalSkilledTradesEligibility(BaseModel):
     # Skilled trade experience
-    skilled_trade_experience: bool = False
-    work_experience_within_5_years: bool = False
+    skilled_trade_experience_within_5_years: bool = False
     eligible_trade: bool = False
 
     # Language
@@ -62,11 +61,11 @@ class FederalSkilledTradesEligibility(BaseModel):
     reading_writing_requirement_met: bool = False
 
     # Qualification
-    valid_job_offer: bool = False
-    certificate_of_qualification: bool = False
+    valid_job_offer_or_certificate: bool = False
 
-    # Job requirements
-    trade_requirements_met: bool = False
+    # Settlement funds
+    settlement_funds_required: bool = True
+    settlement_funds_met: bool = False
 
 
 class ExpressEntryEligibility(BaseModel):
@@ -78,20 +77,3 @@ class ExpressEntryEligibility(BaseModel):
         CanadianExperienceClassEligibility,
         FederalSkilledTradesEligibility,
     ]
-
-
-# Overall Eligibility
-class EligibilityResult(BaseModel):
-    eligible: bool
-    score: float
-    reasons: list[str]
-    missing_requirements: list[str]
-    breakdown: ExpressEntryEligibility
-
-
-class EligibilityReport(BaseModel):
-    express_entry: EligibilityResult
-    alberta_opportunity: EligibilityResult
-    accelerated_tech: EligibilityResult
-    rural_renewal: EligibilityResult
-    tourism_hospitality: EligibilityResult

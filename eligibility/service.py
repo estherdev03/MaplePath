@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import Tuple
-from pydantic import BaseModel
 
 from eligibility.constants import (
     ADAPTABILITY_MAX,
@@ -77,7 +76,7 @@ class EligibilityService:
             fsw_score.age_pts = AGE_POINTS[min(user.age, 46)]
 
         # employment
-        if user.occupation.is_canada_employed:
+        if user.occupation.have_canada_job_offer:
             fsw_score.employment_pts = ARRANGED_EMPLOYMENT_POINTS
 
         # Adaptability
@@ -92,7 +91,7 @@ class EligibilityService:
                 if all(
                     score >= 4 for score in user.spouse.languages.english.clb_scores
                 ):
-                    adapt_pts += ADAPTABILITY["spouse_language"]
+                    adapt_pts += 5
             elif (
                 user.spouse.languages
                 and user.spouse.languages.french
@@ -122,7 +121,7 @@ class EligibilityService:
             and user.occupation.teer in [0, 1, 2, 3]
         ):
             adapt_pts += 10
-        if user.occupation and user.occupation.is_canada_employed:
+        if user.occupation and user.occupation.have_canada_job_offer:
             adapt_pts += 5
         if user.relative_in_can or (user.spouse and user.spouse.relative_in_can):
             adapt_pts += 5
@@ -186,14 +185,17 @@ class EligibilityService:
             skilled_worker_eligibility.education_requirement_met = True
 
         # Job offer and funds
-        if user.occupation and user.occupation.current_canada_employer:
+        if user.occupation and user.occupation.have_canada_job_offer:
             skilled_worker_eligibility.settlement_funds_required = False
-
-        if (
-            skilled_worker_eligibility.settlement_funds_required
-            and user.current_available_funds >= 15263
-        ):
-            skilled_worker_eligibility.settlement_funds_met = True
+        else:
+            if user.spouse:
+                skilled_worker_eligibility.settlement_funds_met = (
+                    user.current_available_funds >= 19001
+                )
+            else:
+                skilled_worker_eligibility.settlement_funds_met = (
+                    user.current_available_funds >= 15263
+                )
 
         # FSW score
         score, breakdown = self._fsw_calculator(user)
@@ -252,4 +254,76 @@ class EligibilityService:
     def federal_skilled_trades_evaluator(
         self, user: UserProfile
     ) -> FederalSkilledTradesEligibility:
-        pass
+        skilled_trade_eligilibility = FederalSkilledTradesEligibility()
+
+        # Work experience
+        if user.work_experience and user.work_experience.trade_exp_within_5_years >= 2:
+            skilled_trade_eligilibility.skilled_trade_experience_within_5_years = True
+
+        # Eligible trade
+        if user.occupation and (
+            user.occupation.major_group_code in ["72", "73", "82", "83", "92", "93"]
+            or user.occupation.minor_group_code in ["6320"]
+            or user.occupation.unit_group_code in ["62200"]
+        ):
+            skilled_trade_eligilibility.eligible_trade = True
+            if (
+                user.occupation.major_group_code == "72"
+                and user.occupation.submajor_group_code == "726"
+            ):
+                skilled_trade_eligilibility.eligible_trade = False
+            if (
+                user.occupation.major_group_code == "93"
+                and user.occupation.submajor_group_code == "932"
+            ):
+                skilled_trade_eligilibility.eligible_trade = False
+
+        # Language
+        if (
+            user.languages
+            and user.languages.english
+            and user.languages.english.is_first_language
+            and user.languages.english.clb_scores
+        ):
+            skilled_trade_eligilibility.speaking_listening_requirement_met = all(
+                user.languages.english.clb_scores[skill] >= 5
+                for skill in ["speaking", "listening"]
+            )
+            skilled_trade_eligilibility.reading_writing_requirement_met = all(
+                user.languages.english.clb_scores[skill] >= 4
+                for skill in ["reading", "writing"]
+            )
+        elif (
+            user.languages
+            and user.languages.french
+            and user.languages.french.is_first_language
+            and user.languages.french.nclc_scores
+        ):
+            skilled_trade_eligilibility.speaking_listening_requirement_met = all(
+                user.languages.french.nclc_scores[skill] >= 5
+                for skill in ["speaking", "listening"]
+            )
+            skilled_trade_eligilibility.reading_writing_requirement_met = all(
+                user.languages.french.nclc_scores[skill] >= 4
+                for skill in ["reading", "writing"]
+            )
+
+        # Job offer or trade certificate
+        if (user.occupation and user.occupation.have_canada_job_offer) or (
+            user.education and user.education.has_COQ
+        ):
+            skilled_trade_eligilibility.valid_job_offer_or_certificate = True
+
+        # Proof of funds
+        if user.occupation and user.occupation.have_canada_job_offer:
+            skilled_trade_eligilibility.settlement_funds_required = False
+        else:
+            if user.spouse:
+                skilled_trade_eligilibility.settlement_funds_met = (
+                    user.current_available_funds >= 19001
+                )
+            else:
+                skilled_trade_eligilibility.settlement_funds_met = (
+                    user.current_available_funds >= 15263
+                )
+        return skilled_trade_eligilibility

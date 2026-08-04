@@ -27,7 +27,9 @@ class EmbeddingInfo:
 class NOCService:
     def __init__(self, noc_repository: NOCRepository):
         self.noc_repository = noc_repository
-        self.rerank_engine = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"), model="rerank-english-v3.0")
+        self.rerank_engine = CohereRerank(
+            cohere_api_key=os.getenv("COHERE_API_KEY"), model="rerank-english-v3.0"
+        )
 
     def _get_noc_code_list(self, filepath: str) -> list[str]:
         df = pd.read_csv(filepath, dtype={"Code - NOC 2021 V1.0": str})
