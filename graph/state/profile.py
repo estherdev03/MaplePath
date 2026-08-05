@@ -114,9 +114,9 @@ class Experience(BaseModel):
 
     @model_validator(mode="after")
     def validate_continuous_years(self):
-        if self.continuous_foreign_years > self.foreign_years:
+        if self.continuous_fulltime_foreign_years > self.foreign_years:
             raise ValueError("Continuous years cannot be greater than total years!")
-        if self.continuous_canada_years > self.canada_years:
+        if self.continuous_fulltime_canada_years > self.canada_years:
             raise ValueError("Continuous years cannot be greater than total years!")
         return self
 

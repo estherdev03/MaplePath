@@ -12,13 +12,13 @@ from crs.constants import (
 from crs.english import EnglishService
 from crs.french import FrenchService
 from crs.transferability import TransferabilityService
-from states.profile_states import (
+from graph.state.profile import (
     CRSBreakdown,
     CRSScore,
     MaritalStatus,
     SpouseBreakdown,
-    UserProfile,
 )
+from graph.state.shared import UserProfile
 
 
 class CRSService:
