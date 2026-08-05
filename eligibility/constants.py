@@ -1,7 +1,5 @@
 # constants.py
 
-from enum import Enum
-
 from graph.state.profile import EducationLevel
 
 FSW_PASS_SCORE = 67

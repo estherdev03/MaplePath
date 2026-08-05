@@ -1,5 +1,5 @@
 from crs.constants import FIRST_LANGUAGE_MARRIED, FIRST_LANGUAGE_SINGLE, SECOND_LANGUAGE
-from states.profile_states import CLBScore, EnglishTest, LanguageScore
+from graph.state.profile import CLBScore, EnglishTest, LanguageScore
 
 
 class EnglishService:

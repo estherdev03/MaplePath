@@ -1,5 +1,5 @@
 from crs.constants import FIRST_LANGUAGE_MARRIED, FIRST_LANGUAGE_SINGLE, SECOND_LANGUAGE
-from states.profile_states import FrenchTest, LanguageScore, NCLCScore
+from graph.state.profile import FrenchTest, LanguageScore, NCLCScore
 
 
 class FrenchService:

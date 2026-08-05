@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from langchain.chat_models import init_chat_model
 
 from graph.state.profile import ProfileDraft
@@ -7,6 +5,7 @@ from graph.state.profile import ProfileDraft
 from dotenv import load_dotenv
 
 load_dotenv()
+
 
 class ProfileService:
     def parse(self, profile_text: str) -> ProfileDraft:

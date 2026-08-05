@@ -8,7 +8,7 @@ from crs.constants import (
 )
 from crs.english import EnglishService
 from crs.french import FrenchService
-from states.profile_states import UserProfile
+from graph.state.shared import UserProfile
 
 
 class TransferabilityService:

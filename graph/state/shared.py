@@ -3,8 +3,6 @@ from datetime import datetime, UTC
 
 from pydantic import BaseModel, Field
 
-from graph.state.chat import ChatEvent
-from graph.state.journey import JourneyEvent
 from graph.state.profile import (
     ProfileEvent,
     Occupation,
@@ -18,7 +16,7 @@ from graph.state.profile import (
     Eligibility,
 )
 
-InputEvent = Union[ProfileEvent, ChatEvent, JourneyEvent]
+InputEvent = Union[ProfileEvent]
 
 
 # Main user state
