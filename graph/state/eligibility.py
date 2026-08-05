@@ -69,11 +69,8 @@ class FederalSkilledTradesEligibility(BaseModel):
 
 
 class ExpressEntryEligibility(BaseModel):
-    has_profile: bool
+    has_profile: bool = False
     profile_number: str | None
-    program: EEProgram
-    breakdown: Union[
-        FederalSkilledWorkerEligibility,
-        CanadianExperienceClassEligibility,
-        FederalSkilledTradesEligibility,
-    ]
+    federal_skilled_worker: FederalSkilledWorkerEligibility | None
+    federal_skilled_trade: FederalSkilledTradesEligibility | None
+    canadian_exp_class: CanadianExperienceClassEligibility | None
