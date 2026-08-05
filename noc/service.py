@@ -118,6 +118,27 @@ class NOCService:
 
         teer = int(summary["TEER"].split("–")[0].strip())
 
+        # Broad category
+        broad_category_code = (
+            summary["Broad occupational category"].split("–")[0].strip()
+        )
+
+        broad_category_detail = (
+            summary["Broad occupational category"].split("–")[1].strip()
+        )
+
+        # Major group
+        major_group_code = summary["Major group"].split("–")[0].strip()
+        major_group_detail = summary["Major group"].split("–")[1].strip()
+
+        # Sub major group
+        sub_major_group_code = summary["Sub-major group"].split("–")[0].strip()
+        sub_major_group_detail = summary["Sub-major group"].split("–")[1].strip()
+
+        # Minor group
+        minor_group_code = summary["Minor group"].split("–")[0].strip()
+        minor_group_detail = summary["Minor group"].split("–")[1].strip()
+
         info = EmbeddingInfo(
             noc_code=noc_code,
             title=title,
@@ -142,10 +163,14 @@ class NOCService:
             additional_information=additional_information,
             exclusions=exclusions,
             teer=teer,
-            broad_category=summary["Broad occupational category"],
-            major_group=summary["Major group"],
-            sub_major_group=summary["Sub-major group"],
-            minor_group=summary["Minor group"],
+            broad_category_code=broad_category_code,
+            broad_category_detail=broad_category_detail,
+            major_group_code=major_group_code,
+            major_group_detail=major_group_detail,
+            sub_major_group_code=sub_major_group_code,
+            sub_major_group_detail=sub_major_group_detail,
+            minor_group_code=minor_group_code,
+            minor_group_detail=minor_group_detail,
             embedding_text=embedding_text,
             embedding=embedding,
         )

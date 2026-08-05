@@ -17,7 +17,6 @@ from graph.state.profile import (
     CRSScore,
     Eligibility,
 )
-from user_profile.service import ProfileService
 
 InputEvent = Union[ProfileEvent, ChatEvent, JourneyEvent]
 

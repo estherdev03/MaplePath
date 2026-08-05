@@ -22,10 +22,14 @@ class NOC(Base):
     exclusions: Mapped[list[str]] = mapped_column(ARRAY(String))
 
     teer: Mapped[int]
-    broad_category: Mapped[str]
-    major_group: Mapped[str]
-    sub_major_group: Mapped[str]
-    minor_group: Mapped[str]
+    broad_category_code: Mapped[str]
+    broad_category_detail: Mapped[str]
+    major_group_code: Mapped[str]
+    major_group_detail: Mapped[str]
+    sub_major_group_code: Mapped[str]
+    sub_major_group_detail: Mapped[str]
+    minor_group_code: Mapped[str]
+    minor_group_detail: Mapped[str]
 
     # Vector Search
     embedding_text: Mapped[str]

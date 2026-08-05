@@ -1,4 +1,3 @@
-
 from sqlalchemy import select, text
 
 from db.models import NOC
@@ -39,7 +38,7 @@ class NOCRepository:
                         *,
                         ts_rank(search_vector, query) as rank
                     FROM 
-                        noc_profiles,
+                        noc,
                         phraseto_tsquery('english', :search_query) query
                     WHERE search_vector @@ query
                     ORDER BY rank DESC 
