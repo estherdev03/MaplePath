@@ -290,7 +290,7 @@ class EligibilityService:
             self.user.occupation.major_group_code
             in ["72", "73", "82", "83", "92", "93"]
             or self.user.occupation.minor_group_code in ["6320"]
-            or self.user.occupation.unit_group_code in ["62200"]
+            or self.user.occupation.noc_code in ["62200"]
         ):
             skilled_trade_eligilibility.eligible_trade = True
             if (
