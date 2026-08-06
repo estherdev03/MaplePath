@@ -190,31 +190,6 @@ class CRSScore(BaseModel):
     spouse_breakdown: SpouseBreakdown | None = None
 
 
-# Eligibility
-class ProgramEligibility(BaseModel):
-    eligible: bool
-    reasons: list[str] = Field(default_factory=list)
-    gaps: list[str] = Field(default_factory=list)
-
-
-class ExpressEntryEligibility(ProgramEligibility):
-    pass
-
-
-class AlbertaTechEligibility(ProgramEligibility):
-    pass
-
-
-class AlbertaOpportunityEligibility(ProgramEligibility):
-    pass
-
-
-class Eligibility(BaseModel):
-    express_entry: ExpressEntryEligibility
-    alberta_opportunity: AlbertaOpportunityEligibility
-    alberta_tech: AlbertaTechEligibility
-
-
 # Profile payload
 class ProfileConfirmFormPayload(BaseModel):
     age: int
@@ -226,6 +201,7 @@ class ProfileConfirmFormPayload(BaseModel):
     marital_status: MaritalStatus
     education: Education
     canada_education: CanadaEducation
+    provincial_nomination: bool
     sibling_in_can: bool
     relative_in_can: bool  # parents, grandparents, etc
     spouse: SpouseProfile
