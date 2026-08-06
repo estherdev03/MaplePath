@@ -2,13 +2,17 @@ from dataclasses import asdict, dataclass
 import os
 
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from langchain_cohere import CohereRerank
 from langchain_openai import OpenAIEmbeddings
 import pandas as pd
 import requests
 
 from db.models import NOC
+from db.service import DatabaseService
 from noc.repository import NOCRepository
+
+load_dotenv()
 
 
 @dataclass
@@ -205,5 +209,19 @@ class NOCService:
         reranked_result = self.rerank_engine.rerank(
             documents=combined_result_text, query=query, top_n=5
         )
-        final_result = [combined_result[r["index"]] for r in reranked_result]
-        return final_result
+        result = [combined_result[r["index"]] for r in reranked_result]
+        return result
+
+    def get_one_by_noc_code(self, noc_code: str) -> NOC | None:
+        result = self.noc_repository.get_one_by_noc_code(noc_code)
+        if not result:
+            raise ValueError(f"NOC profile not found for noc code: {noc_code}")
+        return result
+
+
+db = DatabaseService(os.getenv("DB_URL"))
+repo = NOCRepository(db)
+service = NOCService(repo)
+res = service.get_one_by_noc_code("21231")
+for key, val in vars(res).items():
+    print(f"{key}: {val}")

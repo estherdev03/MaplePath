@@ -4,7 +4,8 @@ from user_profile.service import ProfileService
 
 
 # Profile related nodes
-def make_profile_parser(profile_service:ProfileService):
+def make_profile_parser(profile_service: ProfileService):
     def profile_parser(state: MainState) -> ProfileDraft:
         return profile_service.parse(profile_text=state.event.payload.text)
+
     return profile_parser

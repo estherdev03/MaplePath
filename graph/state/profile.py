@@ -157,14 +157,13 @@ class SpouseProfile(BaseModel):
 # Occupation
 class Occupation(BaseModel):
     title: str
-    noc_code: str
-    teer: int
-    major_group_code: str
-    minor_group_code: str
-    unit_group_code: str
-    submajor_group_code: str
+    noc_code: str | None = None
+    teer: int | None = None
+    major_group_code: str | None = None
+    minor_group_code: str | None = None
+    submajor_group_code: str | None = None
     have_canada_job_offer: bool = False  # have Canada job offer for at least 1 year
-    noc_confidence: float
+    noc_confidence: float | None = None
 
 
 # CRS
@@ -219,16 +218,18 @@ class Eligibility(BaseModel):
 # Profile payload
 class ProfileConfirmFormPayload(BaseModel):
     age: int
-    languages: Languages
     job_title: str
+    job_responsibility: str  # used for NOC parse
+    have_canada_job_offer: bool
+    languages: Languages
     work_experience: Experience
     marital_status: MaritalStatus
     education: Education
     canada_education: CanadaEducation
-    provincial_nomination: bool = False
-    sibling_in_can: bool = False
-
-    spouse: SpouseProfile | None = None
+    sibling_in_can: bool
+    relative_in_can: bool  # parents, grandparents, etc
+    spouse: SpouseProfile
+    current_available_funds: float
 
     @model_validator(mode="after")
     def validate_spouse(self):

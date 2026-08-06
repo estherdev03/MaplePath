@@ -10,6 +10,11 @@ class NOCRepository:
     def __init__(self, db_service: DatabaseService):
         self.db_service = db_service
 
+    def get_one_by_noc_code(self, noc_code: str):
+        with self.db_service.create_session() as session:
+            noc_profile = session.get(NOC, noc_code)
+            return noc_profile
+
     def save_one(self, noc: NOC):
         with self.db_service.create_session() as session:
             session.add(noc)
