@@ -29,7 +29,6 @@ FIRST_LANGUAGE_POINTS = {
 
 # Second Official Language
 # Max 4
-SECOND_LANGUAGE_MIN_CLB = 5
 SECOND_LANGUAGE_POINTS = 4
 
 

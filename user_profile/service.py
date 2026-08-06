@@ -1,5 +1,7 @@
 from langchain.chat_models import init_chat_model
 
+from crs.service import CRSService
+from eligibility.service import EligibilityService
 from graph.state.profile import Occupation, ProfileConfirmFormPayload, ProfileDraft
 
 from dotenv import load_dotenv
@@ -12,8 +14,15 @@ load_dotenv()
 
 
 class ProfileService:
-    def __init__(self, noc_service: NOCService):
+    def __init__(
+        self,
+        noc_service: NOCService,
+        crs_service: CRSService,
+        eligibility_service: EligibilityService,
+    ):
+        self.crs_service = crs_service
         self.noc_service = noc_service
+        self.eligibility_service = eligibility_service
 
     def parse(self, profile_text: str) -> ProfileDraft:
         llm = init_chat_model("openai:gpt-5.4-mini")
@@ -122,7 +131,7 @@ class ProfileService:
         return response
 
     def create(self, profile: ProfileConfirmFormPayload) -> UserProfile:
-        occupation = self.get_occupation(
+        occupation = self._get_occupation(
             profile.job_title, profile.job_responsibility, profile.have_canada_job_offer
         )
         user = UserProfile(
@@ -133,6 +142,7 @@ class ProfileService:
             marital_status=profile.marital_status,
             education=profile.education,
             canada_education=profile.canada_education,
+            provincial_nomination=profile.provincial_nomination,
             sibling_in_can=profile.sibling_in_can,
             relative_in_can=profile.relative_in_can,
             spouse=profile.spouse,
@@ -140,10 +150,12 @@ class ProfileService:
         )
         return user
 
-    def get_occupation(
+    def _get_occupation(
         self, job_title: str, job_responsibility: str, have_canada_job_offer: bool
     ) -> Occupation:
-        noc = self.parse_NOC(job_title=job_title, job_responsibility=job_responsibility)
+        noc = self._parse_NOC(
+            job_title=job_title, job_responsibility=job_responsibility
+        )
         return Occupation(
             title=noc.title,
             noc_code=noc.noc_code,
@@ -155,7 +167,7 @@ class ProfileService:
             have_canada_job_offer=have_canada_job_offer,
         )
 
-    def parse_NOC(self, job_title: str, job_responsibility: str) -> NOCResult:
+    def _parse_NOC(self, job_title: str, job_responsibility: str) -> NOCResult:
         llm = init_chat_model("openai:gpt-5.4-mini")
         structure_llm = llm.with_structured_output(LLMNocResult)
 
@@ -274,3 +286,11 @@ class ProfileService:
             submajor_group_code=noc_profile.sub_major_group_code,
             noc_confidence=result.noc_confidence,
         )
+
+    def calculate_CRS(self, user: UserProfile) -> UserProfile:
+        user.crs_score = self.crs_service.calculate_crs(user)
+        return user
+
+    def evaluate_express_entry(self, user: UserProfile) -> UserProfile:
+        user.eligibility = self.eligibility_service.evaluate_express_entry(user)
+        return user

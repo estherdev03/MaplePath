@@ -3,6 +3,7 @@ from datetime import datetime, UTC
 
 from pydantic import BaseModel, Field
 
+from graph.state.eligibility import ExpressEntryEligibility
 from graph.state.profile import (
     ProfileEvent,
     Occupation,
@@ -13,7 +14,6 @@ from graph.state.profile import (
     CanadaEducation,
     SpouseProfile,
     CRSScore,
-    Eligibility,
 )
 
 InputEvent = Union[ProfileEvent]
@@ -45,13 +45,12 @@ class UserProfile(BaseModel):
 
     crs_score: CRSScore | None = None
 
-    eligibility: Eligibility | None = None
+    eligibility: ExpressEntryEligibility | None = None
 
     current_available_funds: float = 0
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    profile_version: int | None = None
 
     def update(self, **kwargs):
         for key, value in kwargs.items():
