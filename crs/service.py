@@ -193,6 +193,7 @@ class CRSService:
                 clb_score = self.english_service.english_to_clb(
                     english.test_name, english.detail_scores
                 )
+                english.clb_scores = clb_score
                 writing_points = (
                     SPOUSE_LANGUAGE_POINTS[min(clb_score.writing, 10)]
                     if clb_score.writing >= 4
@@ -225,6 +226,7 @@ class CRSService:
                 nclc_score = self.french_service.french_to_nclc(
                     french.test_name, french.detail_scores
                 )
+                french.nclc_scores = nclc_score
                 writing_points = (
                     SPOUSE_LANGUAGE_POINTS[min(nclc_score.writing, 10)]
                     if nclc_score.writing >= 4
@@ -281,12 +283,13 @@ class CRSService:
             self.transferability_service.foreign_can_exp_points_calc(profile)
         )
         trade_lang_points = self.transferability_service.trade_lang_points_calc(profile)
-        return (
+        return min(
             education_lang_point
             + education_can_exp_points
             + foreign_exp_lang_points
             + foreign_can_exp_points
-            + trade_lang_points
+            + trade_lang_points,
+            100,
         )
 
     def _canadian_study_points(self, profile: UserProfile):

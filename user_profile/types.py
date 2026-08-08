@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from pydantic import BaseModel, Field
+
 
 @dataclass
 class NOCCandidate:
@@ -12,13 +14,12 @@ class NOCCandidate:
     exclusions: list[str]
 
 
-@dataclass
-class LLMNocResult:
-    noc_code: str | None
-    title: str | None
-    main_duties: list[str]
-    noc_confidence: float
-    reasoning: str
+class LLMNocResult(BaseModel):
+    noc_code: str | None = None
+    title: str | None = None
+    main_duties: list[str] = Field(default_factory=list)
+    noc_confidence: float = 0.0
+    reasoning: str = ""
 
 
 @dataclass

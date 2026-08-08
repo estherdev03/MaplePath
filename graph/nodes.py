@@ -4,15 +4,29 @@ from user_profile.service import ProfileService
 
 
 # Profile related nodes
-def make_profile_parser(profile_service: ProfileService):
-    def profile_parser(state: MainState) -> ProfileDraft:
+def parse_profile_wrapper(profile_service: ProfileService):
+    def parse_profile(state: MainState) -> ProfileDraft:
         return profile_service.parse(profile_text=state.event.payload.text)
 
-    return profile_parser
+    return parse_profile
 
 
-def make_create_profile(profile_service: ProfileService):
-    def create_profile(state: MainState) -> MainState:
+def create_profile_wrapper(profile_service: ProfileService):
+    def create_profile(state: MainState) -> dict:
         return {"profile": profile_service.create(profile=state.event.payload)}
 
     return create_profile
+
+
+def calculate_crs_wrapper(profile_service: ProfileService):
+    def calculate_crs(state: MainState) -> dict:
+        return {"profile": profile_service.calculate_CRS(state.profile)}
+
+    return calculate_crs
+
+
+def evaluate_eligibility_wrapper(profile_service: ProfileService):
+    def evaluate_eligibility(state: MainState) -> dict:
+        return {"profile": profile_service.evaluate_express_entry(state.profile)}
+
+    return evaluate_eligibility

@@ -217,11 +217,3 @@ class NOCService:
         if not result:
             raise ValueError(f"NOC profile not found for noc code: {noc_code}")
         return result
-
-
-db = DatabaseService(os.getenv("DB_URL"))
-repo = NOCRepository(db)
-service = NOCService(repo)
-res = service.get_one_by_noc_code("21231")
-for key, val in vars(res).items():
-    print(f"{key}: {val}")
