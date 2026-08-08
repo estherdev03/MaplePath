@@ -11,7 +11,11 @@ def orchestrator(
         return Command(goto="profile_router")
 
 
-def profile_router(state: MainState) -> Command[Literal["profile_parser"]]:
+def profile_router(
+    state: MainState,
+) -> Command[Literal["parse_profile", "create_profile"]]:
     print(state.event.event_type)
     if state.event.event_type == "profile_draft":
-        return Command(goto="profile_parser")
+        return Command(goto="parse_profile")
+    elif state.event.event_type == "profile_confirm":
+        return Command(goto="create_profile")

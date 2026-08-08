@@ -12,85 +12,90 @@ class FrenchService:
         )
 
     def _tef_speaking_to_nclc(self, score: float | None) -> int:
+        # TEF Canada "Équivalence ancien score" (pre-2019-09-30 chart).
+        # Express Entry requires this table regardless of test date. Scale: /450.
         if score is None:
             return 0
 
-        if score >= 556:
+        if score >= 393:
             return 10
-        if score >= 518:
+        if score >= 371:
             return 9
-        if score >= 494:
+        if score >= 349:
             return 8
-        if score >= 456:
+        if score >= 310:
             return 7
-        if score >= 422:
+        if score >= 271:
             return 6
-        if score >= 387:
+        if score >= 226:
             return 5
-        if score >= 328:
+        if score >= 181:
             return 4
 
         return 0
 
     def _tef_writing_to_nclc(self, score: float | None) -> int:
+        # Scale: /450. Same bands as speaking.
         if score is None:
             return 0
 
-        if score >= 558:
+        if score >= 393:
             return 10
-        if score >= 512:
+        if score >= 371:
             return 9
-        if score >= 472:
+        if score >= 349:
             return 8
-        if score >= 428:
+        if score >= 310:
             return 7
-        if score >= 379:
+        if score >= 271:
             return 6
-        if score >= 330:
+        if score >= 226:
             return 5
-        if score >= 268:
+        if score >= 181:
             return 4
 
         return 0
 
     def _tef_listening_to_nclc(self, score: float | None) -> int:
+        # Scale: /360.
         if score is None:
             return 0
 
-        if score >= 546:
+        if score >= 316:
             return 10
-        if score >= 503:
+        if score >= 298:
             return 9
-        if score >= 462:
+        if score >= 280:
             return 8
-        if score >= 434:
+        if score >= 249:
             return 7
-        if score >= 393:
+        if score >= 217:
             return 6
-        if score >= 352:
+        if score >= 181:
             return 5
-        if score >= 306:
+        if score >= 145:
             return 4
 
         return 0
 
     def _tef_reading_to_nclc(self, score: float | None) -> int:
+        # Scale: /300. Note this differs from listening — do not share a table.
         if score is None:
             return 0
 
-        if score >= 546:
+        if score >= 263:
             return 10
-        if score >= 503:
+        if score >= 248:
             return 9
-        if score >= 462:
+        if score >= 233:
             return 8
-        if score >= 434:
+        if score >= 207:
             return 7
-        if score >= 393:
+        if score >= 181:
             return 6
-        if score >= 352:
+        if score >= 151:
             return 5
-        if score >= 306:
+        if score >= 121:
             return 4
 
         return 0

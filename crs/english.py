@@ -99,7 +99,7 @@ class EnglishService:
     # ================= CELPIP ==========================================
     def celpip_to_clb(self, score: LanguageScore) -> CLBScore:
         return CLBScore(
-            speaking=self.celpip_score_to_clb(score.speaking),
+            speaking=self._celpip_score_to_clb(score.speaking),
             writing=self._celpip_score_to_clb(score.writing),
             listening=self._celpip_score_to_clb(score.listening),
             reading=self._celpip_score_to_clb(score.reading),
