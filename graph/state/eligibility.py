@@ -18,13 +18,13 @@ class FSWScoreBreakdown(BaseModel):
     work_exp_pts: int = 0
     age_pts: int = 0
     employment_pts: int = 0
-    adaptability: int = 0
+    adaptability_pts: int = 0
 
 
 class FederalSkilledWorkerEligibility(BaseModel):
     # Work experience
-    continuous_work_experience: bool = False
-    eligible_teer: bool = False
+    continuous_work_experience_met: bool = False
+    eligible_teer_met: bool = False
 
     # Language
     language_requirement_met: bool = False
@@ -45,7 +45,7 @@ class FederalSkilledWorkerEligibility(BaseModel):
 class CanadianExperienceClassEligibility(BaseModel):
     # Canadian work experience
     canadian_work_experience_met: bool = False
-    eligible_teer: bool = False
+    eligible_teer_met: bool = False
 
     # Language
     language_requirement_met: bool = False
@@ -53,22 +53,32 @@ class CanadianExperienceClassEligibility(BaseModel):
 
 class FederalSkilledTradesEligibility(BaseModel):
     # Skilled trade experience
-    skilled_trade_experience_within_5_years: bool = False
-    eligible_trade: bool = False
+    skilled_trade_experience_within_5_years_met: bool = False
+    eligible_trade_met: bool = False
 
     # Language
     speaking_listening_requirement_met: bool = False
     reading_writing_requirement_met: bool = False
 
     # Qualification
-    valid_job_offer_or_certificate: bool = False
+    valid_job_offer_or_certificate_met: bool = False
 
     # Settlement funds
     settlement_funds_required: bool = True
     settlement_funds_met: bool = False
 
 
+class EligibilityResult(BaseModel):
+    eligible: bool = False
+    breakdown: Union[
+        FederalSkilledWorkerEligibility,
+        FederalSkilledTradesEligibility,
+        CanadianExperienceClassEligibility,
+        None,
+    ] = None
+
+
 class ExpressEntryEligibility(BaseModel):
-    federal_skilled_worker: FederalSkilledWorkerEligibility | None
-    federal_skilled_trade: FederalSkilledTradesEligibility | None
-    canadian_exp_class: CanadianExperienceClassEligibility | None
+    federal_skilled_worker: EligibilityResult | None = None
+    federal_skilled_trade: EligibilityResult | None = None
+    canadian_exp_class: EligibilityResult | None = None
