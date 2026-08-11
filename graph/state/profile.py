@@ -108,16 +108,30 @@ class Experience(BaseModel):
     continuous_fulltime_foreign_years: float = Field(default=0, ge=0)  # within 10 years
     continuous_fulltime_canada_years: float = Field(default=0, ge=0)  # within 10 years
     canada_work_exp_within_3_years: float = Field(
-        default=0, ge=0
+        default=0, ge=0, le=3
     )  # within 3 years, can be from different employers
-    trade_exp_within_5_years: float = Field(default=0, ge=0)
+    trade_exp_within_5_years: float = Field(default=0, ge=0, le=5)
 
     @model_validator(mode="after")
-    def validate_continuous_years(self):
+    def validate_experience_subset(self):
         if self.continuous_fulltime_foreign_years > self.foreign_years:
-            raise ValueError("Continuous years cannot be greater than total years!")
+            raise ValueError(
+                "Continuous years cannot be greater than total foreign years!"
+            )
         if self.continuous_fulltime_canada_years > self.canada_years:
-            raise ValueError("Continuous years cannot be greater than total years!")
+            raise ValueError(
+                "Continuous years cannot be greater than total Canada years!"
+            )
+        if self.alberta_years > self.canada_years:
+            raise ValueError("Alberta years cannot be greater than total Canada years!")
+        if self.canada_work_exp_within_3_years > self.canada_years:
+            raise ValueError(
+                "Canada work experience within 3 years cannot be greater than total Canada years!"
+            )
+        if self.trade_exp_within_5_years > self.canada_years + self.foreign_years:
+            raise ValueError(
+                "Trade experience years cannot be greater than sum of foreign years and Canada years!"
+            )
         return self
 
 

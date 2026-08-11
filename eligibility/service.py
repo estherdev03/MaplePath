@@ -13,6 +13,7 @@ from eligibility.constants import (
 )
 from graph.state.eligibility import (
     CanadianExperienceClassEligibility,
+    EligibilityResult,
     ExpressEntryEligibility,
     FSWScoreBreakdown,
     FederalSkilledTradesEligibility,
@@ -36,11 +37,12 @@ class EligibilityService:
             and user.languages.english
             and user.languages.english.is_first_language
         ):
-            for score in user.languages.english.clb_scores:
+            for score in user.languages.english.clb_scores.model_dump().values():
                 if score >= 7:
                     fsw_score.first_lang_pts += FIRST_LANGUAGE_POINTS[min(score, 10)]
             if user.languages.french and all(
-                score >= 5 for score in user.languages.french.nclc_scores
+                score >= 5
+                for score in user.languages.french.nclc_scores.model_dump().values()
             ):
                 fsw_score.second_lang_pts = SECOND_LANGUAGE_POINTS
         # french is first language
@@ -49,11 +51,12 @@ class EligibilityService:
             and user.languages.french
             and user.languages.french.is_first_language
         ):
-            for score in user.languages.french.nclc_scores:
+            for score in user.languages.french.nclc_scores.model_dump().values():
                 if score >= 7:
                     fsw_score.first_lang_pts += FIRST_LANGUAGE_POINTS[min(score, 10)]
             if user.languages.english and all(
-                score >= 5 for score in user.languages.english.clb_scores
+                score >= 5
+                for score in user.languages.english.clb_scores.model_dump().values()
             ):
                 fsw_score.second_lang_pts += SECOND_LANGUAGE_POINTS
 
@@ -90,7 +93,8 @@ class EligibilityService:
                 and user.spouse.languages.english.is_first_language
             ):
                 if all(
-                    score >= 4 for score in user.spouse.languages.english.clb_scores
+                    score >= 4
+                    for score in user.spouse.languages.english.clb_scores.model_dump().values()
                 ):
                     adapt_pts += 5
             elif (
@@ -99,7 +103,8 @@ class EligibilityService:
                 and user.spouse.languages.french.is_first_language
             ):
                 if all(
-                    score >= 4 for score in user.spouse.languages.french.nclc_scores
+                    score >= 4
+                    for score in user.spouse.languages.french.nclc_scores.model_dump().values()
                 ):
                     adapt_pts += 5
             # spouse education
@@ -126,7 +131,7 @@ class EligibilityService:
             adapt_pts += 5
         if user.relative_in_can or (user.spouse and user.spouse.relative_in_can):
             adapt_pts += 5
-        fsw_score.adaptability = min(adapt_pts, ADAPTABILITY_MAX)
+        fsw_score.adaptability_pts = min(adapt_pts, ADAPTABILITY_MAX)
         total_pts = sum(fsw_score.model_dump().values())
         return total_pts, fsw_score
 
@@ -138,14 +143,14 @@ class EligibilityService:
 
         # Teer
         if user.occupation and user.occupation.teer in [0, 1, 2, 3]:
-            skilled_worker_eligibility.eligible_teer = True
+            skilled_worker_eligibility.eligible_teer_met = True
 
         # Work experience
         if user.work_experience and (
             user.work_experience.continuous_fulltime_canada_years >= 1
             or user.work_experience.continuous_fulltime_foreign_years >= 1
         ):
-            skilled_worker_eligibility.continuous_work_experience = True
+            skilled_worker_eligibility.continuous_work_experience_met = True
 
         # Languages
         if user.languages:
@@ -156,10 +161,12 @@ class EligibilityService:
                 user.languages.french and not user.languages.french.is_first_language
             ):
                 clb7_or_more = all(
-                    score >= 7 for score in user.languages.english.clb_scores
+                    score >= 7
+                    for score in user.languages.english.clb_scores.model_dump().values()
                 )
                 nclc5_or_more = all(
-                    score >= 5 for score in user.languages.french.nclc_scores
+                    score >= 5
+                    for score in user.languages.french.nclc_scores.model_dump().values()
                 )
                 if clb7_or_more and nclc5_or_more:
                     skilled_worker_eligibility.language_requirement_met = True
@@ -170,10 +177,12 @@ class EligibilityService:
                 user.languages.english and not user.languages.english.is_first_language
             ):
                 nclc7_or_more = all(
-                    score >= 7 for score in user.languages.french.nclc_scores
+                    score >= 7
+                    for score in user.languages.french.nclc_scores.model_dump().values()
                 )
                 clb5_or_more = all(
-                    score >= 5 for score in user.languages.english.clb_scores
+                    score >= 5
+                    for score in user.languages.english.clb_scores.model_dump().values()
                 )
                 if nclc7_or_more and clb5_or_more:
                     skilled_worker_eligibility.language_requirement_met = True
@@ -219,33 +228,37 @@ class EligibilityService:
 
         # occupation
         if user.occupation and user.occupation.teer in [0, 1, 2, 3]:
-            can_exp_class_eligibility.eligible_teer = True
+            can_exp_class_eligibility.eligible_teer_met = True
 
         # languages
         if user.languages:
             if user.occupation and user.occupation.teer in [0, 1]:
                 if user.languages.english and user.languages.english.is_first_language:
                     clb7_or_more = all(
-                        score >= 7 for score in user.languages.english.clb_scores
+                        score >= 7
+                        for score in user.languages.english.clb_scores.model_dump().values()
                     )
                     if clb7_or_more:
                         can_exp_class_eligibility.language_requirement_met = True
                 elif user.languages.french and user.languages.french.is_first_language:
                     nclc7_or_more = all(
-                        score >= 7 for score in user.languages.french.nclc_scores
+                        score >= 7
+                        for score in user.languages.french.nclc_scores.model_dump().values()
                     )
                     if nclc7_or_more:
                         can_exp_class_eligibility.language_requirement_met = True
             elif user.occupation and user.occupation.teer in [2, 3]:
                 if user.languages.english and user.languages.english.is_first_language:
                     clb5_or_more = all(
-                        score >= 5 for score in user.languages.english.clb_scores
+                        score >= 5
+                        for score in user.languages.english.clb_scores.model_dump().values()
                     )
                     if clb5_or_more:
                         can_exp_class_eligibility.language_requirement_met = True
                 elif user.languages.french and user.languages.french.is_first_language:
                     nclc5_or_more = all(
-                        score >= 5 for score in user.languages.french.nclc_scores
+                        score >= 5
+                        for score in user.languages.french.nclc_scores.model_dump().values()
                     )
                     if nclc5_or_more:
                         can_exp_class_eligibility.language_requirement_met = True
@@ -258,7 +271,9 @@ class EligibilityService:
 
         # Work experience
         if user.work_experience and user.work_experience.trade_exp_within_5_years >= 2:
-            skilled_trade_eligilibility.skilled_trade_experience_within_5_years = True
+            skilled_trade_eligilibility.skilled_trade_experience_within_5_years_met = (
+                True
+            )
 
         # Eligible trade
         if user.occupation and (
@@ -266,17 +281,17 @@ class EligibilityService:
             or user.occupation.minor_group_code in ["6320"]
             or user.occupation.noc_code in ["62200"]
         ):
-            skilled_trade_eligilibility.eligible_trade = True
+            skilled_trade_eligilibility.eligible_trade_met = True
             if (
                 user.occupation.major_group_code == "72"
                 and user.occupation.submajor_group_code == "726"
             ):
-                skilled_trade_eligilibility.eligible_trade = False
+                skilled_trade_eligilibility.eligible_trade_met = False
             if (
                 user.occupation.major_group_code == "93"
                 and user.occupation.submajor_group_code == "932"
             ):
-                skilled_trade_eligilibility.eligible_trade = False
+                skilled_trade_eligilibility.eligible_trade_met = False
 
         # Language
         if (
@@ -286,11 +301,11 @@ class EligibilityService:
             and user.languages.english.clb_scores
         ):
             skilled_trade_eligilibility.speaking_listening_requirement_met = all(
-                user.languages.english.clb_scores[skill] >= 5
+                user.languages.english.clb_scores.model_dump()[skill] >= 5
                 for skill in ["speaking", "listening"]
             )
             skilled_trade_eligilibility.reading_writing_requirement_met = all(
-                user.languages.english.clb_scores[skill] >= 4
+                user.languages.english.clb_scores.model_dump()[skill] >= 4
                 for skill in ["reading", "writing"]
             )
         elif (
@@ -300,11 +315,11 @@ class EligibilityService:
             and user.languages.french.nclc_scores
         ):
             skilled_trade_eligilibility.speaking_listening_requirement_met = all(
-                user.languages.french.nclc_scores[skill] >= 5
+                user.languages.french.nclc_scores.model_dump()[skill] >= 5
                 for skill in ["speaking", "listening"]
             )
             skilled_trade_eligilibility.reading_writing_requirement_met = all(
-                user.languages.french.nclc_scores[skill] >= 4
+                user.languages.french.nclc_scores.model_dump()[skill] >= 4
                 for skill in ["reading", "writing"]
             )
 
@@ -312,7 +327,7 @@ class EligibilityService:
         if (user.occupation and user.occupation.have_canada_job_offer) or (
             user.education and user.education.has_COQ
         ):
-            skilled_trade_eligilibility.valid_job_offer_or_certificate = True
+            skilled_trade_eligilibility.valid_job_offer_or_certificate_met = True
 
         # Proof of funds
         if user.occupation and user.occupation.have_canada_job_offer:
@@ -329,8 +344,55 @@ class EligibilityService:
         return skilled_trade_eligilibility
 
     def evaluate_express_entry(self, user: UserProfile) -> ExpressEntryEligibility:
+        federal_skilled_worker_result = EligibilityResult()
+        federal_skilled_trade_result = EligibilityResult()
+        canadian_exp_class_result = EligibilityResult()
+
+        # Federal Skilled Worker
+        federal_skilled_worker_result.breakdown = self._evaluate_federal_skilled_worker(
+            user
+        )
+        if (
+            federal_skilled_worker_result.breakdown.continuous_work_experience_met
+            and federal_skilled_worker_result.breakdown.eligible_teer_met
+            and federal_skilled_worker_result.breakdown.language_requirement_met
+            and federal_skilled_worker_result.breakdown.education_requirement_met
+            and federal_skilled_worker_result.breakdown.selection_factor_passed
+            and (
+                federal_skilled_worker_result.breakdown.settlement_funds_met
+                or not federal_skilled_worker_result.breakdown.settlement_funds_required
+            )
+        ):
+            federal_skilled_worker_result.eligible = True
+
+        # Federal Skilled Trade
+        federal_skilled_trade_result.breakdown = self._evaluate_federal_skilled_trades(
+            user
+        )
+        if (
+            federal_skilled_trade_result.breakdown.skilled_trade_experience_within_5_years_met
+            and federal_skilled_trade_result.breakdown.eligible_trade_met
+            and federal_skilled_trade_result.breakdown.speaking_listening_requirement_met
+            and federal_skilled_trade_result.breakdown.reading_writing_requirement_met
+            and federal_skilled_trade_result.breakdown.valid_job_offer_or_certificate_met
+            and (
+                federal_skilled_trade_result.breakdown.settlement_funds_met
+                or not federal_skilled_trade_result.breakdown.settlement_funds_required
+            )
+        ):
+            federal_skilled_trade_result.eligible = True
+
+        # Canadian Experience Class
+        canadian_exp_class_result.breakdown = self._evaluate_canadian_exp_class(user)
+        if (
+            canadian_exp_class_result.breakdown.canadian_work_experience_met
+            and canadian_exp_class_result.breakdown.eligible_teer_met
+            and canadian_exp_class_result.breakdown.language_requirement_met
+        ):
+            canadian_exp_class_result.eligible = True
+
         return ExpressEntryEligibility(
-            federal_skilled_worker=self._evaluate_federal_skilled_worker(user),
-            canadian_exp_class=self._evaluate_canadian_exp_class(user),
-            federal_skilled_trade=self._evaluate_federal_skilled_trades(user),
+            federal_skilled_worker=federal_skilled_worker_result,
+            canadian_exp_class=canadian_exp_class_result,
+            federal_skilled_trade=federal_skilled_trade_result,
         )

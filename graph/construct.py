@@ -12,6 +12,7 @@ from db.service import DatabaseService
 from eligibility.service import EligibilityService
 from graph.nodes import (
     calculate_crs_wrapper,
+    evaluate_eligibility_wrapper,
     parse_profile_wrapper,
     create_profile_wrapper,
 )
@@ -54,13 +55,17 @@ graph_builder.add_node("profile_router", profile_router)
 graph_builder.add_node("parse_profile", parse_profile_wrapper(profile_service))
 graph_builder.add_node("create_profile", create_profile_wrapper(profile_service))
 graph_builder.add_node("calculate_crs", calculate_crs_wrapper(profile_service))
+graph_builder.add_node(
+    "evaluate_express_entry", evaluate_eligibility_wrapper(profile_service)
+)
 
 
 # ========== EDGES ==============
 graph_builder.add_edge(START, "orchestrator")
 graph_builder.add_edge("parse_profile", END)
 graph_builder.add_edge("create_profile", "calculate_crs")
-graph_builder.add_edge("calculate_crs", END)
+graph_builder.add_edge("calculate_crs", "evaluate_express_entry")
+graph_builder.add_edge("evaluate_express_entry", END)
 
 # ========== COMPILE GRAPH ==============
 compiled_graph = graph_builder.compile()
