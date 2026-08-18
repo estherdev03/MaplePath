@@ -1,5 +1,5 @@
 from pgvector.sqlalchemy import VECTOR
-from sqlalchemy import Index, String, ARRAY
+from sqlalchemy import Index, String, ARRAY, text
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from db.base import Base
@@ -8,7 +8,14 @@ from db.base import Base
 # NOC model
 class NOC(Base):
     __tablename__ = "noc"
-    __table_args__ = (Index("noc_search_idx", "search_vector", postgresql_using="gin"),)
+    __table_args__ = (
+        Index(
+            "noc_bm25",
+            "search_text",
+            postgresql_using="bm25",
+            postgresql_with={"text_config": "'english'", "b": "0.4"},
+        ),
+    )
     noc_code: Mapped[str] = mapped_column(primary_key=True)
     title: Mapped[str]
     description: Mapped[str]
@@ -35,8 +42,8 @@ class NOC(Base):
     embedding_text: Mapped[str]
     embedding: Mapped[list[float]] = mapped_column(VECTOR(3072))
 
-    # Full-text Search
-    search_vector: Mapped[dict] = mapped_column(TSVECTOR)
+    # Keyword Search
+    search_text: Mapped[str]
 
     def __eq__(self, other):
         return self.noc_code == other.noc_code
