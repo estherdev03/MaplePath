@@ -37,16 +37,12 @@ class NOCRepository:
             result = session.scalars(query_stmt).all()
             return result
 
-    def text_search(self, query: str):
+    # BM25 keyword search
+    def keyword_search(self, query: str):
         stmt = select(NOC).from_statement(text("""
-                    SELECT
-                        *,
-                        ts_rank(search_vector, query) as rank
-                    FROM 
-                        noc,
-                        phraseto_tsquery('english', :search_query) query
-                    WHERE search_vector @@ query
-                    ORDER BY rank DESC 
+                    SELECT *
+                    FROM noc
+                    ORDER BY search_text <@> to_bm25query(:search_query, 'noc_bm25')
                     LIMIT 30;
                 """))
         with self.db_service.create_session() as session:

@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import asdict, dataclass
 import os
 
@@ -13,6 +14,8 @@ from db.service import DatabaseService
 from noc.repository import NOCRepository
 
 load_dotenv()
+
+K_RRF = 60
 
 
 @dataclass
@@ -179,6 +182,26 @@ class NOCService:
             embedding=embedding,
         )
 
+    # reciprocal rank fusion
+    def _rrf(
+        self, vector_result: list[NOC], keyword_result: list[NOC], k: int = K_RRF
+    ) -> list[NOC]:
+        retriever_results = [vector_result, keyword_result]
+        unique_noc_dict: dict[str, NOC] = {}
+        for noc in list(set(vector_result + keyword_result)):
+            unique_noc_dict[noc.noc_code] = noc
+        scores: dict[str, float] = defaultdict(float)
+        for retriever in retriever_results:
+            for rank, noc in enumerate(retriever, start=1):
+                scores[noc.noc_code] += 1.0 / (k + rank)
+        sorted_noc = sorted(
+            scores.items(), key=lambda x: -x[1]
+        )  # descending order by scores
+        result: list[NOC] = []
+        for noc in sorted_noc:
+            result.append(unique_noc_dict[noc[0]])
+        return result
+
     def init_noc_info(self, filepath):
         noc_info_list = []
         noc_code_list = self._get_noc_code_list(filepath)
@@ -198,18 +221,18 @@ class NOCService:
 
     def noc_keyword_search(self, query: str) -> list[NOC]:
         """Job title NOC search using text search"""
-        return self.noc_repository.text_search(query)
+        return self.noc_repository.keyword_search(query)
 
     def noc_hybrid_search(self, query: str) -> list[NOC]:
         """Combine both semantic and keyword search result, then rerank using Cohere LLM"""
         semantic_result = self.noc_semantic_search(query)
         keyword_result = self.noc_keyword_search(query)
-        combined_result = list(set(semantic_result + keyword_result))
-        combined_result_text = [res.embedding_text for res in combined_result]
+        rrf_result = self._rrf(semantic_result, keyword_result)
+        rrf_result_text = [res.embedding_text for res in rrf_result]
         reranked_result = self.rerank_engine.rerank(
-            documents=combined_result_text, query=query, top_n=5
+            documents=rrf_result_text, query=query, top_n=5
         )
-        result = [combined_result[r["index"]] for r in reranked_result]
+        result = [rrf_result[r["index"]] for r in reranked_result]
         return result
 
     def get_one_by_noc_code(self, noc_code: str) -> NOC | None:

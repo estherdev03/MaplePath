@@ -170,7 +170,6 @@ class ProfileService:
     def _parse_NOC(self, job_title: str, job_responsibility: str) -> NOCResult:
         llm = init_chat_model("openai:gpt-5.4-mini")
         structure_llm = llm.with_structured_output(LLMNocResult)
-
         search_result = self.noc_service.noc_hybrid_search(job_title)
         noc_candidates = [
             NOCCandidate(
