@@ -10,8 +10,7 @@ import pandas as pd
 import requests
 
 from db.models import NOC
-from db.service import DatabaseService
-from noc.repository import NOCRepository
+from noc.repository import IdealNOC, NOCRepository
 
 load_dotenv()
 
@@ -191,9 +190,13 @@ class NOCService:
         for noc in list(set(vector_result + keyword_result)):
             unique_noc_dict[noc.noc_code] = noc
         scores: dict[str, float] = defaultdict(float)
-        for retriever in retriever_results:
+        for idx, retriever in enumerate(retriever_results):
+            if idx == 0:
+                w = 1
+            else:
+                w = 0.1
             for rank, noc in enumerate(retriever, start=1):
-                scores[noc.noc_code] += 1.0 / (k + rank)
+                scores[noc.noc_code] += w*1.0 / (k + rank)
         sorted_noc = sorted(
             scores.items(), key=lambda x: -x[1]
         )  # descending order by scores
@@ -201,6 +204,9 @@ class NOCService:
         for noc in sorted_noc:
             result.append(unique_noc_dict[noc[0]])
         return result
+
+    def get_ideal_pool_count(self, ideal: IdealNOC) -> tuple[int, int]:
+        return self.noc_repository.get_ideal_pool_count(ideal)
 
     def init_noc_info(self, filepath):
         noc_info_list = []
@@ -223,14 +229,14 @@ class NOCService:
         """Job title NOC search using text search"""
         return self.noc_repository.keyword_search(query)
 
-    def noc_hybrid_search(self, query: str) -> list[NOC]:
+    def noc_hybrid_search(self, query:str) -> list[NOC]:
         """Combine both semantic and keyword search result, then rerank using Cohere LLM"""
         semantic_result = self.noc_semantic_search(query)
         keyword_result = self.noc_keyword_search(query)
-        rrf_result = self._rrf(semantic_result, keyword_result)
-        rrf_result_text = [res.embedding_text for res in rrf_result]
+        rrf_result = self._rrf(semantic_result, keyword_result)[:20]
+        rrf_result_text = [f"Title: {res.title}\nDuties:\n" + "\n".join(res.main_duties or []) + "\nExample Titles:\n" + "\n".join(res.example_titles or []) for res in rrf_result]
         reranked_result = self.rerank_engine.rerank(
-            documents=rrf_result_text, query=query, top_n=5
+            documents=rrf_result_text, query=query, top_n=10
         )
         result = [rrf_result[r["index"]] for r in reranked_result]
         return result

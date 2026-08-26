@@ -1,7 +1,16 @@
-from sqlalchemy import select, text
+from dataclasses import dataclass
+
+from sqlalchemy import func, select, text
 
 from db.models import NOC
 from db.service import DatabaseService
+
+
+@dataclass
+class IdealNOC:
+    noc_code: str
+    minor_group_code: str
+    major_group_code: str
 
 
 class NOCRepository:
@@ -32,7 +41,7 @@ class NOCRepository:
             query_stmt = (
                 select(NOC)
                 .order_by(NOC.embedding.cosine_distance(search_vector))
-                .limit(30)
+                .limit(50)
             )
             result = session.scalars(query_stmt).all()
             return result
@@ -43,8 +52,26 @@ class NOCRepository:
                     SELECT *
                     FROM noc
                     ORDER BY search_text <@> to_bm25query(:search_query, 'noc_bm25')
-                    LIMIT 30;
+                    LIMIT 50;
                 """))
         with self.db_service.create_session() as session:
             result = session.scalars(stmt, {"search_query": query}).all()
             return result
+
+    def get_ideal_pool_count(self, ideal: IdealNOC):
+        with self.db_service.create_session() as session:
+            # minor count
+            minor_stmt = select(func.count(NOC.noc_code)).where(
+                NOC.minor_group_code == ideal.minor_group_code,
+                NOC.noc_code != ideal.noc_code,
+            )
+            minor_count = session.execute(minor_stmt).scalar() or 0
+
+            # major count
+            major_stmt = select(func.count(NOC.noc_code)).where(
+                NOC.major_group_code == ideal.major_group_code,
+                NOC.noc_code != ideal.noc_code,
+                NOC.minor_group_code != ideal.minor_group_code,
+            )
+            major_count = session.execute(major_stmt).scalar() or 0
+            return minor_count, major_count
