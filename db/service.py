@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 class DatabaseService:
     def __init__(self, db_url: str):
-        self.engine = create_engine(db_url, echo=True)
+        self.engine = create_engine(db_url, echo=False)
         self.SessionLocal = sessionmaker(self.engine)
 
     def create_extention(self, extentions: list[str]):
