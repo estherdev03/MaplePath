@@ -1,0 +1,11 @@
+query_id,job_title,job_responsibility,noc_code,minor_group_code,major_group_code,noc_title,case_type
+1,Software Developer,"Design, build and maintain backend REST APIs in Python, write unit tests, review code, and deploy services to AWS.",21232,2123,21,Software developers and programmers,exact_title
+2,Software Engineer,"Research and design software architecture, evaluate and integrate technical environments and operating systems, and maintain embedded and application software.",21231,2123,21,Software engineers and designers,close_sibling
+3,IT Support Technician,"Provide first-line technical support to computer users, troubleshoot hardware and software issues, and help staff with applications and email.",22221,2222,22,User support technicians,vague_title
+4,Bookkeeper,"Maintain complete sets of books, record financial transactions, reconcile accounts, and prepare invoices and payroll entries.",12200,1220,12,Accounting technicians and bookkeepers,teer_distinction
+5,Registered Nurse,"Provide direct nursing care in a hospital, administer medications, monitor patients, and educate families about treatment plans.",31301,3130,31,Registered nurses and registered psychiatric nurses,exact_title
+6,Licensed Practical Nurse,"Provide nursing care under the direction of registered nurses and physicians, including personal care, monitoring vital signs, and assisting with treatments.",32101,3210,32,Licensed practical nurses,close_sibling
+7,Cook,"Prepare and cook a wide variety of foods in a restaurant kitchen according to recipes and food safety procedures.",63200,6320,63,Cooks,close_sibling
+8,Electrician,"Install, test and repair electrical wiring, fixtures and control devices in residential and commercial buildings.",72200,7220,72,Electricians (except industrial and power system),exact_title
+9,Transport Truck Driver,"Drive a tractor-trailer to haul freight on interprovincial routes, inspect the vehicle, and keep logbooks.",73300,7330,73,Transport truck drivers,exact_title
+10,Restaurant Manager,"Plan and control the overall operations of a restaurant, including staffing, budgets, suppliers and customer service.",60030,6003,60,Restaurant and food service managers,manager_vs_supervisor
