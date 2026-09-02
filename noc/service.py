@@ -194,7 +194,7 @@ class NOCService:
             if idx == 0:
                 w = 1
             else:
-                w = 0.1
+                w = 0.5
             for rank, noc in enumerate(retriever, start=1):
                 scores[noc.noc_code] += w*1.0 / (k + rank)
         sorted_noc = sorted(
