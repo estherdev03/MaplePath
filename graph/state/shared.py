@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from graph.state.eligibility import ExpressEntryEligibility
 from graph.state.profile import (
+    ProfileDraft,
     ProfileEvent,
     Occupation,
     Languages,
@@ -61,9 +62,4 @@ class UserProfile(BaseModel):
 # Input state
 class MainState(BaseModel):
     event: InputEvent
-    profile: UserProfile | None = None
-
-
-# Output state
-class OutputState(BaseModel):
-    profile: UserProfile | None = None
+    profile: UserProfile | ProfileDraft = None

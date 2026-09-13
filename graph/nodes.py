@@ -6,7 +6,7 @@ from user_profile.service import ProfileService
 # Profile related nodes
 def parse_profile_wrapper(profile_service: ProfileService):
     def parse_profile(state: MainState) -> ProfileDraft:
-        return profile_service.parse(profile_text=state.event.payload.text)
+        return {"profile": profile_service.parse(profile_text=state.event.payload.text)}
 
     return parse_profile
 

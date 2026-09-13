@@ -119,8 +119,10 @@ if __name__ == "__main__":
         print(f"Job title: {row.job_title}")
         print(f"BM25: {bm25_ndcg} (NDCG) | {bm25_hit} (Hit Rate)")
         print(f"Vector: {vector_ndcg} (NDCG) | {vector_hit} (Hit Rate)")
-        print(f"RRF: {rrf_ndcg} (NDCG) | {rrf_hit} (Hit Rate)")
-        print(f"Hybrid: {hybrid_ndcg} (NDCG) | {hybrid_hit} (Hit Rate)")
+        print(f"RRF only: {rrf_ndcg} (NDCG) | {rrf_hit} (Hit Rate)")
+        print(
+            f"Hybrid (RRF + Cohere Rerank): {hybrid_ndcg} (NDCG) | {hybrid_hit} (Hit Rate)"
+        )
         print("==============================================")
 
     print("----------------------")
@@ -128,8 +130,8 @@ if __name__ == "__main__":
     print(
         f"Mean Vector: {total_ndcg_vector/10} (NDCG) | {total_hit_vector/10} (Hit Rate)"
     )
-    print(f"Mean RRF: {total_ndcg_rrf/10} (NDCG) | {total_hit_rrf/10} (Hit Rate)")
+    print(f"Mean RRF only: {total_ndcg_rrf/10} (NDCG) | {total_hit_rrf/10} (Hit Rate)")
     print(
-        f"Mean Hybrid: {total_ndcg_hybrid/10} (NDCG) | {total_hit_hybrid/10} (Hit Rate)"
+        f"Mean Hybrid (RRF + Cohere Rerank): {total_ndcg_hybrid/10} (NDCG) | {total_hit_hybrid/10} (Hit Rate)"
     )
     print("----------------------")
