@@ -1,11 +1,37 @@
 # NDCG metric to evaluate NOC retrieval method (Vector, BM25, RRF only and Hybrid)
+from dataclasses import dataclass, field
 from math import log
 import os
+from typing import Tuple
+
 from db.models import NOC
 from db.service import DatabaseService
 from noc.repository import IdealNOC, NOCRepository
 from noc.service import NOCService
 import pandas as pd
+
+
+@dataclass
+class SingleExampleReport:
+    case_type: str
+    job_title: str
+    bm25: Tuple[float, float]  # [NDCG, hit_rate]
+    vector: Tuple[float, float]
+    rrf: Tuple[float, float]
+    hybrid: Tuple[float, float]
+
+
+@dataclass
+class CompleteExamplesReport:
+    report: list[SingleExampleReport] = field(default_factory=list)
+
+
+@dataclass
+class RetrievalMethodMeanReport:
+    bm25: Tuple[float, float]  # [NDCG, hit_rate]
+    vector: Tuple[float, float]
+    rrf: Tuple[float, float]
+    hybrid: Tuple[float, float]
 
 
 class EvaluateService:
@@ -47,24 +73,30 @@ class EvaluateService:
         return dcg_score / idcg_score  # NDCG
 
     # calculate hit rate @ k
-    def hit_rate(self, search_result: list[NOC], ideal: IdealNOC, k: int = 10) -> int:
+    def calculate_hit_rate(
+        self, search_result: list[NOC], ideal: IdealNOC, k: int = 10
+    ) -> int:
         for noc in search_result:
             if noc.noc_code == ideal.noc_code:
                 return 1
         return 0
 
 
-if __name__ == "__main__":
+# Evaluate all retrieval methods using 10 examples from file (due to Cohere Rerank limit)
+def noc_retrieval_method_evaluate(
+    file_path: str,
+) -> tuple[CompleteExamplesReport, RetrievalMethodMeanReport]:
     db_service = DatabaseService(db_url=os.getenv("DB_URL"))
     noc_repository = NOCRepository(db_service=db_service)
     noc_service = NOCService(noc_repository=noc_repository)
     evaluate_service = EvaluateService(noc_service=noc_service)
 
-    df = pd.read_csv("data/noc_eval_labels.csv")
+    df = pd.read_csv(file_path)
     df["search_query"] = df.apply(
         lambda row: f"Job title: {row['job_title']} \n Job responsibility: {row['job_responsibility']}",
         axis=1,
     )
+
     total_ndcg_bm25 = 0
     total_ndcg_vector = 0
     total_ndcg_hybrid = 0
@@ -73,6 +105,9 @@ if __name__ == "__main__":
     total_hit_vector = 0
     total_hit_hybrid = 0
     total_hit_rrf = 0
+
+    all_examples_report = CompleteExamplesReport()
+
     for row in df.itertuples():
         search_query = row.search_query
         noc_code = str(row.noc_code)
@@ -103,35 +138,33 @@ if __name__ == "__main__":
         total_ndcg_rrf += rrf_ndcg
         # -------------------- HIT RATE -----------------------------
         # BM25
-        bm25_hit = evaluate_service.hit_rate(keyword_result, ideal_noc, 10)
+        bm25_hit = evaluate_service.calculate_hit_rate(keyword_result, ideal_noc, 10)
         # Vector
-        vector_hit = evaluate_service.hit_rate(vector_result, ideal_noc, 10)
+        vector_hit = evaluate_service.calculate_hit_rate(vector_result, ideal_noc, 10)
         # Hybrid (RRF + Cohere Rerank)
-        hybrid_hit = evaluate_service.hit_rate(hybrid_result, ideal_noc, 10)
+        hybrid_hit = evaluate_service.calculate_hit_rate(hybrid_result, ideal_noc, 10)
         # Only RRF
-        rrf_hit = evaluate_service.hit_rate(rrf_result, ideal_noc, 10)
+        rrf_hit = evaluate_service.calculate_hit_rate(rrf_result, ideal_noc, 10)
         total_hit_bm25 += bm25_hit
         total_hit_vector += vector_hit
         total_hit_hybrid += hybrid_hit
         total_hit_rrf += rrf_hit
-        print("==============================================")
-        print(f"Case type: {row.case_type}")
-        print(f"Job title: {row.job_title}")
-        print(f"BM25: {bm25_ndcg} (NDCG) | {bm25_hit} (Hit Rate)")
-        print(f"Vector: {vector_ndcg} (NDCG) | {vector_hit} (Hit Rate)")
-        print(f"RRF only: {rrf_ndcg} (NDCG) | {rrf_hit} (Hit Rate)")
-        print(
-            f"Hybrid (RRF + Cohere Rerank): {hybrid_ndcg} (NDCG) | {hybrid_hit} (Hit Rate)"
-        )
-        print("==============================================")
 
-    print("----------------------")
-    print(f"Mean BM25: {total_ndcg_bm25/10} (NDCG) | {total_hit_bm25/10} (Hit Rate)")
-    print(
-        f"Mean Vector: {total_ndcg_vector/10} (NDCG) | {total_hit_vector/10} (Hit Rate)"
+        single_example_report = SingleExampleReport(
+            case_type=row.case_type,
+            job_title=row.job_title,
+            bm25=(bm25_ndcg, bm25_hit),
+            vector=(vector_ndcg, vector_hit),
+            rrf=(rrf_ndcg, rrf_hit),
+            hybrid=(hybrid_ndcg, hybrid_hit),
+        )
+        all_examples_report.report.append(single_example_report)
+
+    method_mean_report = RetrievalMethodMeanReport(
+        bm25=(total_ndcg_bm25 / 10, total_hit_bm25 / 10),
+        vector=(total_ndcg_vector / 10, total_hit_vector / 10),
+        rrf=(total_ndcg_rrf / 10, total_hit_rrf / 10),
+        hybrid=(total_ndcg_hybrid / 10, total_hit_hybrid / 10),
     )
-    print(f"Mean RRF only: {total_ndcg_rrf/10} (NDCG) | {total_hit_rrf/10} (Hit Rate)")
-    print(
-        f"Mean Hybrid (RRF + Cohere Rerank): {total_ndcg_hybrid/10} (NDCG) | {total_hit_hybrid/10} (Hit Rate)"
-    )
-    print("----------------------")
+
+    return (all_examples_report, method_mean_report)
