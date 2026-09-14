@@ -118,4 +118,4 @@ profile_payload = ProfileConfirmFormPayload(
 event = ProfileConfirmEvent(event_type="profile_confirm", payload=profile_payload)
 
 result = compiled_graph.invoke({"event": event})
-print(result["profile"])
+print(result["profile"].advice)
