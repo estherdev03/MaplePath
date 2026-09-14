@@ -7,6 +7,7 @@ from graph.state.profile import (
     ProfileDraftPayload,
 )
 from graph.construct import compiled_graph
+from noc.evaluate import noc_retrieval_method_evaluate
 
 app = FastAPI()
 
@@ -27,5 +28,8 @@ def complete_profile(profile_confirm: ProfileConfirmFormPayload):
 
 
 @app.get("/evaluate")
-def RAG_evaluate():
-    pass
+def NOC_retrieval_evaluate():
+    examples_report, mean_report = noc_retrieval_method_evaluate(
+        "data/noc_eval_labels.csv"
+    )
+    return {"examples_report": examples_report.report, "mean_report": mean_report}
