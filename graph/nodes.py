@@ -30,3 +30,10 @@ def evaluate_eligibility_wrapper(profile_service: ProfileService):
         return {"profile": profile_service.evaluate_express_entry(state.profile)}
 
     return evaluate_eligibility
+
+
+def create_advice_wrapper(profile_service: ProfileService):
+    def create_advice(state: MainState) -> dict:
+        return {"profile": profile_service.create_advice(state.profile)}
+
+    return create_advice
