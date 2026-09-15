@@ -1,3 +1,4 @@
+from logging_config import configure_logging
 from graph.state.profile import (
     CLBScore,
     CanadaEducation,
@@ -19,6 +20,8 @@ from graph.state.profile import (
     SpouseProfile,
 )
 from graph.construct import compiled_graph
+
+configure_logging()
 
 # text = """
 # I'm 28 years old,

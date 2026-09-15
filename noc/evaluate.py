@@ -1,5 +1,6 @@
 # NDCG metric to evaluate NOC retrieval method (Vector, BM25, RRF only and Hybrid)
 from math import log
+import logging
 import os
 from typing import Tuple
 
@@ -15,6 +16,8 @@ from noc.types import (
     RetrievalMethodMeanReport,
     SingleExampleReport,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class EvaluateService:
@@ -79,6 +82,7 @@ def noc_retrieval_method_evaluate(
         lambda row: f"Job title: {row['job_title']} \n Job responsibility: {row['job_responsibility']}",
         axis=1,
     )
+    logger.info("Running NOC retrieval evaluation on %d example(s)", len(df))
 
     total_ndcg_bm25 = 0
     total_ndcg_vector = 0
@@ -149,5 +153,6 @@ def noc_retrieval_method_evaluate(
         rrf=(total_ndcg_rrf / 10, total_hit_rrf / 10),
         hybrid=(total_ndcg_hybrid / 10, total_hit_hybrid / 10),
     )
+    logger.info("NOC retrieval evaluation finished: %s", method_mean_report)
 
     return (all_examples_report, method_mean_report)

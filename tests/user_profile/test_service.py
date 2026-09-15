@@ -16,8 +16,10 @@ from graph.state.profile import (
     ProfileConfirmFormPayload,
     SpouseProfile,
 )
+import pytest
+
 from user_profile.service import ProfileService
-from user_profile.types import NOCResult
+from user_profile.types import LLMNocResult, NOCResult
 
 
 def _service():
@@ -96,6 +98,31 @@ def test_get_occupation_builds_occupation_from_noc_result(monkeypatch):
     assert occupation.teer == 1
     assert occupation.have_canada_job_offer is True
     assert occupation.noc_confidence == 0.9
+
+
+# ---- _parse_NOC ----
+def test_parse_nocs_raises_clear_error_when_llm_finds_no_match(monkeypatch):
+    """When the LLM returns noc_code=None (no confident candidate match),
+    raise a clear ValueError instead of calling get_one_by_noc_code(None)."""
+    fake_structured_llm = MagicMock()
+    fake_structured_llm.invoke.return_value = LLMNocResult(
+        noc_code=None,
+        reasoning="None of the provided candidates sufficiently match.",
+    )
+    fake_llm = MagicMock()
+    fake_llm.with_structured_output.return_value = fake_structured_llm
+    monkeypatch.setattr(
+        "user_profile.service.init_chat_model", MagicMock(return_value=fake_llm)
+    )
+    service = _service()
+    service.noc_service.noc_hybrid_search.return_value = []
+
+    with pytest.raises(ValueError, match="Software Engineer"):
+        service._parse_NOC(
+            job_title="Software Engineer", job_responsibility="Build web apps"
+        )
+
+    service.noc_service.get_one_by_noc_code.assert_not_called()
 
 
 # ---- calculate_CRS ----

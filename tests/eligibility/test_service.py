@@ -46,6 +46,20 @@ def test_calculate_fsw_education_language_and_work_points(eligibility_service):
     assert breakdown.work_exp_pts == 15  # WORK_EXPERIENCE_POINTS[6] (capped)
 
 
+def test_calculate_fsw_work_exp_with_fractional_years_does_not_raise(
+    eligibility_service,
+):
+    """canada_years/foreign_years are floats; combined total must be cast to
+    int before indexing WORK_EXPERIENCE_POINTS or a fractional sum (e.g. 2.5)
+    raises a KeyError instead of scoring correctly."""
+    user = UserProfile(
+        work_experience=Experience(canada_years=1.5, foreign_years=1.0),
+        occupation=_occ(have_canada_job_offer=False),
+    )
+    _, breakdown = eligibility_service._calculate_fsw(user)
+    assert breakdown.work_exp_pts == 11  # WORK_EXPERIENCE_POINTS[int(2.5) == 2]
+
+
 def test_calculate_fsw_age_points_capped_and_below_18(eligibility_service):
     below = UserProfile(age=17, occupation=_occ(have_canada_job_offer=False))
     capped = UserProfile(age=60, occupation=_occ(have_canada_job_offer=False))

@@ -1,9 +1,4 @@
-"""Tests for noc.evaluate.EvaluateService.
-
-noc_retrieval_method_evaluate itself constructs its own DatabaseService/
-NOCRepository/NOCService internally, which makes it untestable without a
-live DB (see the skipped placeholder below) -- out of scope here.
-"""
+"""Tests for noc.evaluate.EvaluateService."""
 
 from unittest.mock import MagicMock
 

@@ -1,8 +1,12 @@
+import logging
+
 from sqlalchemy import func, select, text
 
 from db.models import NOC
 from db.service import DatabaseService
 from noc.types import IdealNOC
+
+logger = logging.getLogger(__name__)
 
 
 class NOCRepository:
@@ -25,8 +29,9 @@ class NOCRepository:
         with self.db_service.create_session() as session:
             for i, noc in enumerate(noc_list):
                 session.add(noc)
-                print(f"Add {noc.noc_code} profile to db. Index: {i}")
+                logger.debug("Adding %s profile to db, index: %d", noc.noc_code, i)
             session.commit()
+        logger.info("Saved %d NOC profile(s) to db", len(noc_list))
 
     def vector_search(self, search_vector: list[float]):
         with self.db_service.create_session() as session:
