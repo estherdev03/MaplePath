@@ -230,7 +230,7 @@ class EnglishService:
             case EnglishTest.CELPIP:
                 return self.celpip_to_clb(scores)
             case _:
-                raise ValueError("{test} test score is not accepted.")
+                raise ValueError(f"{test} test score is not accepted.")
 
     def clb_to_points(
         self,

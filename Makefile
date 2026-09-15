@@ -6,3 +6,6 @@ pgdownvol:
 
 pgdown:
 	docker compose -f docker-compose.dev.yaml down
+
+test:
+	uv run pytest

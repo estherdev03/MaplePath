@@ -119,7 +119,11 @@ class CRSService:
 
     def _first_language_points(self, profile: UserProfile) -> int:
         is_married = profile.marital_status == MaritalStatus.MARRIED
-        if profile.languages.english and profile.languages.english.is_first_language:
+        if (
+            profile.languages
+            and profile.languages.english
+            and profile.languages.english.is_first_language
+        ):
             test_name = profile.languages.english.test_name
             scores = profile.languages.english.detail_scores
             profile.languages.english.clb_scores = self.english_service.english_to_clb(
@@ -128,7 +132,11 @@ class CRSService:
             return self.english_service.clb_to_points(
                 profile.languages.english.clb_scores, is_married, True
             )
-        if profile.languages.french and profile.languages.french.is_first_language:
+        if (
+            profile.languages
+            and profile.languages.french
+            and profile.languages.french.is_first_language
+        ):
             test_name = profile.languages.french.test_name
             scores = profile.languages.french.detail_scores
             profile.languages.french.nclc_scores = self.french_service.french_to_nclc(

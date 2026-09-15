@@ -1,16 +1,8 @@
-from dataclasses import dataclass
-
 from sqlalchemy import func, select, text
 
 from db.models import NOC
 from db.service import DatabaseService
-
-
-@dataclass
-class IdealNOC:
-    noc_code: str
-    minor_group_code: str
-    major_group_code: str
+from noc.types import IdealNOC
 
 
 class NOCRepository:
