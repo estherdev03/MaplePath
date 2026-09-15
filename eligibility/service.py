@@ -69,8 +69,10 @@ class EligibilityService:
 
             fsw_score.work_exp_pts = WORK_EXPERIENCE_POINTS[
                 min(
-                    user.work_experience.canada_years
-                    + user.work_experience.foreign_years,
+                    int(
+                        user.work_experience.canada_years
+                        + user.work_experience.foreign_years
+                    ),
                     6,
                 )
             ]

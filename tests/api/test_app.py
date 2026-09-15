@@ -78,6 +78,43 @@ def test_complete_profile_invalid_body_returns_422():
     assert response.status_code == 422
 
 
+def test_parse_profile_value_error_returns_400():
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.side_effect = ValueError("No matching NOC occupation found")
+        response = client.post("/profile/parse", params={"profile_text": "hello"})
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "No matching NOC occupation found"}
+
+
+def test_parse_profile_unexpected_error_returns_500_without_leaking_details():
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.side_effect = RuntimeError("db connection refused")
+        response = client.post("/profile/parse", params={"profile_text": "hello"})
+
+    assert response.status_code == 500
+    assert "db connection refused" not in response.text
+
+
+def test_complete_profile_value_error_returns_400():
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.side_effect = ValueError("Spouse information is required")
+        response = client.post("/profile/complete", json=_confirm_payload_json())
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Spouse information is required"}
+
+
+def test_noc_retrieval_evaluate_missing_file_returns_500():
+    with patch(
+        "api.app.noc_retrieval_method_evaluate",
+        side_effect=FileNotFoundError("data/noc_eval_labels.csv"),
+    ):
+        response = client.get("/evaluate")
+
+    assert response.status_code == 500
+
+
 def test_noc_retrieval_evaluate_returns_examples_and_mean_report():
     single = SingleExampleReport(
         case_type="core",

@@ -127,6 +127,83 @@ def test_get_one_by_noc_code_found_and_not_found():
         service.get_one_by_noc_code("missing")
 
 
+# ---- _get_noc_code_list ----
+def test_get_noc_code_list_raises_clear_error_when_file_missing():
+    service = _service()
+    with pytest.raises(FileNotFoundError, match="NOC code list file not found"):
+        service._get_noc_code_list("does-not-exist.csv")
+
+
+def test_get_noc_code_list_raises_clear_error_when_column_missing(tmp_path):
+    csv_path = tmp_path / "bad.csv"
+    csv_path.write_text("some_other_column\nvalue\n")
+    service = _service()
+    with pytest.raises(ValueError, match="missing expected column"):
+        service._get_noc_code_list(str(csv_path))
+
+
+# ---- _parse_noc ----
+def test_parse_noc_raises_clear_error_when_title_missing():
+    service = _service()
+    with pytest.raises(ValueError, match="Could not find NOC title"):
+        service._parse_noc("<html><body>no title here</body></html>")
+
+
+def test_parse_noc_raises_clear_error_when_breakdown_summary_missing():
+    service = _service()
+    html = "<html><body><h2>21232 – Software engineers</h2><p>desc</p></body></html>"
+    with pytest.raises(ValueError, match="missing 'TEER'"):
+        service._parse_noc(html)
+
+
+# ---- init_noc_info ----
+def test_init_noc_info_skips_failed_codes_and_saves_the_rest(monkeypatch):
+    import pandas as pd
+    import requests
+
+    repo = MagicMock()
+    service = _service(repo)
+    monkeypatch.setattr(
+        service, "_get_noc_code_list", MagicMock(return_value=["11111", "22222"])
+    )
+
+    good_profile = NOC(noc_code="22222")
+
+    def fake_get(url, timeout=None):
+        response = MagicMock()
+        if "11111" in url:
+            raise requests.RequestException("boom")
+        response.raise_for_status.return_value = None
+        response.text = "<html>ok</html>"
+        return response
+
+    monkeypatch.setattr("noc.service.requests.get", fake_get)
+    monkeypatch.setattr(service, "_parse_noc", MagicMock(return_value=good_profile))
+
+    service.init_noc_info("dummy.csv")
+
+    repo.save_all.assert_called_once_with([good_profile])
+
+
+def test_init_noc_info_raises_when_every_code_fails(monkeypatch):
+    import requests
+
+    repo = MagicMock()
+    service = _service(repo)
+    monkeypatch.setattr(
+        service, "_get_noc_code_list", MagicMock(return_value=["11111"])
+    )
+    monkeypatch.setattr(
+        "noc.service.requests.get",
+        MagicMock(side_effect=requests.RequestException("boom")),
+    )
+
+    with pytest.raises(RuntimeError, match="No NOC profiles"):
+        service.init_noc_info("dummy.csv")
+
+    repo.save_all.assert_not_called()
+
+
 # ---- get_ideal_pool_count ----
 def test_get_ideal_pool_count_delegates_to_repository():
     repo = MagicMock()

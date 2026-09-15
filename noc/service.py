@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import asdict
+import logging
 import os
 
 from bs4 import BeautifulSoup
@@ -15,6 +16,8 @@ from noc.types import EmbeddingInfo, IdealNOC
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 K_RRF = 60
 
 
@@ -26,10 +29,18 @@ class NOCService:
         )
 
     def _get_noc_code_list(self, filepath: str) -> list[str]:
-        df = pd.read_csv(filepath, dtype={"Code - NOC 2021 V1.0": str})
-        return df.loc[
-            df["Hierarchical structure"] == "Unit Group", "Code - NOC 2021 V1.0"
-        ].to_numpy()
+        try:
+            df = pd.read_csv(filepath, dtype={"Code - NOC 2021 V1.0": str})
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"NOC code list file not found: {filepath}") from e
+        try:
+            return df.loc[
+                df["Hierarchical structure"] == "Unit Group", "Code - NOC 2021 V1.0"
+            ].to_numpy()
+        except KeyError as e:
+            raise ValueError(
+                f"NOC code list file '{filepath}' is missing expected column {e}"
+            ) from e
 
     def _get_list_after_heading(self, soup: BeautifulSoup, heading: str) -> list[str]:
         h4 = soup.find("h4", string=lambda s: s and heading.lower() in s.lower())
@@ -55,13 +66,18 @@ class NOCService:
 
         # title
         title_h2 = soup.find("h2")
+        if not title_h2:
+            raise ValueError("Could not find NOC title (unexpected page structure)")
         full_title = title_h2.get_text(" ", strip=True)
+        if "–" not in full_title:
+            raise ValueError(f"Could not parse NOC code/title from '{full_title}'")
         noc_code, title = full_title.split("–", 1)
         noc_code = noc_code.strip()
         title = title.strip()
 
         # description
-        description = title_h2.find_next("p").get_text(" ", strip=True)
+        description_p = title_h2.find_next("p")
+        description = description_p.get_text(" ", strip=True) if description_p else ""
 
         # example titles
         example_div = soup.find("div", id="ExampleTitles")
@@ -77,7 +93,10 @@ class NOCService:
             inclusion_h5 = example_div.find("h5", string="Inclusions")
             if inclusion_h5:
                 ul = inclusion_h5.find_next("ul")
-                inclusions = [li.get_text(" ", strip=True) for li in ul.find_all("li")]
+                if ul:
+                    inclusions = [
+                        li.get_text(" ", strip=True) for li in ul.find_all("li")
+                    ]
 
         # main section
         main_duties = self._get_list_after_heading(soup, "Main duties")
@@ -102,36 +121,54 @@ class NOCService:
         breakdown = soup.find("h3", string="Breakdown summary")
         if breakdown:
             section = breakdown.find_parent("section")
-            for dt in section.find_all("dt"):
-                dd = dt.find_next_sibling("dd")
-                if dd:
-                    summary[dt.get_text(" ", strip=True)] = dd.get_text(
-                        " ",
-                        strip=True,
-                    )
+            if section:
+                for dt in section.find_all("dt"):
+                    dd = dt.find_next_sibling("dd")
+                    if dd:
+                        summary[dt.get_text(" ", strip=True)] = dd.get_text(
+                            " ",
+                            strip=True,
+                        )
 
-        teer = int(summary["TEER"].split("–")[0].strip())
+        def _summary_field(key: str) -> str:
+            if key not in summary:
+                raise ValueError(
+                    f"NOC {noc_code}: breakdown summary is missing '{key}'"
+                )
+            return summary[key]
+
+        def _summary_code_and_detail(key: str) -> tuple[str, str]:
+            value = _summary_field(key)
+            if "–" not in value:
+                raise ValueError(
+                    f"NOC {noc_code}: could not parse code/detail from '{key}': '{value}'"
+                )
+            code, detail = value.split("–", 1)
+            return code.strip(), detail.strip()
+
+        teer_value = _summary_field("TEER")
+        try:
+            teer = int(teer_value.split("–")[0].strip())
+        except ValueError as e:
+            raise ValueError(
+                f"NOC {noc_code}: could not parse TEER from '{teer_value}'"
+            ) from e
 
         # Broad category
-        broad_category_code = (
-            summary["Broad occupational category"].split("–")[0].strip()
-        )
-
-        broad_category_detail = (
-            summary["Broad occupational category"].split("–")[1].strip()
+        broad_category_code, broad_category_detail = _summary_code_and_detail(
+            "Broad occupational category"
         )
 
         # Major group
-        major_group_code = summary["Major group"].split("–")[0].strip()
-        major_group_detail = summary["Major group"].split("–")[1].strip()
+        major_group_code, major_group_detail = _summary_code_and_detail("Major group")
 
         # Sub major group
-        sub_major_group_code = summary["Sub-major group"].split("–")[0].strip()
-        sub_major_group_detail = summary["Sub-major group"].split("–")[1].strip()
+        sub_major_group_code, sub_major_group_detail = _summary_code_and_detail(
+            "Sub-major group"
+        )
 
         # Minor group
-        minor_group_code = summary["Minor group"].split("–")[0].strip()
-        minor_group_detail = summary["Minor group"].split("–")[1].strip()
+        minor_group_code, minor_group_detail = _summary_code_and_detail("Minor group")
 
         info = EmbeddingInfo(
             noc_code=noc_code,
@@ -198,23 +235,56 @@ class NOCService:
 
     def init_noc_info(self, filepath):
         noc_info_list = []
+        failed_codes = []
         noc_code_list = self._get_noc_code_list(filepath)
+        logger.info("Fetching %d NOC profiles from %s", len(noc_code_list), filepath)
         for i, code in enumerate(noc_code_list):
             url = f"https://noc.esdc.gc.ca/Structure/NOCProfile?code={code}&version=2021.0"
-            html = requests.get(url).text
-            profile = self._parse_noc(html)
+            try:
+                response = requests.get(url, timeout=30)
+                response.raise_for_status()
+                profile = self._parse_noc(response.text)
+            except requests.RequestException as e:
+                logger.warning(
+                    "Skipping NOC %s (index %d): request failed: %s", code, i, e
+                )
+                failed_codes.append(code)
+                continue
+            except (ValueError, AttributeError, KeyError) as e:
+                logger.warning(
+                    "Skipping NOC %s (index %d): failed to parse page: %s", code, i, e
+                )
+                failed_codes.append(code)
+                continue
             noc_info_list.append(profile)
-            print(f"Add profile {profile.noc_code}, index: {i}")
+            logger.debug("Parsed profile %s, index: %d", profile.noc_code, i)
+
+        if not noc_info_list:
+            raise RuntimeError(
+                "No NOC profiles were successfully fetched/parsed; nothing to save."
+            )
+
         self.noc_repository.save_all(noc_info_list)
+
+        if failed_codes:
+            logger.warning(
+                "Completed with %d failed NOC code(s): %s",
+                len(failed_codes),
+                failed_codes,
+            )
+        else:
+            logger.info("Completed with %d NOC profile(s) saved", len(noc_info_list))
 
     def noc_semantic_search(self, query: str) -> list[NOC]:
         """Job title NOC search using vector embedding"""
+        logger.debug("Running NOC semantic search for query: %r", query)
         emb_model = OpenAIEmbeddings(model="text-embedding-3-large")
         emb_query = emb_model.embed_query(query)
         return self.noc_repository.vector_search(emb_query)
 
     def noc_keyword_search(self, query: str) -> list[NOC]:
         """Job title NOC search using text search"""
+        logger.debug("Running NOC keyword search for query: %r", query)
         return self.noc_repository.keyword_search(query)
 
     def noc_hybrid_search(self, query: str) -> list[NOC]:
@@ -229,6 +299,7 @@ class NOCService:
             + "\n".join(res.example_titles or [])
             for res in rrf_result
         ]
+        logger.debug("Reranking %d NOC candidates via Cohere", len(rrf_result_text))
         reranked_result = self.rerank_engine.rerank(
             documents=rrf_result_text, query=query, top_n=10
         )
@@ -238,5 +309,6 @@ class NOCService:
     def get_one_by_noc_code(self, noc_code: str) -> NOC | None:
         result = self.noc_repository.get_one_by_noc_code(noc_code)
         if not result:
+            logger.warning("NOC profile not found for noc code: %s", noc_code)
             raise ValueError(f"NOC profile not found for noc code: {noc_code}")
         return result

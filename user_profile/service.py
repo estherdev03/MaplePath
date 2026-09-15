@@ -1,3 +1,5 @@
+import logging
+
 from langchain.chat_models import init_chat_model
 
 from crs.service import CRSService
@@ -12,6 +14,8 @@ from user_profile.types import LLMNocResult, NOCCandidate, NOCResult
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 
 class ProfileService:
     def __init__(
@@ -25,6 +29,7 @@ class ProfileService:
         self.eligibility_service = eligibility_service
 
     def parse(self, profile_text: str) -> ProfileDraft:
+        logger.info("Parsing profile draft from free text")
         llm = init_chat_model("openai:gpt-5.4-mini")
         structured_llm = llm.with_structured_output(ProfileDraft)
         response = structured_llm.invoke(f"""
@@ -125,9 +130,15 @@ class ProfileService:
 
         Never fabricate information.
 
-        Profile Text: {profile_text}               
+        Profile Text: {profile_text}
         """)
-        print(response)
+        logger.debug("Profile draft parse result: %s", response)
+        if response.missing_fields or response.warnings:
+            logger.info(
+                "Profile draft parsed with missing_fields=%s warnings=%s",
+                response.missing_fields,
+                response.warnings,
+            )
         return response
 
     def create(self, profile: ProfileConfirmFormPayload) -> UserProfile:
@@ -168,6 +179,7 @@ class ProfileService:
         )
 
     def _parse_NOC(self, job_title: str, job_responsibility: str) -> NOCResult:
+        logger.info("Classifying NOC occupation for job title: %r", job_title)
         llm = init_chat_model("openai:gpt-5.4-mini")
         structure_llm = llm.with_structured_output(LLMNocResult)
         search_query = f"""
@@ -277,6 +289,22 @@ class ProfileService:
         Never invent an occupation that is not present in the candidate list.
         """)
 
+        if not result.noc_code:
+            reason = result.reasoning or "no confident match was found."
+            logger.warning(
+                "No NOC match for job title '%s': %s", job_title, reason
+            )
+            raise ValueError(
+                f"Could not determine a NOC occupation for job title "
+                f"'{job_title}': {reason}"
+            )
+
+        logger.info(
+            "Matched NOC code %s (confidence=%.2f) for job title '%s'",
+            result.noc_code,
+            result.noc_confidence,
+            job_title,
+        )
         noc_profile = self.noc_service.get_one_by_noc_code(result.noc_code)
 
         return NOCResult(
@@ -298,6 +326,7 @@ class ProfileService:
         return user
 
     def create_advice(self, user: UserProfile) -> UserProfile:
+        logger.info("Generating Express Entry advice for user profile")
         llm = init_chat_model("openai:gpt-5.4-mini")
         response = llm.invoke(f"""
         You are MaplePath's Express Entry Advisor.
@@ -351,4 +380,5 @@ class ProfileService:
         {user.eligibility}
         """)
         user.advice = response.content
+        logger.info("Express Entry advice generated")
         return user
