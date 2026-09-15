@@ -1,5 +1,5 @@
 from collections import defaultdict
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 import os
 
 from bs4 import BeautifulSoup
@@ -10,24 +10,12 @@ import pandas as pd
 import requests
 
 from db.models import NOC
-from noc.repository import IdealNOC, NOCRepository
+from noc.repository import NOCRepository
+from noc.types import EmbeddingInfo, IdealNOC
 
 load_dotenv()
 
 K_RRF = 60
-
-
-@dataclass
-class EmbeddingInfo:
-    noc_code: str
-    title: str
-    description: str
-    example_titles: list[str]
-    inclusions: list[str]
-    main_duties: list[str]
-    employment_requirements: list[str]
-    additional_information: list[str]
-    exclusions: list[str]
 
 
 class NOCService:
@@ -196,7 +184,7 @@ class NOCService:
             else:
                 w = 0.5
             for rank, noc in enumerate(retriever, start=1):
-                scores[noc.noc_code] += w*1.0 / (k + rank)
+                scores[noc.noc_code] += w * 1.0 / (k + rank)
         sorted_noc = sorted(
             scores.items(), key=lambda x: -x[1]
         )  # descending order by scores
@@ -229,12 +217,18 @@ class NOCService:
         """Job title NOC search using text search"""
         return self.noc_repository.keyword_search(query)
 
-    def noc_hybrid_search(self, query:str) -> list[NOC]:
+    def noc_hybrid_search(self, query: str) -> list[NOC]:
         """Combine both semantic and keyword search result, then rerank using Cohere LLM"""
         semantic_result = self.noc_semantic_search(query)
         keyword_result = self.noc_keyword_search(query)
         rrf_result = self._rrf(semantic_result, keyword_result)[:20]
-        rrf_result_text = [f"Title: {res.title}\nDuties:\n" + "\n".join(res.main_duties or []) + "\nExample Titles:\n" + "\n".join(res.example_titles or []) for res in rrf_result]
+        rrf_result_text = [
+            f"Title: {res.title}\nDuties:\n"
+            + "\n".join(res.main_duties or [])
+            + "\nExample Titles:\n"
+            + "\n".join(res.example_titles or [])
+            for res in rrf_result
+        ]
         reranked_result = self.rerank_engine.rerank(
             documents=rrf_result_text, query=query, top_n=10
         )

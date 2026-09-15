@@ -1,37 +1,20 @@
 # NDCG metric to evaluate NOC retrieval method (Vector, BM25, RRF only and Hybrid)
-from dataclasses import dataclass, field
 from math import log
 import os
 from typing import Tuple
 
 from db.models import NOC
 from db.service import DatabaseService
-from noc.repository import IdealNOC, NOCRepository
+from noc.repository import NOCRepository
 from noc.service import NOCService
 import pandas as pd
 
-
-@dataclass
-class SingleExampleReport:
-    case_type: str
-    job_title: str
-    bm25: Tuple[float, float]  # [NDCG, hit_rate]
-    vector: Tuple[float, float]
-    rrf: Tuple[float, float]
-    hybrid: Tuple[float, float]
-
-
-@dataclass
-class CompleteExamplesReport:
-    report: list[SingleExampleReport] = field(default_factory=list)
-
-
-@dataclass
-class RetrievalMethodMeanReport:
-    bm25: Tuple[float, float]  # [NDCG, hit_rate]
-    vector: Tuple[float, float]
-    rrf: Tuple[float, float]
-    hybrid: Tuple[float, float]
+from noc.types import (
+    CompleteExamplesReport,
+    IdealNOC,
+    RetrievalMethodMeanReport,
+    SingleExampleReport,
+)
 
 
 class EvaluateService:

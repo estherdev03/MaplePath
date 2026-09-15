@@ -12,8 +12,6 @@ class FrenchService:
         )
 
     def _tef_speaking_to_nclc(self, score: float | None) -> int:
-        # TEF Canada "Équivalence ancien score" (pre-2019-09-30 chart).
-        # Express Entry requires this table regardless of test date. Scale: /450.
         if score is None:
             return 0
 
@@ -35,7 +33,6 @@ class FrenchService:
         return 0
 
     def _tef_writing_to_nclc(self, score: float | None) -> int:
-        # Scale: /450. Same bands as speaking.
         if score is None:
             return 0
 
@@ -57,7 +54,6 @@ class FrenchService:
         return 0
 
     def _tef_listening_to_nclc(self, score: float | None) -> int:
-        # Scale: /360.
         if score is None:
             return 0
 
@@ -79,7 +75,6 @@ class FrenchService:
         return 0
 
     def _tef_reading_to_nclc(self, score: float | None) -> int:
-        # Scale: /300. Note this differs from listening — do not share a table.
         if score is None:
             return 0
 
@@ -200,7 +195,7 @@ class FrenchService:
             case FrenchTest.TEF:
                 return self.tef_to_nclc(scores)
             case _:
-                raise ValueError("{test} test score is not accepted.")
+                raise ValueError(f"{test} test score is not accepted.")
 
     def nclc_to_points(
         self,
