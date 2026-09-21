@@ -1,6 +1,32 @@
-import { PROGRAMS, FSW_GRID } from "@/lib/mock-data";
+"use client";
+
+import Link from "next/link";
+import { useRequireProfile } from "@/lib/use-require-profile";
+import { buildProgramViews, FSW_GRID_LABELS, FSW_GRID_MAX } from "@/lib/eligibility-view";
 
 export default function EligibilityPage() {
+  const profile = useRequireProfile();
+
+  if (!profile) return null;
+
+  if (!profile.eligibility) {
+    return (
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}>
+        <h3 style={{ margin: 0 }}>Express Entry eligibility</h3>
+        <p style={{ margin: "10px 0 22px", fontSize: 14, color: "rgba(233,233,237,.6)" }}>
+          Confirm your profile first — eligibility is computed once the scorer has a complete profile.
+        </p>
+        <Link href="/intake" className="btn btn-primary">
+          Describe your situation
+        </Link>
+      </div>
+    );
+  }
+
+  const programs = buildProgramViews(profile);
+  const fsw = profile.eligibility.federal_skilled_worker?.breakdown;
+  const fswGrid = fsw?.selection_factor_breakdown;
+
   return (
     <div style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}>
       <h3 style={{ margin: 0 }}>Express Entry eligibility</h3>
@@ -8,7 +34,7 @@ export default function EligibilityPage() {
         Requirement-level results. A program is eligible only when every requirement is met.
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {PROGRAMS.map((p) => (
+        {programs.map((p) => (
           <div
             key={p.name}
             style={{ borderRadius: 14, background: "#161826", boxShadow: `0 0 0 1px ${p.edge}`, overflow: "hidden" }}
@@ -53,23 +79,27 @@ export default function EligibilityPage() {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 20, borderRadius: 14, background: "#161826", boxShadow: "var(--shadow-sm)", padding: "18px 20px" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10, marginBottom: 12 }}>
-          <h5 style={{ margin: 0 }}>FSW selection grid — 67-point threshold</h5>
-          <span className="tag tag-accent">78 / 100 · passed</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
-          {FSW_GRID.map((g) => (
-            <div key={g.label} style={{ padding: "11px 13px", borderRadius: 8, background: "#1b1e2d" }}>
-              <div style={{ fontSize: 11.5, color: "rgba(233,233,237,.58)" }}>{g.label}</div>
-              <div style={{ fontSize: 19, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
-                {g.val}
-                <span style={{ fontSize: 12, color: "rgba(233,233,237,.45)" }}> / {g.max}</span>
+      {fswGrid && fsw && (
+        <div style={{ marginTop: 20, borderRadius: 14, background: "#161826", boxShadow: "var(--shadow-sm)", padding: "18px 20px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10, marginBottom: 12 }}>
+            <h5 style={{ margin: 0 }}>FSW selection grid — 67-point threshold</h5>
+            <span className={`tag ${fsw.selection_factor_passed ? "tag-accent" : "tag-neutral"}`}>
+              {fsw.selection_factor_score} / 100 · {fsw.selection_factor_passed ? "passed" : "not passed"}
+            </span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+            {(Object.keys(FSW_GRID_LABELS) as (keyof typeof FSW_GRID_LABELS)[]).map((key) => (
+              <div key={key} style={{ padding: "11px 13px", borderRadius: 8, background: "#1b1e2d" }}>
+                <div style={{ fontSize: 11.5, color: "rgba(233,233,237,.58)" }}>{FSW_GRID_LABELS[key]}</div>
+                <div style={{ fontSize: 19, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
+                  {fswGrid[key]}
+                  <span style={{ fontSize: 12, color: "rgba(233,233,237,.45)" }}> / {FSW_GRID_MAX[key]}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

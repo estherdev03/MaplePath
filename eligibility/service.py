@@ -19,7 +19,7 @@ from graph.state.eligibility import (
     FederalSkilledTradesEligibility,
     FederalSkilledWorkerEligibility,
 )
-from graph.state.profile import EducationLevel
+from graph.state.profile import EducationLevel, MaritalStatus
 from graph.state.shared import UserProfile
 
 
@@ -199,7 +199,7 @@ class EligibilityService:
         if user.occupation and user.occupation.have_canada_job_offer:
             skilled_worker_eligibility.settlement_funds_required = False
         else:
-            if user.spouse:
+            if user.marital_status == MaritalStatus.MARRIED:
                 skilled_worker_eligibility.settlement_funds_met = (
                     user.current_available_funds >= 19001
                 )
@@ -335,7 +335,7 @@ class EligibilityService:
         if user.occupation and user.occupation.have_canada_job_offer:
             skilled_trade_eligilibility.settlement_funds_required = False
         else:
-            if user.spouse:
+            if user.marital_status == MaritalStatus.MARRIED:
                 skilled_trade_eligilibility.settlement_funds_met = (
                     user.current_available_funds >= 19001
                 )

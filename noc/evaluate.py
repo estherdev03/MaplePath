@@ -1,11 +1,13 @@
 # NDCG metric to evaluate NOC retrieval method (Vector, BM25, RRF only and Hybrid)
+from dataclasses import asdict
 from math import log
+import hashlib
 import logging
 import os
-from typing import Tuple
 
 from db.models import NOC
 from db.service import DatabaseService
+from noc.evaluate_repository import EvaluateRepository
 from noc.repository import NOCRepository
 from noc.service import NOCService
 import pandas as pd
@@ -18,6 +20,11 @@ from noc.types import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _hash_labels_file(file_path: str) -> str:
+    with open(file_path, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
 
 
 class EvaluateService:
@@ -68,16 +75,33 @@ class EvaluateService:
         return 0
 
 
-# Evaluate all retrieval methods using 10 examples from file (due to Cohere Rerank limit)
+# Evaluate all retrieval methods using the examples from file
 def noc_retrieval_method_evaluate(
     file_path: str,
 ) -> tuple[CompleteExamplesReport, RetrievalMethodMeanReport]:
     db_service = DatabaseService(db_url=os.getenv("DB_URL"))
+    evaluate_repository = EvaluateRepository(db_service=db_service)
+
+    # The benchmark reranks every example through a rate-limited search API,
+    # so a run is cached by the labels file's content hash and only redone
+    # when the labelled examples themselves change.
+    labels_hash = _hash_labels_file(file_path)
+    cached_run = evaluate_repository.get_by_hash(labels_hash)
+    if cached_run is not None:
+        logger.info("Using cached NOC retrieval evaluation for labels hash %s", labels_hash)
+        return (
+            CompleteExamplesReport(
+                report=[SingleExampleReport(**e) for e in cached_run.examples_report]
+            ),
+            RetrievalMethodMeanReport(**cached_run.mean_report),
+        )
+
     noc_repository = NOCRepository(db_service=db_service)
     noc_service = NOCService(noc_repository=noc_repository)
     evaluate_service = EvaluateService(noc_service=noc_service)
 
     df = pd.read_csv(file_path)
+    example_count = len(df)
     df["search_query"] = df.apply(
         lambda row: f"Job title: {row['job_title']} \n Job responsibility: {row['job_responsibility']}",
         axis=1,
@@ -148,11 +172,17 @@ def noc_retrieval_method_evaluate(
         all_examples_report.report.append(single_example_report)
 
     method_mean_report = RetrievalMethodMeanReport(
-        bm25=(total_ndcg_bm25 / 10, total_hit_bm25 / 10),
-        vector=(total_ndcg_vector / 10, total_hit_vector / 10),
-        rrf=(total_ndcg_rrf / 10, total_hit_rrf / 10),
-        hybrid=(total_ndcg_hybrid / 10, total_hit_hybrid / 10),
+        bm25=(total_ndcg_bm25 / example_count, total_hit_bm25 / example_count),
+        vector=(total_ndcg_vector / example_count, total_hit_vector / example_count),
+        rrf=(total_ndcg_rrf / example_count, total_hit_rrf / example_count),
+        hybrid=(total_ndcg_hybrid / example_count, total_hit_hybrid / example_count),
     )
     logger.info("NOC retrieval evaluation finished: %s", method_mean_report)
+
+    evaluate_repository.save(
+        labels_hash,
+        [asdict(e) for e in all_examples_report.report],
+        asdict(method_mean_report),
+    )
 
     return (all_examples_report, method_mean_report)

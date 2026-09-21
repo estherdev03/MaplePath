@@ -19,7 +19,7 @@ from graph.state.profile import (
 import pytest
 
 from user_profile.service import ProfileService
-from user_profile.types import LLMNocResult, NOCResult
+from user_profile.types import LLMNocResult, NOCCandidate, NOCResult
 
 
 def _service():
@@ -88,6 +88,27 @@ def test_get_occupation_builds_occupation_from_noc_result(monkeypatch):
         minor_group_code="2123",
         submajor_group_code="212",
         noc_confidence=0.9,
+        reasoning="Matched on backend duties.",
+        candidates=[
+            NOCCandidate(
+                noc_code="21232",
+                title="Software Engineer",
+                description="",
+                main_duties=[],
+                example_titles=[],
+                inclusions=[],
+                exclusions=[],
+            ),
+            NOCCandidate(
+                noc_code="21231",
+                title="Software Designer",
+                description="",
+                main_duties=[],
+                example_titles=[],
+                inclusions=[],
+                exclusions=[],
+            ),
+        ],
     )
     monkeypatch.setattr(service, "_parse_NOC", MagicMock(return_value=noc_result))
 
@@ -98,6 +119,8 @@ def test_get_occupation_builds_occupation_from_noc_result(monkeypatch):
     assert occupation.teer == 1
     assert occupation.have_canada_job_offer is True
     assert occupation.noc_confidence == 0.9
+    assert occupation.reasoning == "Matched on backend duties."
+    assert [c.noc_code for c in occupation.candidates] == ["21232", "21231"]
 
 
 # ---- _parse_NOC ----
@@ -123,6 +146,59 @@ def test_parse_nocs_raises_clear_error_when_llm_finds_no_match(monkeypatch):
         )
 
     service.noc_service.get_one_by_noc_code.assert_not_called()
+
+
+def test_parse_nocs_returns_reasoning_and_ordered_candidates_on_match(monkeypatch):
+    """The final NOCResult should carry the LLM's reasoning and the full
+    ordered candidate list the LLM was asked to choose from, so the UI can
+    show them without inventing retrieval scores."""
+    fake_structured_llm = MagicMock()
+    fake_structured_llm.invoke.return_value = LLMNocResult(
+        noc_code="21232",
+        title="Software Engineer",
+        noc_confidence=0.9,
+        reasoning="Duties matched the top candidate's main duties.",
+    )
+    fake_llm = MagicMock()
+    fake_llm.with_structured_output.return_value = fake_structured_llm
+    monkeypatch.setattr(
+        "user_profile.service.init_chat_model", MagicMock(return_value=fake_llm)
+    )
+    service = _service()
+    top_candidate = MagicMock(
+        noc_code="21232",
+        title="Software Engineer",
+        description="",
+        main_duties=[],
+        example_titles=[],
+        inclusions=[],
+        exclusions=[],
+    )
+    runner_up = MagicMock(
+        noc_code="21231",
+        title="Software Designer",
+        description="",
+        main_duties=[],
+        example_titles=[],
+        inclusions=[],
+        exclusions=[],
+    )
+    service.noc_service.noc_hybrid_search.return_value = [top_candidate, runner_up]
+    service.noc_service.get_one_by_noc_code.return_value = MagicMock(
+        title="Software Engineer",
+        noc_code="21232",
+        teer=1,
+        major_group_code="21",
+        minor_group_code="2123",
+        sub_major_group_code="212",
+    )
+
+    result = service._parse_NOC(
+        job_title="Software Engineer", job_responsibility="Build web apps"
+    )
+
+    assert result.reasoning == "Duties matched the top candidate's main duties."
+    assert [c.noc_code for c in result.candidates] == ["21232", "21231"]
 
 
 # ---- calculate_CRS ----

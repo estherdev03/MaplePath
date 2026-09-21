@@ -2,8 +2,10 @@ from collections import defaultdict
 from dataclasses import asdict
 import logging
 import os
+import time
 
 from bs4 import BeautifulSoup
+from cohere.errors import TooManyRequestsError
 from dotenv import load_dotenv
 from langchain_cohere import CohereRerank
 from langchain_openai import OpenAIEmbeddings
@@ -19,6 +21,16 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 K_RRF = 60
+NOC_FETCH_MAX_ATTEMPTS = 3
+NOC_FETCH_BACKOFF_SECONDS = 2
+
+# The Cohere trial key allows 10 calls/minute; a single /evaluate run alone
+# makes 10 rerank calls, so it's easy to land on the wrong side of that
+# window (e.g. right after a profile confirmation also used the key). A
+# short wait is unlikely to help — the whole window needs to roll over —
+# so back off long enough to plausibly cross into the next one.
+COHERE_RERANK_MAX_ATTEMPTS = 2
+COHERE_RERANK_BACKOFF_SECONDS = 20
 
 
 class NOCService:
@@ -233,26 +245,53 @@ class NOCService:
     def get_ideal_pool_count(self, ideal: IdealNOC) -> tuple[int, int]:
         return self.noc_repository.get_ideal_pool_count(ideal)
 
+    def _fetch_and_parse_noc(self, code: str, i: int) -> NOC:
+        url = f"https://noc.esdc.gc.ca/Structure/NOCProfile?code={code}&version=2021.0"
+        last_error: Exception | None = None
+        for attempt in range(1, NOC_FETCH_MAX_ATTEMPTS + 1):
+            try:
+                response = requests.get(url, timeout=30)
+                response.raise_for_status()
+                return self._parse_noc(response.text)
+            except (requests.RequestException, ValueError, AttributeError, KeyError) as e:
+                last_error = e
+                if attempt < NOC_FETCH_MAX_ATTEMPTS:
+                    logger.warning(
+                        "NOC %s (index %d) attempt %d/%d failed: %s; retrying",
+                        code,
+                        i,
+                        attempt,
+                        NOC_FETCH_MAX_ATTEMPTS,
+                        e,
+                    )
+                    time.sleep(NOC_FETCH_BACKOFF_SECONDS * attempt)
+        raise last_error
+
     def init_noc_info(self, filepath):
         noc_info_list = []
         failed_codes = []
         noc_code_list = self._get_noc_code_list(filepath)
         logger.info("Fetching %d NOC profiles from %s", len(noc_code_list), filepath)
         for i, code in enumerate(noc_code_list):
-            url = f"https://noc.esdc.gc.ca/Structure/NOCProfile?code={code}&version=2021.0"
             try:
-                response = requests.get(url, timeout=30)
-                response.raise_for_status()
-                profile = self._parse_noc(response.text)
+                profile = self._fetch_and_parse_noc(code, i)
             except requests.RequestException as e:
                 logger.warning(
-                    "Skipping NOC %s (index %d): request failed: %s", code, i, e
+                    "Skipping NOC %s (index %d): request failed after %d attempts: %s",
+                    code,
+                    i,
+                    NOC_FETCH_MAX_ATTEMPTS,
+                    e,
                 )
                 failed_codes.append(code)
                 continue
             except (ValueError, AttributeError, KeyError) as e:
                 logger.warning(
-                    "Skipping NOC %s (index %d): failed to parse page: %s", code, i, e
+                    "Skipping NOC %s (index %d): failed to parse page after %d attempts: %s",
+                    code,
+                    i,
+                    NOC_FETCH_MAX_ATTEMPTS,
+                    e,
                 )
                 failed_codes.append(code)
                 continue
@@ -300,11 +339,26 @@ class NOCService:
             for res in rrf_result
         ]
         logger.debug("Reranking %d NOC candidates via Cohere", len(rrf_result_text))
-        reranked_result = self.rerank_engine.rerank(
-            documents=rrf_result_text, query=query, top_n=10
-        )
+        reranked_result = self._rerank_with_retry(rrf_result_text, query)
         result = [rrf_result[r["index"]] for r in reranked_result]
         return result
+
+    def _rerank_with_retry(self, documents: list[str], query: str):
+        last_error: TooManyRequestsError | None = None
+        for attempt in range(1, COHERE_RERANK_MAX_ATTEMPTS + 1):
+            try:
+                return self.rerank_engine.rerank(documents=documents, query=query, top_n=10)
+            except TooManyRequestsError as e:
+                last_error = e
+                if attempt < COHERE_RERANK_MAX_ATTEMPTS:
+                    logger.warning(
+                        "Cohere rerank rate-limited (attempt %d/%d); retrying in %ds",
+                        attempt,
+                        COHERE_RERANK_MAX_ATTEMPTS,
+                        COHERE_RERANK_BACKOFF_SECONDS,
+                    )
+                    time.sleep(COHERE_RERANK_BACKOFF_SECONDS)
+        raise last_error
 
     def get_one_by_noc_code(self, noc_code: str) -> NOC | None:
         result = self.noc_repository.get_one_by_noc_code(noc_code)

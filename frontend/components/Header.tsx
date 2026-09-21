@@ -2,12 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV_ITEMS } from "@/lib/mock-data";
-import { useDevPanel } from "./DevPanelContext";
+import { useProfile } from "@/lib/profile-context";
+
+const CORE_NAV_ITEMS = [
+  { href: "/", label: "Home" },
+  { href: "/intake", label: "Intake" },
+  { href: "/confirm", label: "Confirm" },
+] as const;
+
+// These only have something to show once a profile has been confirmed —
+// gated in the nav so they're not offered before that step.
+const GATED_NAV_ITEMS = [
+  { href: "/results", label: "Results" },
+  { href: "/eligibility", label: "Eligibility" },
+  { href: "/noc", label: "Occupation" },
+  { href: "/advice", label: "Advice" },
+  { href: "/simulator", label: "Simulator" },
+] as const;
+
+// Not part of the profile flow at all — a standalone retrieval-accuracy
+// report. Always last in the nav and styled apart from it, so it doesn't
+// read as another step in the user's journey.
+const BENCHMARK_ITEM = { href: "/benchmark", label: "Benchmark" } as const;
 
 export default function Header() {
   const pathname = usePathname();
-  const { devOpen, toggleDev } = useDevPanel();
+  const { profile } = useProfile();
+  const hasProfile = profile != null;
+  const navItems = hasProfile
+    ? [...CORE_NAV_ITEMS, ...GATED_NAV_ITEMS]
+    : CORE_NAV_ITEMS;
 
   return (
     <header
@@ -25,7 +49,14 @@ export default function Header() {
         boxShadow: "0 1px 0 rgba(233,233,237,.1)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginRight: "auto" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 9,
+          marginRight: "auto",
+        }}
+      >
         <svg
           viewBox="0 0 24 24"
           width={22}
@@ -38,13 +69,24 @@ export default function Header() {
         >
           <path d="M12 3v18M12 8l5-3M12 13l-5-3M12 13l5-3" />
         </svg>
-        <span style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-.01em" }}>MaplePath</span>
+        <span
+          style={{ fontSize: 17, fontWeight: 500, letterSpacing: "-.01em" }}
+        >
+          MaplePath
+        </span>
         <span className="tag tag-neutral" style={{ marginLeft: 4 }}>
-          mockup
+          demo
         </span>
       </div>
-      <nav style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-        {NAV_ITEMS.map((item) => {
+      <nav
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        {navItems.map((item) => {
           const active = pathname === item.href;
           return (
             <Link
@@ -67,9 +109,14 @@ export default function Header() {
           );
         })}
       </nav>
-      <button type="button" className="btn btn-secondary" onClick={toggleDev} style={{ fontSize: 12 }}>
-        {devOpen ? "Hide internals" : "Developer panel"}
-      </button>
+      <Link
+        href={BENCHMARK_ITEM.href}
+        title="Retrieval evaluation report — not part of your profile"
+        className="btn btn-secondary"
+        style={{ fontSize: 12 }}
+      >
+        {BENCHMARK_ITEM.label}
+      </Link>
     </header>
   );
 }

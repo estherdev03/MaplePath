@@ -4,7 +4,12 @@ from langchain.chat_models import init_chat_model
 
 from crs.service import CRSService
 from eligibility.service import EligibilityService
-from graph.state.profile import Occupation, ProfileConfirmFormPayload, ProfileDraft
+from graph.state.profile import (
+    Occupation,
+    OccupationCandidate,
+    ProfileConfirmFormPayload,
+    ProfileDraft,
+)
 
 from dotenv import load_dotenv
 
@@ -66,6 +71,9 @@ class ProfileService:
         - return null
         - add warning
 
+        ## Job Responsibility
+        Extract a description of the user's day-to-day duties or responsibilities in their job, if explicitly described. This is separate from the job title. If not provided, add missing fields and warnings.
+
         ## Languages
 
         Extract English and French test results only if explicitly provided.
@@ -98,6 +106,12 @@ class ProfileService:
         If duration cannot be determined:
         - return 0 for that value, add missing fields and warnings
 
+        ## Family in Canada
+        Extract sibling_in_can (true only if a sibling in Canada is explicitly mentioned) and relative_in_can (true only if another relative, e.g. parent, grandparent, aunt, uncle, cousin, in Canada is explicitly mentioned). Default to false, not null, if not mentioned — do not add a missing field or warning for these unless the text is ambiguous about who the relative is.
+
+        ## Settlement Funds
+        Extract current_available_funds only if a specific CAD (or convertible) amount of available/settlement funds or savings is explicitly stated. If not provided, return null, add missing fields and warnings.
+
         # Missing Fields
 
         Populate missing_fields with any important profile fields and subfields that could not be extracted.
@@ -105,8 +119,10 @@ class ProfileService:
         Possible values:
         - age
         - job_title
+        - job_responsibility
         - languages
         - work_experience
+        - current_available_funds
         - etc
                                         
         Example: missing_fields=['languages.english.detail_scores', 'work_experience.canada_years', 'work_experience.alberta_years', etc]
@@ -176,6 +192,11 @@ class ProfileService:
             submajor_group_code=noc.submajor_group_code,
             noc_confidence=noc.noc_confidence,
             have_canada_job_offer=have_canada_job_offer,
+            reasoning=noc.reasoning,
+            candidates=[
+                OccupationCandidate(noc_code=c.noc_code, title=c.title)
+                for c in noc.candidates
+            ],
         )
 
     def _parse_NOC(self, job_title: str, job_responsibility: str) -> NOCResult:
@@ -315,6 +336,8 @@ class ProfileService:
             minor_group_code=noc_profile.minor_group_code,
             submajor_group_code=noc_profile.sub_major_group_code,
             noc_confidence=result.noc_confidence,
+            reasoning=result.reasoning,
+            candidates=noc_candidates,
         )
 
     def calculate_CRS(self, user: UserProfile) -> UserProfile:

@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from bs4 import BeautifulSoup
+from cohere.errors import TooManyRequestsError
 
 from db.models import NOC
 from noc.service import NOCService
@@ -115,6 +116,37 @@ def test_noc_hybrid_search_reranks_and_returns_top_10(monkeypatch):
     assert [n.noc_code for n in result] == ["B", "A"]
 
 
+# ---- _rerank_with_retry ----
+def test_rerank_with_retry_recovers_after_one_rate_limit(monkeypatch):
+    """First call is rate-limited, second succeeds — retried once, and the
+    backoff wait is exercised without actually sleeping in the test."""
+    service = _service()
+    rate_limit_error = TooManyRequestsError(body={"message": "rate limited"})
+    service.rerank_engine = MagicMock()
+    service.rerank_engine.rerank.side_effect = [rate_limit_error, [{"index": 0}]]
+    sleep_calls = []
+    monkeypatch.setattr("noc.service.time.sleep", lambda s: sleep_calls.append(s))
+
+    result = service._rerank_with_retry(["doc"], "query")
+
+    assert result == [{"index": 0}]
+    assert service.rerank_engine.rerank.call_count == 2
+    assert len(sleep_calls) == 1
+
+
+def test_rerank_with_retry_raises_after_exhausting_attempts(monkeypatch):
+    service = _service()
+    rate_limit_error = TooManyRequestsError(body={"message": "rate limited"})
+    service.rerank_engine = MagicMock()
+    service.rerank_engine.rerank.side_effect = rate_limit_error
+    monkeypatch.setattr("noc.service.time.sleep", lambda s: None)
+
+    with pytest.raises(TooManyRequestsError):
+        service._rerank_with_retry(["doc"], "query")
+
+    assert service.rerank_engine.rerank.call_count == 2
+
+
 # ---- get_one_by_noc_code ----
 def test_get_one_by_noc_code_found_and_not_found():
     repo = MagicMock()
@@ -156,6 +188,49 @@ def test_parse_noc_raises_clear_error_when_breakdown_summary_missing():
         service._parse_noc(html)
 
 
+# ---- _fetch_and_parse_noc ----
+def test_fetch_and_parse_noc_retries_transient_failure_then_succeeds(monkeypatch):
+    import requests
+
+    service = _service()
+    monkeypatch.setattr("noc.service.time.sleep", lambda seconds: None)
+
+    good_profile = NOC(noc_code="22222")
+    call_count = 0
+
+    def flaky_get(url, timeout=None):
+        nonlocal call_count
+        call_count += 1
+        if call_count < 3:
+            raise requests.RequestException("boom")
+        response = MagicMock()
+        response.raise_for_status.return_value = None
+        response.text = "<html>ok</html>"
+        return response
+
+    monkeypatch.setattr("noc.service.requests.get", flaky_get)
+    monkeypatch.setattr(service, "_parse_noc", MagicMock(return_value=good_profile))
+
+    result = service._fetch_and_parse_noc("22222", 0)
+
+    assert result is good_profile
+    assert call_count == 3
+
+
+def test_fetch_and_parse_noc_raises_after_exhausting_retries(monkeypatch):
+    import requests
+
+    service = _service()
+    monkeypatch.setattr("noc.service.time.sleep", lambda seconds: None)
+    get_mock = MagicMock(side_effect=requests.RequestException("boom"))
+    monkeypatch.setattr("noc.service.requests.get", get_mock)
+
+    with pytest.raises(requests.RequestException, match="boom"):
+        service._fetch_and_parse_noc("11111", 0)
+
+    assert get_mock.call_count == 3
+
+
 # ---- init_noc_info ----
 def test_init_noc_info_skips_failed_codes_and_saves_the_rest(monkeypatch):
     import pandas as pd
@@ -163,6 +238,7 @@ def test_init_noc_info_skips_failed_codes_and_saves_the_rest(monkeypatch):
 
     repo = MagicMock()
     service = _service(repo)
+    monkeypatch.setattr("noc.service.time.sleep", lambda seconds: None)
     monkeypatch.setattr(
         service, "_get_noc_code_list", MagicMock(return_value=["11111", "22222"])
     )
@@ -190,6 +266,7 @@ def test_init_noc_info_raises_when_every_code_fails(monkeypatch):
 
     repo = MagicMock()
     service = _service(repo)
+    monkeypatch.setattr("noc.service.time.sleep", lambda seconds: None)
     monkeypatch.setattr(
         service, "_get_noc_code_list", MagicMock(return_value=["11111"])
     )

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pydantic import BaseModel, Field
 
@@ -31,3 +31,5 @@ class NOCResult:
     minor_group_code: str
     submajor_group_code: str
     noc_confidence: float
+    reasoning: str = ""
+    candidates: list[NOCCandidate] = field(default_factory=list)
