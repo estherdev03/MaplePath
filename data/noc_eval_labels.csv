@@ -8,4 +8,4 @@ query_id,job_title,job_responsibility,noc_code,minor_group_code,major_group_code
 7,Cook,"Prepare and cook a wide variety of foods in a restaurant kitchen according to recipes and food safety procedures.",63200,6320,63,Cooks,close_sibling
 8,Electrician,"Install, test and repair electrical wiring, fixtures and control devices in residential and commercial buildings.",72200,7220,72,Electricians (except industrial and power system),exact_title
 9,Transport Truck Driver,"Drive a tractor-trailer to haul freight on interprovincial routes, inspect the vehicle, and keep logbooks.",73300,7330,73,Transport truck drivers,exact_title
-10,Restaurant Manager,"Plan and control the overall operations of a restaurant, including staffing, budgets, suppliers and customer service.",60030,6003,60,Restaurant and food service managers,manager_vs_supervisor
+

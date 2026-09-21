@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { DevPanelProvider } from "@/components/DevPanelContext";
 import Header from "@/components/Header";
-import DevPanel from "@/components/DevPanel";
+import { ProfileProvider } from "@/lib/profile-context";
 
 export const metadata: Metadata = {
   title: "MaplePath",
@@ -23,11 +22,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           lineHeight: 1.55,
         }}
       >
-        <DevPanelProvider>
+        <ProfileProvider>
           <Header />
           {children}
-          <DevPanel />
-        </DevPanelProvider>
+        </ProfileProvider>
       </body>
     </html>
   );

@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from pgvector.sqlalchemy import VECTOR
-from sqlalchemy import Index, String, ARRAY, text
+from sqlalchemy import Index, String, ARRAY, func, text
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import TSVECTOR
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from db.base import Base
 
 
@@ -50,3 +52,15 @@ class NOC(Base):
 
     def __hash__(self):
         return hash(self.noc_code)
+
+
+# Cached NOC retrieval evaluation run. Keyed by a hash of the labels file's
+# contents, so the (expensive, rate-limited) benchmark only reruns when the
+# labelled examples actually change instead of on every /evaluate request.
+class NocEvaluationRun(Base):
+    __tablename__ = "noc_evaluation_run"
+
+    labels_hash: Mapped[str] = mapped_column(primary_key=True)
+    examples_report: Mapped[list[dict]] = mapped_column(JSONB)
+    mean_report: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())

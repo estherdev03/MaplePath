@@ -165,6 +165,11 @@ class SpouseProfile(BaseModel):
 
 
 # Occupation
+class OccupationCandidate(BaseModel):
+    noc_code: str
+    title: str
+
+
 class Occupation(BaseModel):
     title: str
     noc_code: str | None = None
@@ -174,6 +179,8 @@ class Occupation(BaseModel):
     submajor_group_code: str | None = None
     have_canada_job_offer: bool = False  # have Canada job offer for at least 1 year
     noc_confidence: float | None = None
+    reasoning: str | None = None
+    candidates: list[OccupationCandidate] = Field(default_factory=list)
 
 
 # CRS
@@ -236,13 +243,16 @@ class ProfileDraft(BaseModel):
     age: int | None = None
     languages: Languages | None = None
     job_title: str | None = None
+    job_responsibility: str | None = None
     work_experience: Experience | None = None
     education: Education | None = None
     canada_education: CanadaEducation | None = None
     provincial_nomination: bool = False
     sibling_in_can: bool = False
+    relative_in_can: bool = False
     marital_status: MaritalStatus | None = None
     spouse: SpouseProfile | None = None
+    current_available_funds: float | None = None
 
     missing_fields: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
