@@ -4,7 +4,7 @@
 
 MaplePath helps prospective immigrants understand where they stand: it extracts a structured profile from natural language, classifies the occupation under **NOC 2021**, calculates a **CRS** score, and assesses eligibility for **Federal Skilled Worker**, **Canadian Experience Class**, and **Federal Skilled Trades**.
 
-Built as a production-oriented **Python** backend: **LangGraph** orchestration, hybrid retrieval over PostgreSQL, retrieval-augmented occupation classification, and **rule-based** scoring engines that stay explainable—not a black-box chatbot.
+Built as a production-oriented **Python** backend: **LangGraph** orchestration, hybrid retrieval over PostgreSQL, retrieval-augmented occupation classification, and **rule-based** scoring engines that stay explainable—not a black-box chatbot. A **Next.js** frontend walks applicants through intake, confirmation, and results against that API.
 
 ---
 
@@ -46,6 +46,8 @@ Skills this project is designed to demonstrate:
 - **Domain rule engines** for CRS and Express Entry, implemented in Python with Pydantic models (auditable point tables, not prompt-only scoring)
 - **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines
 - **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
+- **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, CRS simulator, NOC search, eligibility, and advice views) calling the FastAPI backend
+- **Automated test suite** with pytest covering the graph, services, and API layer
 
 ---
 
@@ -79,6 +81,8 @@ Natural language or confirmed form
 | `eligibility/`  | FSW, CEC, and FST rule evaluation                                             |
 | `db/`           | SQLAlchemy models and persistence                                             |
 | `api/`          | REST API                                                                      |
+| `frontend/`     | Next.js application (intake, confirmation, simulator, NOC search, results)   |
+| `tests/`        | pytest suite mirroring the module layout above                               |
 
 
 ---
@@ -87,15 +91,19 @@ Natural language or confirmed form
 
 ## Tech stack
 
-**Languages & runtime:** Python 3.12, uv  
+**Languages & runtime:** Python 3.12, uv, Node.js  
 
 **AI & retrieval:** LangGraph, LangChain, OpenAI (chat + embeddings), Cohere Rerank  
 
 **Backend:** FastAPI, Pydantic, SQLAlchemy  
 
+**Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS  
+
 **Data:** PostgreSQL, pgvector, BM25 (`pg_textsearch`)  
 
 **Ops:** Docker Compose, Makefile  
+
+**Testing:** pytest  
 
 ---
 
@@ -103,7 +111,9 @@ Natural language or confirmed form
 
 ## Getting started
 
-**Prerequisites:** Python 3.12+, [uv](https://docs.astral.sh/uv/), Docker, OpenAI and Cohere API keys.
+**Prerequisites:** Python 3.12+, [uv](https://docs.astral.sh/uv/), Node.js 20+, Docker, OpenAI and Cohere API keys.
+
+**Backend:**
 
 ```bash
 uv sync
@@ -113,16 +123,28 @@ uv run python init_db.py          # first run: load NOC 2021 from ESDC and gener
 uv run fastapi dev api/app.py
 ```
 
+**Frontend:**
 
-| Method | Endpoint            | Description                                                |
-| ------ | ------------------- | ---------------------------------------------------------- |
-| `POST` | `/profile/parse`    | Extract a structured draft from free-text                  |
-| `POST` | `/profile/complete` | Confirm a profile; return occupation, CRS, and eligibility |
+```bash
+cd frontend
+npm install
+npm run dev   # http://localhost:3000, expects the API at http://localhost:8000 (override with API_URL)
+```
+
+
+| Method | Endpoint            | Description                                                 |
+| ------ | ------------------- | ------------------------------------------------------------|
+| `POST` | `/profile/parse`    | Extract a structured draft from free-text                   |
+| `POST` | `/profile/complete` | Confirm a profile; return occupation, CRS, and eligibility   |
+| `POST` | `/crs/simulate`     | Recalculate CRS score and eligibility for an edited profile |
+| `GET`  | `/evaluate`         | Run the NOC retrieval benchmark and return its report        |
 
 
 Sample graph run without the API: `uv run python main.py`.
 
 NOC retrieval benchmark: `uv run python noc/evaluate.py` (labeled set in `data/noc_eval_labels.csv`).
+
+Run the test suite: `make test` (or `uv run pytest`).
 
 Stop the database with `make pgdown` (add `make pgdownvol` to drop the volume). Initial `init_db.py` scrapes official NOC profiles and may take a substantial amount of time.
 
@@ -133,10 +155,10 @@ Stop the database with `make pgdown` (add `make pgdownvol` to drop the volume). 
 ## Roadmap
 
 **Current (v1)**  
-AI profile extraction · hybrid NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation  
+AI profile extraction · hybrid NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite  
 
 **In progress**  
-Broader REST surface · automated test suite · containerized application deploy  
+Containerized application deploy  
 
 **Next**  
 Policy Q&A with cited IRCC sources · Alberta (AAIP) pathways · journey planning · policy monitoring and notifications  
