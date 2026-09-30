@@ -1,10 +1,13 @@
 import logging
+import os
+import secrets
 
 from cohere.errors import TooManyRequestsError
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 
 from logging_config import configure_logging
 from graph.state.profile import (
+    MaritalStatus,
     ProfileConfirmEvent,
     ProfileConfirmFormPayload,
     ProfileDraftEvent,
@@ -17,7 +20,18 @@ from noc.evaluate import noc_retrieval_method_evaluate
 configure_logging()
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+
+def require_api_key(x_api_key: str | None = Header(default=None)):
+    """Reject requests without the shared key, if API_KEY is set."""
+    expected = os.getenv("API_KEY")
+    if not expected:
+        return
+    if x_api_key is None or not secrets.compare_digest(x_api_key, expected):
+        logger.warning("Rejected request with missing or invalid API key")
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
+
+app = FastAPI(dependencies=[Depends(require_api_key)])
 
 
 @app.post("/profile/parse")
@@ -63,9 +77,36 @@ def complete_profile(profile_confirm: ProfileConfirmFormPayload):
     return {"result": result["profile"]}
 
 
+# UserProfile is also partial graph state, so every field is optional on
+# the model; scoring needs these filled in.
+CRS_REQUIRED_FIELDS = (
+    "age",
+    "occupation",
+    "languages",
+    "work_experience",
+    "marital_status",
+    "education",
+    "canada_education",
+)
+
+
+def missing_crs_fields(profile: UserProfile) -> list[str]:
+    missing = [f for f in CRS_REQUIRED_FIELDS if getattr(profile, f) is None]
+    if profile.marital_status == MaritalStatus.MARRIED and profile.spouse is None:
+        missing.append("spouse")
+    return missing
+
+
 @app.post("/crs/simulate")
 def simulate_crs(profile: UserProfile):
     logger.info("Received CRS simulate request")
+    missing = missing_crs_fields(profile)
+    if missing:
+        logger.warning("CRS simulate rejected, missing fields: %s", missing)
+        raise HTTPException(
+            status_code=422,
+            detail=f"Missing required profile fields: {', '.join(missing)}",
+        )
     try:
         profile.crs_score = crs_service.calculate_crs(profile)
         profile.eligibility = eligibility_service.evaluate_express_entry(profile)

@@ -152,6 +152,41 @@ Stop the database with `make pgdown` (add `make pgdownvol` to drop the volume). 
 
 
 
+## Deployment (Railway)
+
+The backend and database run as two Railway services; the frontend is hosted separately (e.g. Vercel). The backend builds from the root `Dockerfile` (configured in `railway.json`).
+
+**1. Database service:** New → Docker Image → `timescale/timescaledb-ha:pg18` (Railway's built-in Postgres lacks `pg_textsearch`). Name it `postgres`, attach a volume at `/home/postgres/pgdata`, and set:
+
+```
+POSTGRES_PASSWORD=<random password>
+POSTGRES_DB=maplepath
+RAILWAY_RUN_UID=0
+```
+
+**2. Backend service:** New → GitHub Repo → this repo. Set the variables below, then Settings → Networking → Generate Domain.
+
+```
+OPENAI_API_KEY=...
+COHERE_API_KEY=...
+API_KEY=<random secret>
+DB_URL=postgresql://postgres:${{postgres.POSTGRES_PASSWORD}}@${{postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{postgres.POSTGRES_DB}}
+```
+
+**3. Seed the database (once):**
+
+```bash
+railway link
+railway ssh --service backend
+nohup python init_db.py > init_db.log 2>&1 &   # then: tail -f init_db.log
+```
+
+**4. Frontend:** set `API_URL=https://<backend-domain>` and `API_KEY` to the same value as the backend. When `API_KEY` is set, the backend rejects any request without a matching `X-API-Key` header; leave it unset locally.
+
+---
+
+
+
 ## Roadmap
 
 **Current (v1)**  

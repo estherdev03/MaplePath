@@ -1,0 +1,9 @@
+.git
+.venv
+.env
+__pycache__
+*.py[oc]
+.coverage
+.pytest_cache
+frontend
+tests

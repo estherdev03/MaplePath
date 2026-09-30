@@ -10,6 +10,8 @@ import type {
 } from "./types";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
+// Shared secret the backend checks when its own API_KEY is set.
+const API_KEY = process.env.API_KEY;
 
 export class ApiError extends Error {
   status: number;
@@ -22,9 +24,11 @@ export class ApiError extends Error {
 // fetch() throws (rather than resolving with a Response) when the backend
 // is unreachable — surface that the same way as an HTTP error so callers
 // only ever need to handle ApiError, instead of crashing the page/action.
-async function safeFetch(url: URL, init?: RequestInit): Promise<Response> {
+async function safeFetch(url: URL, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers);
+  if (API_KEY) headers.set("X-API-Key", API_KEY);
   try {
-    return await fetch(url, init);
+    return await fetch(url, { ...init, headers });
   } catch {
     throw new ApiError(0, "Could not reach the MaplePath API. Is the backend running?");
   }
