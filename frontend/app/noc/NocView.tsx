@@ -52,7 +52,7 @@ export default function NocView({ occupation }: { occupation: Occupation }) {
       <div style={{ margin: "26px 0 12px", display: "flex", alignItems: "baseline", gap: 10 }}>
         <h5 style={{ margin: 0 }}>Retrieved candidates</h5>
         <span style={{ fontSize: 12, color: "rgba(233,233,237,.5)" }}>
-          BM25 + pgvector, fused by RRF — the model could only choose a NOC code from this list
+          BM25 + pgvector, fused by RRF - the model could only choose a NOC code from this list
         </span>
       </div>
       {occupation.candidates.length > 0 ? (

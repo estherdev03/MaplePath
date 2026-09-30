@@ -74,9 +74,6 @@ export default function Header() {
         >
           MaplePath
         </span>
-        <span className="tag tag-neutral" style={{ marginLeft: 4 }}>
-          demo
-        </span>
       </div>
       <nav
         style={{
