@@ -30,7 +30,10 @@ export default function SimulatorView({
 }) {
   const [sim, setSim] = useState<SimProfile>({ ...initial });
 
-  const setField = <K extends keyof SimProfile>(key: K, value: SimProfile[K]) => {
+  const setField = <K extends keyof SimProfile>(
+    key: K,
+    value: SimProfile[K],
+  ) => {
     setSim((s) => ({ ...s, [key]: value }));
   };
 
@@ -44,7 +47,8 @@ export default function SimulatorView({
       label,
       pts: now[key],
       delta: delta === 0 ? "—" : delta > 0 ? `+${delta}` : String(delta),
-      dColor: delta > 0 ? "#b5abfc" : delta < 0 ? "#cfd3e5" : "rgba(233,233,237,.35)",
+      dColor:
+        delta > 0 ? "#b5abfc" : delta < 0 ? "#cfd3e5" : "rgba(233,233,237,.35)",
     };
   };
 
@@ -57,7 +61,15 @@ export default function SimulatorView({
     display: string;
     onInput: (v: number) => void;
   }[] = [
-    { label: "Age", value: sim.age, min: 18, max: 44, step: 1, display: String(sim.age), onInput: (v) => setField("age", v) },
+    {
+      label: "Age",
+      value: sim.age,
+      min: 18,
+      max: 44,
+      step: 1,
+      display: String(sim.age),
+      onInput: (v) => setField("age", v),
+    },
     {
       label: "Canadian work experience",
       value: sim.canYears,
@@ -110,29 +122,78 @@ export default function SimulatorView({
   ];
 
   const simPct = Math.min(100, (now.total / CRS_TOTAL_MAX) * 100);
-  const deltaLabel = d === 0 ? "unchanged" : d > 0 ? `+${d} vs your inputs` : `${d} vs your inputs`;
-  const deltaColor = d > 0 ? "#b5abfc" : d < 0 ? "#cfd3e5" : "rgba(233,233,237,.5)";
+  const deltaLabel =
+    d === 0
+      ? "unchanged"
+      : d > 0
+        ? `+${d} vs your inputs`
+        : `${d} vs your inputs`;
+  const deltaColor =
+    d > 0 ? "#b5abfc" : d < 0 ? "#cfd3e5" : "rgba(233,233,237,.5)";
   const verdict =
     now.total >= LAST_CEC_CUTOFF
       ? `Above the last CEC cut-off by ${now.total - LAST_CEC_CUTOFF} points. A profile at this score would have been invited in the most recent round.`
       : `Below the last CEC cut-off by ${LAST_CEC_CUTOFF - now.total} points. This score would not have been invited in the most recent round.`;
 
   return (
-    <div style={{ maxWidth: 1040, margin: "0 auto", padding: "34px 26px 80px" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 12 }}>
+    <div
+      style={{ maxWidth: 1040, margin: "0 auto", padding: "34px 26px 80px" }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "baseline",
+          gap: 12,
+        }}
+      >
         <h3 style={{ margin: 0 }}>Score simulator</h3>
-        <span className="tag tag-outline">live · same tables as the scorer</span>
+        <span className="tag tag-outline">
+          live · same tables as the scorer
+        </span>
       </div>
-      <p style={{ margin: "6px 0 24px", fontSize: 14, color: "rgba(233,233,237,.6)" }}>
-        Move any input and the CRS recomputes from the published point tables — age, education, CLB/NCLC, Canadian
-        experience, transferability tiers and the 600-point additional cap. This simplified model covers a single
-        applicant&apos;s core and additional points; it does not model spouse or arranged-employment factors.
+      <p
+        style={{
+          margin: "6px 0 24px",
+          fontSize: 14,
+          color: "rgba(233,233,237,.6)",
+        }}
+      >
+        Move any input and the CRS recomputes from the published point tables -
+        age, education, CLB/NCLC, Canadian experience, transferability tiers and
+        the 600-point additional cap. This simplified model covers a single
+        applicant&apos;s core and additional points; it does not model spouse or
+        arranged-employment factors.
       </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20, alignItems: "start" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: 20, borderRadius: 14, background: "#161826", boxShadow: "var(--shadow-sm)" }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
+          gap: 20,
+          alignItems: "start",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 18,
+            padding: 20,
+            borderRadius: 14,
+            background: "#161826",
+            boxShadow: "var(--shadow-sm)",
+          }}
+        >
           {sliders.map((s) => (
             <div key={s.label}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, marginBottom: 7 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 12.5,
+                  marginBottom: 7,
+                }}
+              >
                 <span style={{ color: "rgba(233,233,237,.7)" }}>{s.label}</span>
                 <span style={{ fontWeight: 500 }}>{s.display}</span>
               </div>
@@ -152,7 +213,9 @@ export default function SimulatorView({
             <select
               className="input"
               value={sim.edu}
-              onChange={(e) => setField("edu", e.target.value as EducationLevel)}
+              onChange={(e) =>
+                setField("edu", e.target.value as EducationLevel)
+              }
             >
               {EDU_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>
@@ -163,22 +226,38 @@ export default function SimulatorView({
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <label className="radio">
-              <input type="checkbox" checked={sim.pnp} onChange={(e) => setField("pnp", e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={sim.pnp}
+                onChange={(e) => setField("pnp", e.target.checked)}
+              />
               <span className="dot" />
               Provincial nomination (+600)
             </label>
             <label className="radio">
-              <input type="checkbox" checked={sim.sibling} onChange={(e) => setField("sibling", e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={sim.sibling}
+                onChange={(e) => setField("sibling", e.target.checked)}
+              />
               <span className="dot" />
               Sibling in Canada (+15)
             </label>
             <label className="radio">
-              <input type="checkbox" checked={sim.canStudy} onChange={(e) => setField("canStudy", e.target.checked)} />
+              <input
+                type="checkbox"
+                checked={sim.canStudy}
+                onChange={(e) => setField("canStudy", e.target.checked)}
+              />
               <span className="dot" />
               Canadian post-secondary credential, 2+ years (+30)
             </label>
           </div>
-          <button type="button" className="btn btn-secondary" onClick={() => setSim({ ...initial })}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setSim({ ...initial })}
+          >
             Reset to your confirmed inputs
           </button>
         </div>
@@ -187,37 +266,134 @@ export default function SimulatorView({
             style={{
               padding: 20,
               borderRadius: 14,
-              background: "radial-gradient(120% 90% at 50% 0%,#2b2741,#161826 72%)",
+              background:
+                "radial-gradient(120% 90% at 50% 0%,#2b2741,#161826 72%)",
               boxShadow: "var(--shadow-sm)",
             }}
           >
-            <div style={{ fontSize: 10, letterSpacing: ".1em", textTransform: "uppercase", color: "#9184d9" }}>
+            <div
+              style={{
+                fontSize: 10,
+                letterSpacing: ".1em",
+                textTransform: "uppercase",
+                color: "#9184d9",
+              }}
+            >
               Simulated CRS
             </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginTop: 6 }}>
-              <span style={{ fontSize: 56, lineHeight: 1, fontWeight: 500, letterSpacing: "-.03em", fontVariantNumeric: "tabular-nums" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 12,
+                marginTop: 6,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 56,
+                  lineHeight: 1,
+                  fontWeight: 500,
+                  letterSpacing: "-.03em",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {now.total}
               </span>
-              <span style={{ fontSize: 15, fontWeight: 500, color: deltaColor }}>{deltaLabel}</span>
+              <span
+                style={{ fontSize: 15, fontWeight: 500, color: deltaColor }}
+              >
+                {deltaLabel}
+              </span>
             </div>
-            <div style={{ marginTop: 16, position: "relative", height: 10, borderRadius: 5, background: "rgba(233,233,237,.1)", overflow: "visible" }}>
-              <div style={{ position: "absolute", inset: "0 auto 0 0", width: `${simPct}%`, background: "#9184d9", borderRadius: 5 }} />
-              <div style={{ position: "absolute", left: `${(LAST_CEC_CUTOFF / CRS_TOTAL_MAX) * 100}%`, top: -5, bottom: -5, width: 1, background: "#e9e9ed" }} />
+            <div
+              style={{
+                marginTop: 16,
+                position: "relative",
+                height: 10,
+                borderRadius: 5,
+                background: "rgba(233,233,237,.1)",
+                overflow: "visible",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: "0 auto 0 0",
+                  width: `${simPct}%`,
+                  background: "#9184d9",
+                  borderRadius: 5,
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  left: `${(LAST_CEC_CUTOFF / CRS_TOTAL_MAX) * 100}%`,
+                  top: -5,
+                  bottom: -5,
+                  width: 1,
+                  background: "#e9e9ed",
+                }}
+              />
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8, fontSize: 11.5, color: "rgba(233,233,237,.55)" }}>
-              <span>{confirmedTotal != null ? `Confirmed profile: ${confirmedTotal}` : "No profile confirmed yet"}</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginTop: 8,
+                fontSize: 11.5,
+                color: "rgba(233,233,237,.55)",
+              }}
+            >
+              <span>
+                {confirmedTotal != null
+                  ? `Confirmed profile: ${confirmedTotal}`
+                  : "No profile confirmed yet"}
+              </span>
               <span>Last CEC cut-off: {LAST_CEC_CUTOFF}</span>
             </div>
-            <div style={{ marginTop: 16, fontSize: 13.5, color: "rgba(233,233,237,.78)" }}>{verdict}</div>
+            <div
+              style={{
+                marginTop: 16,
+                fontSize: 13.5,
+                color: "rgba(233,233,237,.78)",
+              }}
+            >
+              {verdict}
+            </div>
           </div>
-          <div style={{ padding: "6px 16px 12px", borderRadius: 14, background: "#161826", boxShadow: "var(--shadow-sm)" }}>
+          <div
+            style={{
+              padding: "6px 16px 12px",
+              borderRadius: 14,
+              background: "#161826",
+              boxShadow: "var(--shadow-sm)",
+            }}
+          >
             <table className="table">
               <tbody>
                 {simRows.map((r) => (
                   <tr key={r.label}>
                     <td style={{ fontSize: 13 }}>{r.label}</td>
-                    <td style={{ textAlign: "right", fontVariantNumeric: "tabular-nums", width: 70 }}>{r.pts}</td>
-                    <td style={{ textAlign: "right", width: 56, fontSize: 12, color: r.dColor }}>{r.delta}</td>
+                    <td
+                      style={{
+                        textAlign: "right",
+                        fontVariantNumeric: "tabular-nums",
+                        width: 70,
+                      }}
+                    >
+                      {r.pts}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "right",
+                        width: 56,
+                        fontSize: 12,
+                        color: r.dColor,
+                      }}
+                    >
+                      {r.delta}
+                    </td>
                   </tr>
                 ))}
               </tbody>

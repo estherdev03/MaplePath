@@ -151,7 +151,7 @@ export default function IntakeForm() {
               {pending ? "Extracting…" : "Extract my profile"}
             </button>
             <Link href="/confirm" className="btn btn-secondary">
-              Skip — fill the form myself
+              Skip - fill the form myself
             </Link>
             <span
               style={{
