@@ -206,3 +206,60 @@ def test_noc_retrieval_evaluate_returns_examples_and_mean_report():
     assert body["mean_report"]["bm25"] == [0.5, 1]
     assert body["examples_report"][0]["job_title"] == "Engineer"
     mock_eval.assert_called_once_with("data/noc_eval_labels.csv")
+
+
+def test_requests_allowed_without_key_when_api_key_unset(monkeypatch):
+    monkeypatch.delenv("API_KEY", raising=False)
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.return_value = {"profile": {"age": 30}}
+        response = client.post("/profile/parse", params={"profile_text": "hello"})
+
+    assert response.status_code == 200
+
+
+def test_missing_api_key_returns_401_when_api_key_set(monkeypatch):
+    monkeypatch.setenv("API_KEY", "secret")
+    with patch("api.app.compiled_graph") as mock_graph:
+        response = client.post("/profile/parse", params={"profile_text": "hello"})
+
+    assert response.status_code == 401
+    mock_graph.invoke.assert_not_called()
+
+
+def test_wrong_api_key_returns_401_when_api_key_set(monkeypatch):
+    monkeypatch.setenv("API_KEY", "secret")
+    response = client.get("/evaluate", headers={"X-API-Key": "wrong"})
+
+    assert response.status_code == 401
+
+
+def test_correct_api_key_is_accepted_when_api_key_set(monkeypatch):
+    monkeypatch.setenv("API_KEY", "secret")
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.return_value = {"profile": {"age": 30}}
+        response = client.post(
+            "/profile/parse",
+            params={"profile_text": "hello"},
+            headers={"X-API-Key": "secret"},
+        )
+
+    assert response.status_code == 200
+
+
+def test_simulate_crs_empty_profile_returns_422_listing_missing_fields():
+    with patch("api.app.crs_service") as mock_crs_service:
+        response = client.post("/crs/simulate", json={})
+
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    for field in ("age", "occupation", "languages", "education"):
+        assert field in detail
+    mock_crs_service.calculate_crs.assert_not_called()
+
+
+def test_simulate_crs_married_without_spouse_returns_422():
+    profile = _minimal_user_profile_json() | {"marital_status": "married"}
+    response = client.post("/crs/simulate", json=profile)
+
+    assert response.status_code == 422
+    assert "spouse" in response.json()["detail"]
