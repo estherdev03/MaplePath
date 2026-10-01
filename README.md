@@ -2,9 +2,11 @@
 
 **An AI-powered Express Entry assistant for Canada’s skilled immigration system.**
 
+**Live demo:** [maple-path-black.vercel.app](https://maple-path-black.vercel.app/)
+
 MaplePath helps prospective immigrants understand where they stand: it extracts a structured profile from natural language, classifies the occupation under **NOC 2021**, calculates a **CRS** score, and assesses eligibility for **Federal Skilled Worker**, **Canadian Experience Class**, and **Federal Skilled Trades**.
 
-Built as a production-oriented **Python** backend: **LangGraph** orchestration, hybrid retrieval over PostgreSQL, retrieval-augmented occupation classification, and **rule-based** scoring engines that stay explainable—not a black-box chatbot. A **Next.js** frontend walks applicants through intake, confirmation, and results against that API.
+Built as a production-oriented **Python** backend: **LangGraph** orchestration, hybrid retrieval over PostgreSQL, retrieval-augmented occupation classification, and **rule-based** scoring engines that stay explainable. A **Next.js** frontend walks applicants through intake, confirmation, and results against that API.
 
 ---
 
@@ -42,7 +44,7 @@ Skills this project is designed to demonstrate:
 - **Agentic workflow design** with LangGraph (event routing, typed state, multi-step profile → score → eligibility pipeline)
 - **Hybrid search** combining BM25 full-text retrieval, pgvector semantic search, Reciprocal Rank Fusion, and Cohere reranking
 - **Retrieval-augmented generation (RAG)** for NOC classification: retrieved occupation records are passed as context, and the model must choose from that list rather than invent a code
-- **LLM structured extraction** with LangChain / OpenAI—constrained to stated facts, with missing-field and warning lists
+- **LLM structured extraction** with LangChain / OpenAI, constrained to stated facts, with missing-field and warning lists
 - **Domain rule engines** for CRS and Express Entry, implemented in Python with Pydantic models (auditable point tables, not prompt-only scoring)
 - **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines
 - **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
@@ -101,7 +103,7 @@ Natural language or confirmed form
 
 **Data:** PostgreSQL, pgvector, BM25 (`pg_textsearch`)  
 
-**Ops:** Docker Compose, Makefile  
+**Ops:** Docker Compose, Makefile, Railway (backend + database), Vercel (frontend)  
 
 **Testing:** pytest  
 
@@ -152,9 +154,11 @@ Stop the database with `make pgdown` (add `make pgdownvol` to drop the volume). 
 
 
 
-## Deployment (Railway)
+## Deployment
 
-The backend and database run as two Railway services; the frontend is hosted separately (e.g. Vercel). The backend builds from the root `Dockerfile` (configured in `railway.json`).
+Live at **https://maple-path-black.vercel.app/**.
+
+The backend and database run as two Railway services; the frontend is hosted on Vercel. The backend builds from the root `Dockerfile` (configured in `railway.json`).
 
 **1. Database service:** New → Docker Image → `timescale/timescaledb-ha:pg18` (Railway's built-in Postgres lacks `pg_textsearch`). Name it `postgres`, attach a volume at `/home/postgres/pgdata`, and set:
 
@@ -181,7 +185,7 @@ railway ssh --service backend
 nohup python init_db.py > init_db.log 2>&1 &   # then: tail -f init_db.log
 ```
 
-**4. Frontend:** set `API_URL=https://<backend-domain>` and `API_KEY` to the same value as the backend. When `API_KEY` is set, the backend rejects any request without a matching `X-API-Key` header; leave it unset locally.
+**4. Frontend (Vercel):** import the repo with `frontend/` as the root directory, then set `API_URL=https://<backend-domain>` and `API_KEY` to the same value as the backend. When `API_KEY` is set, the backend rejects any request without a matching `X-API-Key` header; leave it unset locally.
 
 ---
 
@@ -190,10 +194,7 @@ nohup python init_db.py > init_db.log 2>&1 &   # then: tail -f init_db.log
 ## Roadmap
 
 **Current (v1)**  
-AI profile extraction · hybrid NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite  
-
-**In progress**  
-Containerized application deploy  
+AI profile extraction · hybrid NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite · containerized deployment (Railway + Vercel)  
 
 **Next**  
 Policy Q&A with cited IRCC sources · Alberta (AAIP) pathways · journey planning · policy monitoring and notifications  
