@@ -29,6 +29,7 @@ Express Entry decisions depend on occupation codes, language conversions, and pr
 | **Occupation matching**  | Hybrid search retrieves official NOC 2021 profiles, an LLM then picks a unit group, TEER, and confidence score from those candidates only |
 | **CRS scoring**          | Full Comprehensive Ranking System breakdown: core human capital, spouse factors, skill transferability, and additional points             |
 | **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks                     |
+| **Personalized advice**  | An LLM turns the computed CRS breakdown and eligibility results into ranked, profile-specific recommendations, without recalculating scores |
 
 
 **Language support:** IELTS, CELPIP, and PTE (English); TEF and TCF (French), converted to CLB / NCLC before scoring.
@@ -46,9 +47,9 @@ Skills this project is designed to demonstrate:
 - **Retrieval-augmented generation (RAG)** for NOC classification: retrieved occupation records are passed as context, and the model must choose from that list rather than invent a code
 - **LLM structured extraction** with LangChain / OpenAI, constrained to stated facts, with missing-field and warning lists
 - **Domain rule engines** for CRS and Express Entry, implemented in Python with Pydantic models (auditable point tables, not prompt-only scoring)
-- **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines
+- **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 9-query labelled set, the shipped hybrid pipeline scores **0.673 NDCG@10** (+0.082 over BM25 alone) with a **100% top-10 hit rate**; results are shown on the frontend's benchmark page
 - **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
-- **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, CRS simulator, NOC search, eligibility, and advice views) calling the FastAPI backend
+- **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, results, CRS simulator, NOC search, eligibility, advice, and retrieval benchmark views) calling the FastAPI backend
 - **Automated test suite** with pytest covering the graph, services, and API layer
 
 ---
@@ -58,19 +59,28 @@ Skills this project is designed to demonstrate:
 ## Architecture
 
 ```
-Natural language or confirmed form
+Event (profile_draft | profile_confirm)
         │
         ▼
-   LangGraph orchestrator
-        │
-        ├── parse profile          (LLM structured output)
-        └── confirm profile
-                ├── retrieve NOC candidates (hybrid search)
-                ├── classify occupation from retrieved context
-
-                ├── CRS calculation
-                └── Express Entry eligibility
-                        └── JSON result (occupation, scores, program breakdowns)
+   orchestrator ──► profile_router
+                        │
+                        ├── profile_draft   ──► parse_profile   (LLM structured output) ──► END
+                        │
+                        └── profile_confirm ──► create_profile
+                                                  ├── retrieve NOC candidates (hybrid search)
+                                                  └── classify occupation from retrieved context
+                                                        │
+                                                        ▼
+                                                  calculate_crs          (deterministic)
+                                                        │
+                                                        ▼
+                                                  evaluate_express_entry (deterministic)
+                                                        │
+                                                        ▼
+                                                  create_advice          (LLM) ──► END
+                                                        │
+                                                        ▼
+                                  JSON result (occupation, CRS breakdown, eligibility, advice)
 ```
 
 
@@ -83,7 +93,7 @@ Natural language or confirmed form
 | `eligibility/`  | FSW, CEC, and FST rule evaluation                                             |
 | `db/`           | SQLAlchemy models and persistence                                             |
 | `api/`          | REST API                                                                      |
-| `frontend/`     | Next.js application (intake, confirmation, simulator, NOC search, results)   |
+| `frontend/`     | Next.js application (intake, confirmation, results, simulator, NOC search, eligibility, advice, benchmark) |
 | `tests/`        | pytest suite mirroring the module layout above                               |
 
 
@@ -95,7 +105,7 @@ Natural language or confirmed form
 
 **Languages & runtime:** Python 3.12, uv, Node.js  
 
-**AI & retrieval:** LangGraph, LangChain, OpenAI (chat + embeddings), Cohere Rerank  
+**AI & retrieval:** LangGraph, LangChain, OpenAI (`gpt-5.4-mini` chat, `text-embedding-3-large` embeddings), Cohere Rerank (`rerank-english-v3.0`)  
 
 **Backend:** FastAPI, Pydantic, SQLAlchemy  
 
@@ -144,7 +154,13 @@ npm run dev   # http://localhost:3000, expects the API at http://localhost:8000 
 
 Sample graph run without the API: `uv run python main.py`.
 
-NOC retrieval benchmark: `uv run python noc/evaluate.py` (labeled set in `data/noc_eval_labels.csv`).
+NOC retrieval benchmark (labelled set in `data/noc_eval_labels.csv`): call `GET /evaluate`, open the frontend's `/benchmark` page, or run it directly:
+
+```bash
+uv run python -c "from noc.evaluate import noc_retrieval_method_evaluate as run; print(run('data/noc_eval_labels.csv')[1])"
+```
+
+Results are cached in the database by the labels file's hash, so the benchmark only re-runs (and calls Cohere) when the labelled set changes.
 
 Run the test suite: `make test` (or `uv run pytest`).
 
