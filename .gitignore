@@ -14,3 +14,9 @@ wheels/
 
 # Test artifacts
 .pytest_cache/
+
+.DS_Store
+
+.coverage
+
+init_db.log

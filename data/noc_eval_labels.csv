@@ -8,4 +8,294 @@ query_id,job_title,job_responsibility,noc_code,minor_group_code,major_group_code
 7,Cook,"Prepare and cook a wide variety of foods in a restaurant kitchen according to recipes and food safety procedures.",63200,6320,63,Cooks,close_sibling
 8,Electrician,"Install, test and repair electrical wiring, fixtures and control devices in residential and commercial buildings.",72200,7220,72,Electricians (except industrial and power system),exact_title
 9,Transport Truck Driver,"Drive a tractor-trailer to haul freight on interprovincial routes, inspect the vehicle, and keep logbooks.",73300,7330,73,Transport truck drivers,exact_title
-
+10,City Councillor,"Represent a ward on municipal council, vote on bylaws and budgets, sit on committees and respond to constituent concerns.",00010,0001,00,Legislators,vague_title
+11,Deputy Minister,"Lead a provincial ministry, advise the minister on policy, oversee the department's senior executives and manage a multi-billion dollar budget.",00011,0001,00,Senior government managers and officials,exact_title
+12,"President, Trucking Company","Run a regional freight carrier, set corporate strategy, oversee operations and finance executives, and report to the board.",00015,0001,00,"Senior managers - construction, transportation, production and utilities",vague_title
+13,Hospital CEO,"Lead a regional hospital, set strategic direction for clinical and support services, and manage relationships with the health authority and board.",00013,0001,00,"Senior managers - health, education, social and community services and membership organizations",vague_title
+14,Finance Manager,"Manage a team of accountants, prepare monthly financial statements and forecasts, oversee cash flow, and coordinate the annual external audit.",10010,1001,10,Financial managers,exact_title
+15,HR Manager,"Lead the human resources department, set recruitment and compensation policies, handle labour relations and supervise HR staff.",10011,1001,10,Human resources managers,exact_title
+16,Procurement Manager,"Direct the purchasing department, negotiate major supplier contracts, set sourcing strategy and supervise a team of buyers.",10012,1001,10,Purchasing managers,close_sibling
+17,Bank Branch Manager,"Manage branch operations, approve loans within lending authority, lead a team of advisors and tellers, and grow deposit and lending business.",10021,1002,10,"Banking, credit and other investment managers",exact_title
+18,Marketing Manager,"Plan and direct marketing campaigns, own the marketing budget, lead a team of specialists and track brand performance against targets.",10022,1002,10,"Advertising, marketing and public relations managers",close_sibling
+19,Marketing Specialist,"Develop campaign plans, run market research, write promotional content and analyse campaign results for assigned product lines.",11202,1120,11,"Professional occupations in advertising, marketing and public relations",close_sibling
+20,Accountant,"Prepare financial statements and corporate tax returns, perform audit engagements and advise clients on accounting policies; CPA designation.",11100,1110,11,Financial auditors and accountants,teer_distinction
+21,Auditor,"Examine clients' financial records and internal controls, test transactions, and prepare audit working papers and opinions.",11100,1110,11,Financial auditors and accountants,exact_title
+22,Financial Analyst,"Build financial models, analyse company performance and investment opportunities, and prepare reports and recommendations for management.",11101,1110,11,Financial and investment analysts,exact_title
+23,Financial Planner,"Meet with individual clients to review their finances, build retirement and investment plans, and recommend insurance and tax strategies.",11102,1110,11,Financial advisors,close_sibling
+24,Credit Adjudicator,"Review commercial loan applications, assess borrower creditworthiness and approve or decline credit within policy limits.",11109,1110,11,Other financial officers,close_sibling
+25,HR Business Partner,"Advise managers on employee relations, design HR policies and programs, and lead performance management and compensation reviews.",11200,1120,11,Human resources professionals,vague_title
+26,Management Consultant,"Analyse client organizations' structures and processes, recommend operational improvements, and help implement change programs.",11201,1120,11,Professional occupations in business management consulting,exact_title
+27,Office Supervisor,"Supervise a team of clerks and receptionists, assign and check work, train new staff and set office procedures.",12010,1201,12,"Supervisors, general office and administrative support workers",exact_title
+28,Logistics Supervisor,"Supervise shippers, receivers and dispatchers, schedule shifts and coordinate inbound and outbound shipments at a distribution centre.",12013,1201,12,"Supervisors, supply chain, tracking and scheduling coordination occupations",close_sibling
+29,Executive Assistant,"Support the CEO by managing calendars, preparing briefing notes, coordinating board meetings and handling confidential correspondence.",12100,1210,12,Executive assistants,teer_distinction
+30,Recruiter,"Source and screen candidates, conduct first-round interviews, post job ads and manage the hiring process for open roles.",12101,1210,12,Human resources and recruitment officers,close_sibling
+31,Purchasing Agent,"Source and buy raw materials and equipment, obtain supplier quotes, issue purchase orders and track deliveries.",12102,1210,12,Procurement and purchasing agents and officers,teer_distinction
+32,Event Planner,"Plan and coordinate conferences and corporate events, book venues, negotiate with vendors and manage event budgets.",12103,1210,12,Conference and event planners,exact_title
+33,Insurance Claims Adjuster,"Investigate auto and property claims, inspect damage, interview claimants and determine settlement amounts.",12201,1220,12,Insurance adjusters and claims examiners,exact_title
+34,Administrative Officer,"Coordinate office administrative procedures, implement policies, manage supply budgets and oversee records for a department.",13100,1310,13,Administrative officers,teer_distinction
+35,Property Manager,"Manage residential rental buildings, negotiate leases, collect rent, and arrange maintenance and repairs with contractors.",13101,1310,13,Property administrators,vague_title
+36,Payroll Administrator,"Process biweekly payroll for 300 employees, calculate deductions, issue T4s and resolve pay discrepancies.",13102,1310,13,Payroll administrators,exact_title
+37,Administrative Assistant,"Answer phones, schedule meetings, prepare documents and maintain filing systems for a busy office.",13110,1311,13,Administrative assistants,exact_title
+38,Legal Assistant,"Prepare and proofread legal documents, track court filing deadlines and maintain case files for lawyers.",13111,1311,13,Legal administrative assistants,close_sibling
+39,Medical Secretary,"Book patient appointments, manage medical charts, process provincial billing and prepare correspondence for a clinic.",13112,1311,13,Medical administrative assistants,exact_title
+40,Customs Broker,"Prepare customs documentation for imported goods, calculate duties and clear shipments through border services for clients.",13200,1320,13,"Customs, ship and other brokers",exact_title
+41,Logistics Coordinator,"Coordinate freight shipments with carriers, track deliveries, prepare shipping documents and resolve delays.",13201,1320,13,Production and transportation logistics coordinators,vague_title
+42,Office Clerk,"File documents, photocopy and scan records, update databases and handle general office tasks.",14100,1410,14,General office support workers,vague_title
+43,Receptionist,"Greet visitors, answer and direct calls, schedule appointments and handle incoming mail at the front desk.",14101,1410,14,Receptionists,exact_title
+44,Data Entry Clerk,Enter customer orders and invoices into the company system and verify the data for accuracy.,14111,1411,14,Data entry clerks,exact_title
+45,Accounts Payable Clerk,"Process vendor invoices, match them to purchase orders, issue payments and reconcile supplier statements.",14200,1420,14,Accounting and related clerks,teer_distinction
+46,Insurance Clerk,"Process policy changes, issue certificates of insurance and update client records in the policy system.",14201,1420,14,"Banking, insurance and other financial clerks",close_sibling
+47,Collections Agent,"Call customers with overdue accounts, negotiate payment arrangements and track collected amounts.",14202,1420,14,Collection clerks,exact_title
+48,Shipper Receiver,"Receive incoming goods, verify them against packing slips, prepare outgoing shipments and update inventory records.",14400,1440,14,Shippers and receivers,exact_title
+49,Parts Counterperson,"Sell and issue automotive parts from the counter to mechanics and customers, look up part numbers and maintain stock.",14401,1440,14,Storekeepers and partspersons,vague_title
+50,Inventory Control Clerk,"Count stock, reconcile inventory discrepancies, and prepare reorder requests for purchasing.",14403,1440,14,Purchasing and inventory control workers,close_sibling
+51,Dispatcher,"Dispatch tow trucks and drivers by radio, track vehicle locations and log service calls.",14404,1440,14,Dispatchers,exact_title
+52,911 Operator,"Answer emergency calls, gather information from callers and dispatch police, fire and ambulance units.",14404,1440,14,Dispatchers,vague_title
+53,"Research Director, Life Sciences","Direct a research laboratory, set the research program, manage scientists and secure grant funding.",20011,2001,20,Architecture and science managers,vague_title
+54,IT Manager,"Manage the IT department, plan infrastructure upgrades, oversee the help desk and network teams, and control the IT budget.",20012,2001,20,Computer and information systems managers,close_sibling
+55,Chemist,"Conduct chemical analyses, develop new formulations, and run experiments using chromatography and spectroscopy.",21101,2110,21,Chemists,exact_title
+56,Chemical Technician,"Set up and run routine chemical tests on product samples, calibrate lab instruments and record results for the chemists.",22100,2210,22,Chemical technologists and technicians,teer_distinction
+57,Geologist,"Map rock formations, log drill cores and interpret geological data to locate mineral deposits.",21102,2110,21,Geoscientists and oceanographers,exact_title
+58,Biologist,"Study wildlife populations, design field surveys, collect samples and write ecological impact reports.",21110,2111,21,Biologists and related scientists,exact_title
+59,Biology Lab Technician,"Prepare cultures and media, run PCR and microbiological tests, and maintain lab equipment for research scientists.",22110,2211,22,Biological technologists and technicians,teer_distinction
+60,Agronomist,"Advise farmers on crop production, soil fertility and pest management, and run field trials.",21112,2111,21,"Agricultural representatives, consultants and specialists",close_sibling
+61,Environmental Health Officer,"Inspect restaurants and public facilities for health code compliance, investigate complaints and enforce public health regulations.",21120,2112,21,Public and environmental health and safety professionals,vague_title
+62,Architect,"Design commercial and residential buildings, prepare drawings and specifications, and oversee construction contracts.",21200,2120,21,Architects,exact_title
+63,Architectural Technologist,"Produce construction drawings and building models in Revit, research code requirements and prepare specifications for architects.",22210,2221,22,Architectural technologists and technicians,teer_distinction
+64,Urban Planner,"Review development applications, prepare official plans and zoning amendments, and consult the public on land use.",21202,2120,21,Urban and land use planners,exact_title
+65,Land Surveyor,"Establish legal property boundaries, prepare plans of survey and certify survey records as a licensed surveyor.",21203,2120,21,Land surveyors,exact_title
+66,Survey Technician,"Operate total stations and GPS equipment in the field, record measurements and draft survey plans under a surveyor's direction.",22213,2221,22,Land survey technologists and technicians,teer_distinction
+67,Statistician,"Design surveys and sampling methods, apply statistical models to data, and interpret results for research reports.",21210,2121,21,"Mathematicians, statisticians and actuaries",close_sibling
+68,Data Scientist,"Build machine learning models in Python, analyse large datasets, and deploy predictive models to production.",21211,2121,21,Data scientists,exact_title
+69,Cybersecurity Analyst,"Monitor networks for security incidents, run vulnerability scans, respond to breaches and harden systems.",21220,2122,21,Cybersecurity specialists,exact_title
+70,Penetration Tester,"Perform ethical hacking of client applications and networks, exploit vulnerabilities and write remediation reports.",21220,2122,21,Cybersecurity specialists,vague_title
+71,IT Business Analyst,"Gather business requirements, map processes, write functional specifications and liaise between users and developers.",21221,2122,21,Business systems specialists,close_sibling
+72,Systems Analyst,"Analyse the organization's information systems, evaluate software and hardware options, and recommend system improvements.",21222,2122,21,Information systems specialists,close_sibling
+73,Database Administrator,"Install, tune and back up PostgreSQL and Oracle databases, manage user access and ensure data integrity.",21223,2122,21,Database analysts and data administrators,exact_title
+74,Computer Systems Developer,"Develop operating-system-level software and system utilities, write low-level code and integrate system components.",21230,2123,21,Computer systems developers and programmers,close_sibling
+75,Mobile App Developer,"Build iOS and Android apps in Swift and Kotlin, integrate REST APIs, and publish releases to the app stores.",21232,2123,21,Software developers and programmers,vague_title
+76,Web Designer,"Design website layouts, create wireframes and mockups, and choose typography and visual style for client sites.",21233,2123,21,Web designers,close_sibling
+77,Front-End Developer,"Build responsive websites in React and TypeScript, implement designs from Figma, and optimize page performance.",21234,2123,21,Web developers and programmers,close_sibling
+78,Civil Engineer,"Design roads, bridges and water systems, prepare engineering drawings and supervise construction projects.",21300,2130,21,Civil engineers,exact_title
+79,Civil Engineering Technologist,"Prepare design drawings, carry out site inspections and materials testing, and estimate quantities for civil engineers.",22300,2230,22,Civil engineering technologists and technicians,teer_distinction
+80,Mechanical Engineer,"Design mechanical systems and equipment, run stress analysis and simulations, and supervise prototype testing.",21301,2130,21,Mechanical engineers,exact_title
+81,Mechanical Engineering Technician,"Build and test prototypes, draft mechanical parts in CAD, and collect test data for the engineering team.",22301,2230,22,Mechanical engineering technologists and technicians,teer_distinction
+82,Electrical Engineer,"Design power distribution and control systems, specify electrical equipment and stamp drawings for industrial projects.",21310,2131,21,Electrical and electronics engineers,exact_title
+83,Electronics Technologist,"Assemble, test and troubleshoot circuit boards and electronic prototypes under the direction of engineers.",22310,2231,22,Electrical and electronics engineering technologists and technicians,teer_distinction
+84,Hardware Engineer,"Design and test computer hardware such as circuit boards and processors, and work with firmware teams on integration.",21311,2131,21,Computer engineers (except software engineers and designers),close_sibling
+85,Process Improvement Engineer,"Optimize manufacturing production lines, conduct time studies, reduce waste and improve plant layout.",21321,2132,21,Industrial and manufacturing engineers,vague_title
+86,Biomedical Engineer,"Design and test medical devices, support regulatory submissions and maintain hospital diagnostic equipment.",21399,2139,21,Other professional engineers,vague_title
+87,CAD Drafter,Prepare engineering drawings and 3D models in AutoCAD and SolidWorks from engineers' sketches.,22212,2221,22,Drafting technologists and technicians,exact_title
+88,GIS Technician,"Create maps and manage spatial data in ArcGIS, digitize features and produce map products for planners.",22214,2221,22,Technical occupations in geomatics and meteorology,vague_title
+89,Network Technician,"Install and maintain LAN and WAN equipment, configure routers and switches, and monitor network performance.",22220,2222,22,Computer network and web technicians,close_sibling
+90,Help Desk Analyst,"Answer user calls and tickets, reset passwords, install software and escalate complex issues.",22221,2222,22,User support technicians,vague_title
+91,QA Tester,"Execute manual and automated test cases on software releases, log defects in Jira and verify fixes.",22222,2222,22,Information systems testing technicians,close_sibling
+92,Health and Safety Coordinator,"Conduct workplace safety inspections, investigate incidents, deliver safety training and maintain OHS compliance.",22232,2223,22,Occupational health and safety specialists,close_sibling
+93,Building Inspector,"Inspect new construction for compliance with building codes and approved plans, and issue permits and occupancy approvals.",22233,2223,22,Construction inspectors,exact_title
+94,Electronics Repair Technician,"Repair TVs, computers and office equipment, diagnose circuit faults and replace components.",22311,2231,22,Electronic service technicians (household and business equipment),vague_title
+95,Health Services Manager,"Manage a hospital's outpatient programs, oversee clinical and support staff, and control the department budget.",30010,3001,30,Managers in health care,exact_title
+96,Pathologist,Examine tissue samples and lab results to diagnose disease and advise physicians on findings.,31100,3110,31,Specialists in clinical and laboratory medicine,exact_title
+97,General Surgeon,"Perform abdominal and emergency surgeries, assess patients before and after operations and manage surgical care.",31101,3110,31,Specialists in surgery,exact_title
+98,Family Doctor,"See patients in a community clinic, diagnose and treat common illnesses, prescribe medication and refer to specialists.",31102,3110,31,General practitioners and family physicians,vague_title
+99,Veterinarian,"Examine and treat sick or injured animals, perform surgeries, vaccinate pets and advise owners on animal care.",31103,3110,31,Veterinarians,exact_title
+100,Vet Tech,"Assist veterinarians during exams and surgery, take X-rays, run lab tests and monitor animal anaesthesia.",32104,3210,32,Animal health technologists and veterinary technicians,teer_distinction
+101,Dentist,"Diagnose and treat dental problems, fill cavities, perform root canals and extractions, and run a dental practice.",31110,3111,31,Dentists,exact_title
+102,Dental Hygienist,"Clean and polish patients' teeth, take dental X-rays, and teach patients oral hygiene.",32111,3211,32,Dental hygienists and dental therapists,teer_distinction
+103,Dental Assistant,"Prepare patients and instruments, pass tools to the dentist during procedures and sterilize equipment.",33100,3310,33,Dental assistants and dental laboratory assistants,teer_distinction
+104,Optometrist,"Perform eye exams, diagnose vision problems and prescribe glasses and contact lenses.",31111,3111,31,Optometrists,exact_title
+105,Optician,Fit and adjust eyeglasses and contact lenses according to prescriptions and help clients choose frames.,32100,3210,32,Opticians,close_sibling
+106,Speech Therapist,"Assess and treat children with speech, language and swallowing disorders and develop therapy plans.",31112,3111,31,Audiologists and speech-language pathologists,vague_title
+107,Pharmacist,"Dispense prescriptions, check for drug interactions, counsel patients on medications and administer vaccines.",31120,3112,31,Pharmacists,exact_title
+108,Pharmacy Technician,"Prepare and fill prescriptions, compound medications and perform final technical checks under a pharmacist; registered with the college.",32124,3212,32,Pharmacy technicians,teer_distinction
+109,Pharmacy Assistant,"Count pills, label bottles, manage inventory and serve customers at the pharmacy counter.",33103,3310,33,Pharmacy technical assistants and pharmacy assistants,teer_distinction
+110,Dietitian,"Assess patients' nutritional needs, develop meal plans for chronic conditions and run nutrition education sessions.",31121,3112,31,Dietitians and nutritionists,exact_title
+111,Psychologist,"Assess and diagnose mental health conditions, provide psychotherapy and administer psychological tests.",31200,3120,31,Psychologists,exact_title
+112,Physiotherapist,Assess patients' mobility after injury or surgery and design exercise and rehabilitation programs.,31202,3120,31,Physiotherapists,exact_title
+113,Occupational Therapist,"Help clients regain independence in daily activities after illness or injury, and recommend home and workplace adaptations.",31203,3120,31,Occupational therapists,exact_title
+114,Kinesiologist,"Assess clients' movement and fitness, design exercise programs for injury recovery and run functional capacity evaluations.",31204,3120,31,Kinesiologists and other professional occupations in therapy and assessment,exact_title
+115,Nurse Manager,"Supervise nursing staff on a hospital unit, schedule shifts, oversee quality of patient care and manage the unit budget.",31300,3130,31,Nursing coordinators and supervisors,close_sibling
+116,Psychiatric Nurse,"Provide nursing care to patients with mental illness, administer medications and lead therapeutic groups on an inpatient unit.",31301,3130,31,Registered nurses and registered psychiatric nurses,close_sibling
+117,Nurse Practitioner,"Diagnose illnesses, order tests, prescribe medications and manage patients independently in a primary care clinic.",31302,3130,31,Nurse practitioners,close_sibling
+118,Midwife,"Provide prenatal care, attend births and provide postpartum care to mothers and newborns.",31303,3130,31,"Physician assistants, midwives and allied health professionals",exact_title
+119,Paramedic,"Respond to 911 calls, assess and stabilize patients, administer emergency treatment and transport them to hospital.",32102,3210,32,Paramedical occupations,exact_title
+120,Respiratory Therapist,"Manage ventilators, perform airway care and pulmonary function tests for patients in the ICU.",32103,3210,32,"Respiratory therapists, clinical perfusionists and cardiopulmonary technologists",exact_title
+121,Medical Lab Technologist,"Perform blood, tissue and microbiology tests in a hospital lab, validate results and maintain analyzers.",32120,3212,32,Medical laboratory technologists,exact_title
+122,Phlebotomist,"Draw blood samples from patients, label and process specimens and prepare them for lab testing.",33101,3310,33,Medical laboratory assistants and related technical occupations,teer_distinction
+123,X-ray Technologist,"Take diagnostic X-ray and CT images, position patients and ensure radiation safety.",32121,3212,32,Medical radiation technologists,vague_title
+124,Ultrasound Technician,"Perform abdominal, obstetric and vascular ultrasound scans and prepare images for radiologists.",32122,3212,32,Medical sonographers,vague_title
+125,Massage Therapist,Assess clients' soft tissue and provide therapeutic massage to relieve pain and injury; registered massage therapist.,32201,3220,32,Massage therapists,exact_title
+126,Personal Support Worker,"Help residents in a long-term care home with bathing, dressing, eating and mobility, and report changes to the nurses.",33102,3310,33,"Nurse aides, orderlies and patient service associates",vague_title
+127,Home Care Worker,"Visit elderly and disabled clients in their homes to help with personal care, meal preparation and light housekeeping.",44101,4410,44,"Home support workers, caregivers and related occupations",close_sibling
+128,School Principal,"Lead an elementary school, supervise teachers, manage the school budget and work with parents and the school board.",40021,4002,40,School principals and administrators of elementary and secondary education,exact_title
+129,Dean of Engineering,"Lead a university faculty, manage academic programs and budgets, and recruit and evaluate faculty.",40020,4002,40,Administrators - post-secondary education and vocational training,vague_title
+130,Social Services Program Manager,"Manage community programs for at-risk youth, supervise caseworkers, oversee funding and evaluate program outcomes.",40030,4003,40,"Managers in social, community and correctional services",vague_title
+131,Police Superintendent,"Command a police division, set enforcement priorities, manage senior officers and oversee the division budget.",40040,4004,40,Commissioned police officers and related occupations in public protection services,teer_distinction
+132,Fire Chief,"Direct the fire department, plan emergency response and fire prevention programs, and manage firefighting staff.",40041,4004,40,Fire chiefs and senior firefighting officers,exact_title
+133,Firefighter,"Respond to fires, vehicle collisions and medical calls, perform rescues and maintain firefighting equipment.",42101,4210,42,Firefighters,teer_distinction
+134,Judge,"Preside over court proceedings, rule on evidence and motions, and decide civil and criminal cases.",41100,4110,41,Judges,exact_title
+135,Lawyer,"Advise clients on corporate and commercial matters, draft contracts and represent clients in litigation.",41101,4110,41,Lawyers and Quebec notaries,exact_title
+136,Paralegal,"Represent clients in small claims court and before tribunals, draft legal documents and research case law.",42200,4220,42,Paralegals and related occupations,teer_distinction
+137,University Professor,"Teach undergraduate and graduate courses, supervise graduate students and conduct published research.",41200,4120,41,University professors and lecturers,exact_title
+138,Graduate Teaching Assistant,"Lead tutorials, grade assignments and exams, and hold office hours for undergraduate courses.",41201,4120,41,Post-secondary teaching and research assistants,close_sibling
+139,College Instructor,"Teach courses in a college diploma program, develop curriculum and evaluate student progress.",41210,4121,41,College and other vocational instructors,exact_title
+140,High School Teacher,"Teach grade 10 to 12 math and science, prepare lessons, assess students and meet with parents.",41220,4122,41,Secondary school teachers,vague_title
+141,Elementary School Teacher,"Teach a grade 3 class across all subjects, plan lessons, assess student progress and communicate with parents.",41221,4122,41,Elementary school and kindergarten teachers,exact_title
+142,Educational Assistant,Support students with special needs in the classroom under the teacher's direction and help with supervision.,43100,4310,43,Elementary and secondary school teacher assistants,teer_distinction
+143,Social Worker,"Assess clients' needs, provide counselling, develop case plans and connect families with community resources; registered social worker.",41300,4130,41,Social workers,exact_title
+144,Community Support Worker,"Help clients access housing and income programs, run drop-in services and provide crisis support under social workers.",42201,4220,42,Social and community service workers,teer_distinction
+145,Marriage and Family Therapist,"Provide counselling to couples and families dealing with conflict, separation and mental health issues.",41301,4130,41,Therapists in counselling and related specialized therapies,vague_title
+146,Pastor,"Lead worship services, preach sermons, perform weddings and funerals and provide spiritual guidance to the congregation.",41302,4130,41,Religious leaders,vague_title
+147,Detective,"Investigate crimes, interview witnesses and suspects, gather evidence and prepare cases for prosecution.",41310,4131,41,Police investigators and other investigative occupations,vague_title
+148,Probation Officer,"Supervise offenders on probation, prepare pre-sentence reports and connect clients with rehabilitation programs.",41311,4131,41,Probation and parole officers,exact_title
+149,School Counsellor,"Counsel high school students on academic, career and personal issues and help them plan for post-secondary.",41320,4132,41,Educational counsellors,exact_title
+150,Career Counsellor,"Help job seekers assess their skills, explore career options, write resumes and prepare for interviews.",41321,4132,41,Career development practitioners and career counsellors (except education),exact_title
+151,Economist,"Analyse economic data, build forecasting models and advise on fiscal and monetary policy.",41401,4140,41,Economists and economic policy researchers and analysts,exact_title
+152,Market Research Analyst,"Design surveys and focus groups, analyse consumer and market data and report on market opportunities.",41402,4140,41,Business development officers and market researchers and analysts,close_sibling
+153,Health Policy Analyst,"Research health system issues, evaluate programs and prepare briefing notes and policy recommendations for the ministry.",41404,4140,41,"Health policy researchers, consultants and program officers",vague_title
+154,Police Constable,"Patrol assigned areas, respond to calls, enforce laws, make arrests and write incident reports.",42100,4210,42,Police officers (except commissioned),exact_title
+155,Early Childhood Educator,Plan and lead play-based learning activities for preschool children at a daycare centre and observe their development.,42202,4220,42,Early childhood educators and assistants,exact_title
+156,Nanny,"Care for children in the family's home, prepare meals, supervise play and take children to school and activities.",44100,4410,44,Home child care providers,teer_distinction
+157,Correctional Officer,"Supervise inmates in a correctional facility, conduct searches and counts, and maintain security and order.",43201,4320,43,Correctional service officers,exact_title
+158,Bylaw Officer,"Enforce municipal bylaws on parking, noise and property standards, investigate complaints and issue tickets.",43202,4320,43,By-law enforcement and other regulatory officers,exact_title
+159,Border Services Officer,"Examine travellers and goods at a port of entry, enforce customs and immigration laws and collect duties.",43203,4320,43,"Border services, customs, and immigration officers",exact_title
+160,Driving Instructor,"Teach students to drive in a dual-control car, explain road rules and prepare them for the road test.",43109,4310,43,Other instructors,vague_title
+161,Museum Director,"Direct a regional museum, set exhibition and collection strategy, manage staff and raise funds.",50010,5001,50,"Library, archive, museum and art gallery managers",exact_title
+162,Recreation Director,"Direct a city's recreation department, plan sports and community programs and manage facility budgets.",50012,5001,50,"Recreation, sports and fitness program and service directors",exact_title
+163,Librarian,"Select library materials, answer research questions, run information literacy programs and manage collections.",51100,5110,51,Librarians,exact_title
+164,Library Technician,"Catalogue new materials, maintain the library system and help patrons with research under the librarians.",52100,5210,52,Library and public archive technicians,teer_distinction
+165,Museum Curator,"Research and develop the museum's collections, plan exhibitions and authenticate artifacts.",51101,5110,51,Conservators and curators,exact_title
+166,Editor,"Edit manuscripts for clarity and style, work with authors on revisions and manage publication schedules.",51110,5111,51,Editors,exact_title
+167,Copywriter,"Write ad copy, website content, email campaigns and product descriptions for brands.",51111,5111,51,Authors and writers (except technical),vague_title
+168,Technical Writer,"Write user manuals, API documentation and online help for software products.",51112,5111,51,Technical writers,exact_title
+169,Reporter,"Research and write news stories, interview sources and cover local events for a daily newspaper.",51113,5111,51,Journalists,vague_title
+170,Translator,Translate business and legal documents from French to English and review translations for accuracy.,51114,5111,51,"Translators, terminologists and interpreters",exact_title
+171,Film Director,"Direct film and TV productions, interpret scripts, guide actors and oversee filming and editing.",51120,5112,51,"Producers, directors, choreographers and related occupations",exact_title
+172,Musician,"Perform with a band at concerts and events, rehearse repertoire and record in the studio.",51122,5112,51,Musicians and singers,exact_title
+173,Camera Operator,"Operate film and video cameras on TV and film sets, frame shots and work with the director of photography.",52110,5211,52,Film and video camera operators,exact_title
+174,Sound Engineer,"Record, mix and master music and voice tracks in a studio and set up audio equipment.",52113,5211,52,Audio and video recording technicians,vague_title
+175,Radio Host,"Host a morning radio show, read news and weather, interview guests and introduce music.",52114,5211,52,Announcers and other broadcasters,vague_title
+176,Graphic Designer,"Design logos, brochures, social media graphics and packaging in Adobe Illustrator and InDesign.",52120,5212,52,Graphic designers and illustrators,exact_title
+177,Interior Designer,"Plan interior spaces for homes and offices, select finishes, furniture and lighting, and prepare design drawings.",52121,5212,52,Interior designers and interior decorators,exact_title
+178,Photographer,"Shoot weddings, portraits and commercial products, and edit photos for clients.",53110,5311,53,Photographers,exact_title
+179,Actor,"Audition for and perform roles in theatre, film and television productions.",53121,5312,53,"Actors, comedians and circus performers",exact_title
+180,Visual Artist,"Create paintings and sculptures for exhibitions and commissions, and sell work through galleries.",53122,5312,53,"Painters, sculptors and other visual artists",close_sibling
+181,Potter,"Make handmade ceramics on the wheel, glaze and fire pieces, and sell them at markets and online.",53124,5312,53,Artisans and craftspersons,vague_title
+182,Professional Athlete,"Compete in professional soccer, train daily and follow conditioning and nutrition programs.",53200,5320,53,Athletes,exact_title
+183,Hockey Coach,"Coach a junior hockey team, plan practices, develop players' skills and manage games.",53201,5320,53,Coaches,exact_title
+184,Referee,"Officiate soccer matches, enforce the rules of play and report on game incidents.",53202,5320,53,Sports officials and referees,exact_title
+185,Personal Trainer,"Design fitness programs for gym clients, lead one-on-one workouts and track progress.",54100,5410,54,"Program leaders and instructors in recreation, sport and fitness",vague_title
+186,Corporate Sales Manager,"Lead the national sales team, set sales targets and territories, and develop the company's sales strategy.",60010,6001,60,Corporate sales managers,exact_title
+187,Store Manager,"Run a retail clothing store, manage staff and scheduling, control inventory and meet sales targets.",60020,6002,60,Retail and wholesale trade managers,vague_title
+188,Retail Supervisor,"Supervise sales associates on the floor, assign duties, handle customer complaints and open and close the store.",62010,6201,62,Retail sales supervisors,teer_distinction
+189,Sales Associate,"Help customers find products, process sales at the till and restock and merchandise displays.",64100,6410,64,Retail salespersons and visual merchandisers,teer_distinction
+190,Restaurant Manager,"Manage restaurant operations, hire and schedule staff, control food and labour costs and ensure customer satisfaction.",60030,6003,60,Restaurant and food service managers,exact_title
+191,Food Service Supervisor,"Supervise kitchen and counter staff at a fast food restaurant, schedule shifts and order supplies.",62020,6202,62,Food service supervisors,teer_distinction
+192,Hotel Manager,"Manage hotel operations, oversee front desk, housekeeping and food services, and set room rates and budgets.",60031,6003,60,Accommodation service managers,exact_title
+193,Call Centre Supervisor,"Supervise a team of customer service agents, monitor call quality, handle escalations and set schedules.",62023,6202,62,Customer and information services supervisors,close_sibling
+194,Technical Sales Representative,"Sell industrial equipment to manufacturers, give technical product demonstrations and advise clients on specifications.",62100,6210,62,Technical sales specialists - wholesale trade,close_sibling
+195,Wholesale Sales Representative,Sell food products to grocery stores and restaurants in an assigned territory and manage client accounts.,64101,6410,64,Sales and account representatives - wholesale trade (non-technical),close_sibling
+196,Retail Buyer,"Select and buy merchandise for a chain of stores, negotiate with suppliers and analyse sales trends.",62101,6210,62,Retail and wholesale buyers,close_sibling
+197,Chef,"Plan menus, supervise kitchen staff, create new dishes and control food costs in a restaurant.",62200,6220,62,Chefs,close_sibling
+198,Line Cook,Cook orders on the grill and sauté stations during service and prep ingredients before shifts.,63200,6320,63,Cooks,vague_title
+199,Insurance Broker,"Sell home, auto and business insurance, compare policies from multiple insurers and renew client coverage.",63100,6310,63,Insurance agents and brokers,exact_title
+200,Realtor,"Help clients buy and sell homes, list properties, run open houses and negotiate offers.",63101,6310,63,Real estate agents and salespersons,vague_title
+201,Mortgage Specialist,"Sell mortgage products to bank customers, assess applications and help clients choose financing options.",63102,6310,63,Financial sales representatives,close_sibling
+202,Butcher,"Cut, trim and package meat for retail sale and serve customers at the meat counter.",63201,6320,63,Butchers - retail and wholesale,exact_title
+203,Baker,"Prepare and bake bread, pastries and cakes in a commercial bakery.",63202,6320,63,Bakers,exact_title
+204,Hairstylist,"Cut, colour and style clients' hair and recommend hair care products.",63210,6321,63,Hairstylists and barbers,exact_title
+205,Esthetician,"Provide facials, waxing, manicures and skin care treatments in a spa.",63211,6321,63,"Estheticians, electrologists and related occupations",exact_title
+206,Wedding Consultant,"Help couples plan their wedding, recommend vendors, manage timelines and coordinate the wedding day.",64201,6420,64,"Image, social and other personal consultants",close_sibling
+207,Restaurant Host,"Greet guests, manage reservations and the waitlist, and seat diners in the restaurant.",64300,6430,64,Maîtres d'hôtel and hosts/hostesses,exact_title
+208,Travel Agent,"Plan trips for clients, book flights, hotels and tours and advise on travel documents.",64310,6431,64,Travel counsellors,vague_title
+209,Flight Attendant,"Ensure passenger safety on flights, deliver safety briefings and serve food and beverages.",64311,6431,64,Pursers and flight attendants,exact_title
+210,Airline Customer Service Agent,"Check in passengers at the airport counter, issue boarding passes, tag baggage and rebook missed connections.",64312,6431,64,Airline ticket and service agents,exact_title
+211,Front Desk Agent,"Check guests in and out of the hotel, take reservations and answer guest requests.",64314,6431,64,Hotel front desk clerks,vague_title
+212,Blackjack Dealer,"Deal cards at casino tables, run games and pay out winnings according to house rules.",64321,6432,64,Casino workers,vague_title
+213,Fishing Guide,"Take clients on guided fishing trips, provide equipment and instruction and ensure safety on the water.",64322,6432,64,Outdoor sport and recreational guides,vague_title
+214,Bank Teller,"Process deposits, withdrawals and bill payments for bank customers and balance the cash drawer.",64400,6440,64,Customer services representatives - financial institutions,vague_title
+215,Call Centre Agent,"Answer customer calls about billing and service, resolve account issues and log interactions.",64409,6440,64,Other customer and information services representatives,vague_title
+216,Security Guard,"Patrol a shopping mall, monitor cameras, control access and respond to alarms and incidents.",64410,6441,64,Security guards and related security service occupations,exact_title
+217,Cashier,"Ring up purchases, handle cash and card payments and bag items at the checkout.",65100,6510,65,Cashiers,exact_title
+218,Gas Station Attendant,"Pump fuel, process payments and sell convenience items at a service station.",65101,6510,65,Service station attendants,vague_title
+219,Grocery Stock Clerk,"Unload deliveries, stock shelves, rotate products and fill online orders in a grocery store.",65102,6510,65,"Store shelf stockers, clerks and order fillers",vague_title
+220,Server,"Take food and drink orders, serve customers and process payments in a restaurant.",65200,6520,65,Food and beverage servers,vague_title
+221,Dishwasher,"Wash dishes and kitchen equipment, clean work areas and help with basic food prep.",65201,6520,65,"Food counter attendants, kitchen helpers and related support occupations",vague_title
+222,Hotel Room Attendant,"Clean guest rooms, make beds, replace linens and restock amenities in a hotel.",65310,6531,65,Light duty cleaners,vague_title
+223,Janitor,"Clean and maintain a school building, mop floors, empty garbage and do minor repairs.",65312,6531,65,"Janitors, caretakers and heavy-duty cleaners",exact_title
+224,Construction Manager,"Plan and direct commercial construction projects, manage schedules, budgets and subcontractors.",70010,7001,70,Construction managers,exact_title
+225,Home Renovation Contractor,"Run a residential renovation business, quote jobs, hire trades and manage kitchen and basement renovations.",70011,7001,70,Home building and renovation managers,close_sibling
+226,Facilities Manager,"Manage maintenance and operations of office buildings, oversee contractors and plan capital repairs.",70012,7001,70,Facility operation and maintenance managers,exact_title
+227,Fleet Manager,"Manage a trucking company's operations, plan routes, oversee drivers and maintenance and control transport costs.",70020,7002,70,Managers in transportation,vague_title
+228,Electrical Contractor,"Run an electrical contracting business, estimate jobs, supervise electricians and ensure code compliance.",72011,7201,72,"Contractors and supervisors, electrical trades and telecommunications occupations",close_sibling
+229,Plumbing Foreman,"Supervise a crew of plumbers on construction sites, assign work and coordinate with other trades.",72012,7201,72,"Contractors and supervisors, pipefitting trades",close_sibling
+230,Machinist,Set up and operate lathes and milling machines to make precision metal parts from blueprints.,72100,7210,72,Machinists and machining and tooling inspectors,exact_title
+231,CNC Operator,"Load parts, run CNC machines from set-up programs, monitor production and check parts with gauges.",94106,9410,94,Machining tool operators,teer_distinction
+232,Welder,"Weld metal components using MIG, TIG and stick processes and read fabrication drawings.",72106,7210,72,Welders and related machine operators,exact_title
+233,Industrial Electrician,"Install, maintain and troubleshoot motors, PLCs and electrical control systems in a manufacturing plant.",72201,7220,72,Industrial electricians,close_sibling
+234,Power Line Technician,"Build and repair overhead and underground power lines, climb poles and work from bucket trucks.",72203,7220,72,Electrical power line and cable workers,exact_title
+235,Cable Technician,Install and repair cable TV and internet services in customers' homes.,72205,7220,72,Telecommunications equipment installation and cable television service technicians,vague_title
+236,Plumber,Install and repair water supply and drainage systems and fixtures in homes and commercial buildings.,72300,7230,72,Plumbers,exact_title
+237,Pipefitter,Install and repair high- and low-pressure piping systems for steam and process fluids in industrial plants.,72301,7230,72,"Steamfitters, pipefitters and sprinkler system installers",exact_title
+238,Carpenter,"Frame houses, install doors, windows and trim, and build forms for concrete.",72310,7231,72,Carpenters,exact_title
+239,Millwright,"Install, align and maintain industrial machinery and conveyor systems in a plant.",72400,7240,72,Construction millwrights and industrial mechanics,exact_title
+240,Heavy Duty Mechanic,"Repair and maintain bulldozers, excavators and mining trucks, and diagnose hydraulic and engine problems.",72401,7240,72,Heavy-duty equipment mechanics,exact_title
+241,HVAC Technician,"Install and service furnaces, air conditioners and refrigeration units in homes and businesses.",72402,7240,72,"Heating, refrigeration and air conditioning mechanics",vague_title
+242,Aircraft Maintenance Engineer,"Inspect, repair and certify aircraft engines and airframes according to Transport Canada regulations.",72404,7240,72,Aircraft mechanics and aircraft inspectors,vague_title
+243,Auto Mechanic,"Diagnose and repair car engines, brakes, transmissions and electrical systems at a dealership.",72410,7241,72,"Automotive service technicians, truck and bus mechanics and mechanical repairers",vague_title
+244,Auto Body Technician,"Repair collision damage to vehicles, straighten frames, replace panels and refinish paint.",72411,7241,72,"Auto body collision, refinishing and glass technicians and damage repair estimators",exact_title
+245,Tire Technician,"Install, balance and repair tires and do oil changes and basic vehicle maintenance.",74203,7420,74,Automotive and heavy truck and equipment parts installers and servicers,teer_distinction
+246,Crane Operator,Operate tower and mobile cranes to lift and place materials on construction sites.,72500,7250,72,Crane operators,exact_title
+247,Airline Pilot,"Fly commercial passenger aircraft, plan flights, perform pre-flight checks and communicate with air traffic control.",72600,7260,72,"Air pilots, flight engineers and flying instructors",exact_title
+248,Air Traffic Controller,"Direct aircraft takeoffs, landings and en-route traffic to keep safe separation.",72601,7260,72,Air traffic controllers and related occupations,exact_title
+249,Ship's Officer,"Navigate a cargo vessel, stand bridge watches and supervise deck crew and cargo operations.",72602,7260,72,"Deck officers, water transport",vague_title
+250,Drywaller,"Hang drywall sheets, tape and mud joints, and sand walls and ceilings.",73102,7310,73,"Plasterers, drywall installers and finishers and lathers",vague_title
+251,Roofer,Install and repair asphalt shingle and flat roofs on residential and commercial buildings.,73110,7311,73,Roofers and shinglers,exact_title
+252,House Painter,Prepare surfaces and paint interior and exterior walls of homes and commercial buildings.,73112,7311,73,Painters and decorators (except interior decorators),close_sibling
+253,Building Superintendent,"Maintain an apartment building, do minor repairs, handle tenant requests and keep common areas clean.",73201,7320,73,General building maintenance workers and building superintendents,vague_title
+254,Exterminator,Inspect homes and businesses for pests and apply treatments to eliminate insects and rodents.,73202,7320,73,Pest controllers and fumigators,vague_title
+255,City Bus Driver,"Drive a city transit bus on scheduled routes, collect fares and help passengers.",73301,7330,73,"Bus drivers, subway operators and other transit operators",exact_title
+256,Locomotive Engineer,"Operate freight trains, monitor train systems and follow signals and dispatch orders.",73310,7331,73,Railway and yard locomotive engineers,exact_title
+257,Excavator Operator,"Operate excavators and loaders to dig trenches, move earth and load trucks on construction sites.",73400,7340,73,Heavy equipment operators,vague_title
+258,Letter Carrier,Deliver mail and parcels to homes and businesses on a walking route.,74101,7410,74,Letter carriers,exact_title
+259,Courier,Pick up and deliver packages and documents across the city by car or bike.,74102,7410,74,Couriers and messengers,exact_title
+260,Ramp Agent,"Load and unload baggage and cargo, guide aircraft to the gate and operate ground equipment.",74202,7420,74,Air transport ramp attendants,vague_title
+261,Longshore Worker,Load and unload containers and cargo from ships at the port using forklifts and cranes.,75100,7510,75,Longshore workers,exact_title
+262,Warehouse Worker,"Pick and pack orders, load trucks and move pallets with a forklift in a warehouse.",75101,7510,75,Material handlers,vague_title
+263,Construction Labourer,"Clean up job sites, carry materials, dig trenches and assist tradespeople.",75110,7511,75,Construction trades helpers and labourers,vague_title
+264,Rideshare Driver,Drive passengers to their destinations using a ride-hailing app and maintain the vehicle.,75200,7520,75,Taxi and limousine drivers and chauffeurs,vague_title
+265,Delivery Driver,Drive a cube van to deliver parcels to homes and businesses on a daily route.,75201,7520,75,Delivery service drivers and door-to-door distributors,teer_distinction
+266,Farmer,"Run a grain and cattle farm, plan planting and harvest, manage finances and hire seasonal workers.",80020,8002,80,Managers in agriculture,vague_title
+267,Greenhouse Manager,"Manage a commercial greenhouse, plan crop production, supervise workers and handle sales.",80021,8002,80,Managers in horticulture,exact_title
+268,Fish Farm Manager,"Manage a salmon aquaculture site, oversee feeding and fish health, and supervise farm workers.",80022,8002,80,Managers in aquaculture,exact_title
+269,Logging Supervisor,"Supervise logging crews, plan cutblocks and ensure safe and efficient timber harvesting.",82010,8201,82,"Supervisors, logging and forestry",exact_title
+270,Mine Supervisor,"Supervise underground mining crews, schedule work and enforce safety procedures.",82020,8202,82,"Supervisors, mining and quarrying",exact_title
+271,Landscaping Supervisor,"Supervise landscaping crews, schedule jobs, train workers and inspect completed work.",82031,8203,82,"Contractors and supervisors, landscaping, grounds maintenance and horticulture services",teer_distinction
+272,Underground Miner,"Drill and blast rock, install ground support and operate scooptrams in an underground mine.",83100,8310,83,Underground production and development miners,exact_title
+273,Feller Buncher Operator,Operate a feller buncher and processor to cut and delimb trees in logging operations.,83110,8311,83,Logging machinery operators,vague_title
+274,Fisherman,Operate a fishing boat and catch lobster and crab using traps.,83121,8312,83,Fishermen/women,exact_title
+275,Dairy Herdsperson,"Manage the milking herd, monitor animal health, run milking equipment and maintain breeding records.",84120,8412,84,Specialized livestock workers and farm machinery operators,vague_title
+276,Tree Planter,Plant seedlings in cutblocks for reforestation and help with forest thinning.,84111,8411,84,Silviculture and forestry workers,vague_title
+277,Fishing Deckhand,"Haul nets and traps, sort and ice the catch and maintain gear aboard a fishing vessel.",84121,8412,84,Fishing vessel deckhands,exact_title
+278,Fruit Picker,Pick apples and berries during harvest season and load crates.,85101,8510,85,Harvesting labourers,vague_title
+279,Greenhouse Worker,"Plant, water and transplant seedlings and harvest crops in a commercial greenhouse.",85103,8510,85,Nursery and greenhouse labourers,vague_title
+280,Landscaper,"Mow lawns, plant shrubs, lay sod and maintain gardens for residential and commercial clients.",85121,8512,85,Landscaping and grounds maintenance labourers,vague_title
+281,Roughneck,Work on the rig floor handling drill pipe and tools and help maintain drilling equipment.,85111,8511,85,"Oil and gas drilling, servicing and related labourers",vague_title
+282,Plant Manager,"Manage a manufacturing plant, oversee production, quality and maintenance, and control plant costs.",90010,9001,90,Manufacturing managers,vague_title
+283,Food Production Supervisor,"Supervise production line workers in a food processing plant, schedule shifts and ensure food safety standards.",92012,9201,92,"Supervisors, food and beverage processing",exact_title
+284,Power Engineer,"Operate and maintain boilers, turbines and refrigeration plant equipment in a hospital; 3rd class power engineer.",92100,9210,92,Power engineers and power systems operators,close_sibling
+285,Water Treatment Operator,"Monitor and operate the water treatment plant, take samples, run tests and adjust chemical dosing.",92101,9210,92,Water and waste treatment plant operators,exact_title
+286,Refinery Control Room Operator,Monitor and control refinery process units from a central control room using a DCS.,93101,9310,93,"Central control and process operators, petroleum, gas and chemical processing",vague_title
+287,Aircraft Assembler,Assemble aircraft structures and install systems according to engineering drawings.,93200,9320,93,Aircraft assemblers and aircraft assembly inspectors,exact_title
+288,Foundry Worker,Pour molten metal into moulds and finish castings in a foundry.,94101,9410,94,Foundry workers,exact_title
+289,Injection Molding Operator,Set up and run plastic injection moulding machines and inspect moulded parts.,94111,9411,94,Plastics processing machine operators,vague_title
+290,Sawmill Operator,Operate saws and edgers to cut logs into lumber in a sawmill.,94120,9412,94,Sawmill machine operators,exact_title
+291,Food Production Line Operator,"Operate mixing, filling and packaging machines on a food production line.",94140,9414,94,"Process control and machine operators, food and beverage processing",vague_title
+292,Meat Packer,Cut and trim beef carcasses on the line in a meat processing plant.,94141,9414,94,"Industrial butchers and meat cutters, poultry preparers and related workers",close_sibling
+293,Fish Plant Worker,"Clean, fillet and package fish at a seafood processing plant.",94142,9414,94,Fish and seafood plant workers,exact_title
+294,Sewing Machine Operator,Sew garments and textile products on industrial sewing machines.,94132,9413,94,Industrial sewing machine operators,exact_title
+295,Auto Assembly Worker,Assemble car components on an automotive assembly line and inspect finished parts.,94200,9420,94,"Motor vehicle assemblers, inspectors and testers",vague_title
+296,Electronics Assembler,Solder and assemble components onto circuit boards and test finished units.,94201,9420,94,"Electronics assemblers, fabricators, inspectors and testers",exact_title
+297,Furniture Finisher,"Sand, stain and lacquer wooden furniture and inspect finished pieces.",94210,9421,94,"Furniture and fixture assemblers, finishers, refinishers and inspectors",exact_title
+298,Powder Coater,Prepare metal parts and apply powder coating and paint finishes in a production plant.,94213,9421,94,"Industrial painters, coaters and metal finishing process operators",close_sibling
+299,Food Processing Labourer,"Load raw ingredients, clean equipment and pack finished food products in a processing plant.",95106,9510,95,Labourers in food and beverage processing,teer_distinction
+300,Metal Fabrication Labourer,"Clean and grind welded parts, load machines and move materials in a metal fabrication shop.",95101,9510,95,Labourers in metal fabrication,teer_distinction
