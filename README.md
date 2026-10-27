@@ -47,7 +47,7 @@ Skills this project is designed to demonstrate:
 - **Retrieval-augmented generation (RAG)** for NOC classification: retrieved occupation records are passed as context, and the model must choose from that list rather than invent a code
 - **LLM structured extraction** with LangChain / OpenAI, constrained to stated facts, with missing-field and warning lists
 - **Domain rule engines** for CRS and Express Entry, implemented in Python with Pydantic models (auditable point tables, not prompt-only scoring)
-- **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 9-query labelled set, the shipped hybrid pipeline scores **0.673 NDCG@10** (+0.082 over BM25 alone) with a **100% top-10 hit rate**; results are shown on the frontend's benchmark page
+- **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 300-query labelled set, the shipped vector pipeline scores **0.609 NDCG@10** (+0.026 over Hybrid) with a **99% top-10 hit rate**, results are shown on the frontend's benchmark page
 - **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
 - **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, results, CRS simulator, NOC search, eligibility, advice, and retrieval benchmark views) calling the FastAPI backend
 - **Automated test suite** with pytest covering the graph, services, and API layer

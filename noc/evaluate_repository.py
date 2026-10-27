@@ -20,6 +20,7 @@ class EvaluateRepository:
         self, labels_hash: str, examples_report: list[dict], mean_report: dict
     ) -> None:
         with self.db_service.create_session() as session:
+            # if not exists -> insert, else update (by primary key)
             session.merge(
                 NocEvaluationRun(
                     labels_hash=labels_hash,
@@ -28,4 +29,6 @@ class EvaluateRepository:
                 )
             )
             session.commit()
-        logger.info("Saved NOC retrieval evaluation run for labels hash %s", labels_hash)
+        logger.info(
+            "Saved NOC retrieval evaluation run for labels hash %s", labels_hash
+        )

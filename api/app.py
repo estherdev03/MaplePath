@@ -46,9 +46,7 @@ def parse_profile(profile_text: str):
         raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
         logger.exception("Failed to parse profile")
-        raise HTTPException(
-            status_code=500, detail="Failed to parse profile"
-        ) from e
+        raise HTTPException(status_code=500, detail="Failed to parse profile") from e
     logger.info("Profile parse request completed")
     return {"result": result["profile"]}
 
@@ -70,15 +68,13 @@ def complete_profile(profile_confirm: ProfileConfirmFormPayload):
         ) from e
     except Exception as e:
         logger.exception("Failed to complete profile")
-        raise HTTPException(
-            status_code=500, detail="Failed to complete profile"
-        ) from e
+        raise HTTPException(status_code=500, detail="Failed to complete profile") from e
     logger.info("Profile complete request completed")
     return {"result": result["profile"]}
 
 
 # UserProfile is also partial graph state, so every field is optional on
-# the model; scoring needs these filled in.
+# the model, scoring needs these filled in.
 CRS_REQUIRED_FIELDS = (
     "age",
     "occupation",

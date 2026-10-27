@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from pgvector.sqlalchemy import VECTOR
-from sqlalchemy import Index, String, ARRAY, func, text
+from sqlalchemy import Index, String, ARRAY, func
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
+from sqlalchemy.dialects.postgresql import JSONB
 from db.base import Base
 
 

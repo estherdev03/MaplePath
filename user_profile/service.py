@@ -206,7 +206,7 @@ class ProfileService:
         search_query = f"""
         Job title: {job_title} \n Job responsibility: {job_responsibility}
         """
-        search_result = self.noc_service.noc_hybrid_search(search_query)
+        search_result = self.noc_service.noc_semantic_search(search_query)
         noc_candidates = [
             NOCCandidate(
                 noc_code=r.noc_code,
@@ -312,9 +312,7 @@ class ProfileService:
 
         if not result.noc_code:
             reason = result.reasoning or "no confident match was found."
-            logger.warning(
-                "No NOC match for job title '%s': %s", job_title, reason
-            )
+            logger.warning("No NOC match for job title '%s': %s", job_title, reason)
             raise ValueError(
                 f"Could not determine a NOC occupation for job title "
                 f"'{job_title}': {reason}"

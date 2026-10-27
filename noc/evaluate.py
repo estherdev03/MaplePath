@@ -4,6 +4,7 @@ from math import log
 import hashlib
 import logging
 import os
+import time
 
 from db.models import NOC
 from db.service import DatabaseService
@@ -69,7 +70,7 @@ class EvaluateService:
     def calculate_hit_rate(
         self, search_result: list[NOC], ideal: IdealNOC, k: int = 10
     ) -> int:
-        for noc in search_result:
+        for noc in search_result[:k]:
             if noc.noc_code == ideal.noc_code:
                 return 1
         return 0
@@ -88,7 +89,9 @@ def noc_retrieval_method_evaluate(
     labels_hash = _hash_labels_file(file_path)
     cached_run = evaluate_repository.get_by_hash(labels_hash)
     if cached_run is not None:
-        logger.info("Using cached NOC retrieval evaluation for labels hash %s", labels_hash)
+        logger.info(
+            "Using cached NOC retrieval evaluation for labels hash %s", labels_hash
+        )
         return (
             CompleteExamplesReport(
                 report=[SingleExampleReport(**e) for e in cached_run.examples_report]
@@ -119,6 +122,8 @@ def noc_retrieval_method_evaluate(
 
     all_examples_report = CompleteExamplesReport()
 
+    count = 1
+
     for row in df.itertuples():
         search_query = row.search_query
         noc_code = str(row.noc_code)
@@ -131,8 +136,11 @@ def noc_retrieval_method_evaluate(
         )
         keyword_result = noc_service.noc_keyword_search(search_query)
         vector_result = noc_service.noc_semantic_search(search_query)
-        hybrid_result = noc_service.noc_hybrid_search(search_query)
         rrf_result = noc_service._rrf(vector_result, keyword_result)
+        hybrid_result = noc_service.noc_hybrid_search(search_query)
+        logger.info("%d", count)
+        count += 1
+        time.sleep(3)  # sleep 7s after every request
 
         # -------------------- NDCG -----------------------------
         # BM25
@@ -184,5 +192,8 @@ def noc_retrieval_method_evaluate(
         [asdict(e) for e in all_examples_report.report],
         asdict(method_mean_report),
     )
+
+    print(all_examples_report.report[:20])
+    print(method_mean_report)
 
     return (all_examples_report, method_mean_report)
