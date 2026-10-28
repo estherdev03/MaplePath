@@ -30,7 +30,10 @@ async function safeFetch(url: URL, init: RequestInit = {}): Promise<Response> {
   try {
     return await fetch(url, { ...init, headers });
   } catch {
-    throw new ApiError(0, "Could not reach the MaplePath API. Is the backend running?");
+    throw new ApiError(
+      0,
+      "Could not reach the MaplePath API. Is the backend running?",
+    );
   }
 }
 
@@ -40,7 +43,12 @@ async function safeFetch(url: URL, init: RequestInit = {}): Promise<Response> {
 // messages so the app doesn't show that dump to the user.
 function formatPydanticDump(detail: string): string | null {
   const messages = [...detail.matchAll(/^ {2}(?! ).+$/gm)]
-    .map((m) => m[0].trim().replace(/^Value error, /, "").replace(/\s*\[type=.*$/, ""))
+    .map((m) =>
+      m[0]
+        .trim()
+        .replace(/^Value error, /, "")
+        .replace(/\s*\[type=.*$/, ""),
+    )
     .filter(Boolean);
   return messages.length > 0 ? messages.join(" ") : null;
 }
@@ -65,7 +73,7 @@ async function handle<T>(res: Response): Promise<T> {
       const body = await res.json();
       if (body?.detail) detail = formatDetail(body.detail);
     } catch {
-      // response wasn't JSON; keep statusText
+      // response wasn't JSON, keep statusText
     }
     throw new ApiError(res.status, detail);
   }
@@ -81,7 +89,7 @@ export async function parseProfile(text: string): Promise<ProfileDraft> {
 }
 
 export async function completeProfile(
-  payload: ProfileConfirmFormPayload
+  payload: ProfileConfirmFormPayload,
 ): Promise<UserProfile> {
   const res = await safeFetch(new URL("/profile/complete", API_URL), {
     method: "POST",
@@ -94,7 +102,7 @@ export async function completeProfile(
 }
 
 export async function simulateCrs(
-  profile: UserProfile
+  profile: UserProfile,
 ): Promise<CrsSimulateResponse> {
   const res = await safeFetch(new URL("/crs/simulate", API_URL), {
     method: "POST",
@@ -106,9 +114,7 @@ export async function simulateCrs(
 }
 
 export async function getEvaluation(): Promise<EvaluateResponse> {
-  const res = await safeFetch(new URL("/evaluate", API_URL), {
-    // The evaluation run embeds + reranks 84 labelled examples; cache it
-    // briefly instead of re-running the whole benchmark on every page view.
+  const res = await safeFetch(new URL(`/evaluate`, API_URL), {
     next: { revalidate: 300 },
   });
   return handle<EvaluateResponse>(res);

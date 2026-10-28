@@ -1,8 +1,10 @@
+import EvaluationExampleTable from "@/components/EvaluationExampleTable";
 import { ApiError, getEvaluation } from "@/lib/api";
 import type { RetrievalScore } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
+// All method labels included in the evaluation
 const METHOD_LABELS: {
   key: "bm25" | "vector" | "rrf" | "hybrid";
   name: string;
@@ -25,6 +27,7 @@ function pct(score: RetrievalScore): number {
 export default async function BenchmarkPage() {
   let error: string | null = null;
   let report: Awaited<ReturnType<typeof getEvaluation>> | null = null;
+
   try {
     report = await getEvaluation();
   } catch (e) {
@@ -172,7 +175,6 @@ export default async function BenchmarkPage() {
           </div>
         ))}
       </div>
-
       <h5 style={{ margin: "32px 0 4px" }}>
         Each method against the same {examples_report.length} labels
       </h5>
@@ -251,7 +253,6 @@ export default async function BenchmarkPage() {
           </div>
         ))}
       </div>
-
       <h5 style={{ margin: "34px 0 4px" }}>Per-example report</h5>
       <p
         style={{
@@ -264,57 +265,7 @@ export default async function BenchmarkPage() {
         <code style={{ fontSize: 12 }}>examples_report</code>. NDCG and hit are
         for the shipped vector method.
       </p>
-      <table className="table">
-        <thead>
-          <tr>
-            <th>Job title</th>
-            <th style={{ width: 130 }}>Case type</th>
-            <th style={{ textAlign: "right", width: 78 }}>NDCG</th>
-            <th style={{ width: 96 }}>Outcome</th>
-          </tr>
-        </thead>
-        <tbody>
-          {examples_report.map((e) => {
-            const [ndcg, hit] = e.vector;
-            const outcome =
-              ndcg === 1 ? "Top hit" : hit === 1 ? "Top 10" : "Missed";
-            const tagClass =
-              ndcg === 1
-                ? "tag-accent"
-                : hit === 1
-                  ? "tag-outline"
-                  : "tag-neutral";
-            const color =
-              ndcg === 1
-                ? "#b5abfc"
-                : hit === 1
-                  ? "rgba(233,233,237,.82)"
-                  : "#cfd3e5";
-            return (
-              <tr key={`${e.job_title}-${e.case_type}`}>
-                <td style={{ color: "rgba(233,233,237,.85)" }}>
-                  {e.job_title}
-                </td>
-                <td style={{ color: "rgba(233,233,237,.62)" }}>
-                  {e.case_type}
-                </td>
-                <td
-                  style={{
-                    textAlign: "right",
-                    fontVariantNumeric: "tabular-nums",
-                    color,
-                  }}
-                >
-                  {ndcg.toFixed(3)}
-                </td>
-                <td>
-                  <span className={`tag ${tagClass}`}>{outcome}</span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <EvaluationExampleTable examples_report={examples_report} />
       <p
         style={{
           margin: "18px 0 0",

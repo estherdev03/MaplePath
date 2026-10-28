@@ -193,7 +193,4 @@ def noc_retrieval_method_evaluate(
         asdict(method_mean_report),
     )
 
-    print(all_examples_report.report[:20])
-    print(method_mean_report)
-
     return (all_examples_report, method_mean_report)
