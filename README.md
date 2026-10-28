@@ -6,11 +6,18 @@
 
 MaplePath helps prospective immigrants understand where they stand: it extracts a structured profile from natural language, classifies the occupation under **NOC 2021**, calculates a **CRS** score, and assesses eligibility for **Federal Skilled Worker**, **Canadian Experience Class**, and **Federal Skilled Trades**.
 
-Built as a production-oriented **Python** backend: **LangGraph** orchestration, hybrid retrieval over PostgreSQL, retrieval-augmented occupation classification, and **rule-based** scoring engines that stay explainable. A **Next.js** frontend walks applicants through intake, confirmation, and results against that API.
+Built as a production-oriented **Python** backend: **LangGraph** orchestration, pgvector semantic retrieval over PostgreSQL (chosen by benchmark against keyword, RRF, and reranked hybrid search), retrieval-augmented occupation classification, and **rule-based** scoring engines that stay explainable. A **Next.js** frontend walks applicants through intake, confirmation, and results against that API.
 
 ---
 
+## Recent changes
 
+- **Occupation classification now uses pgvector semantic search instead of the reranked hybrid pipeline.** On the expanded labelled set, vector search scored higher NDCG@10 than hybrid (0.609 vs 0.583) with a 99% top-10 hit rate, so `/profile/complete` now retrieves NOC candidates with `noc_semantic_search`. BM25, RRF, and hybrid remain in `noc/` for comparison in the benchmark.
+- **Labelled evaluation set grew from 9 to 300 job descriptions** (`data/noc_eval_labels.csv`).
+- **Hit rate is now strictly top-10.** `calculate_hit_rate` only checks the first `k` results, previously there was a bug that makes a match anywhere in the result list counted.
+- **Benchmark page:** the shipped method is labelled "vector", and the per-example report is a paginated table (20 rows per page) in `frontend/components/EvaluationExampleTable.tsx`.
+
+---
 
 ## Why it exists
 
@@ -18,43 +25,35 @@ Express Entry decisions depend on occupation codes, language conversions, and pr
 
 ---
 
-
-
 ## Capabilities
 
-
-| Area                     | What it delivers                                                                                                                          |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **Profile intelligence** | Converts unstructured text into a validated applicant profile, flagging missing or ambiguous fields instead of inventing data             |
-| **Occupation matching**  | Hybrid search retrieves official NOC 2021 profiles, an LLM then picks a unit group, TEER, and confidence score from those candidates only |
-| **CRS scoring**          | Full Comprehensive Ranking System breakdown: core human capital, spouse factors, skill transferability, and additional points             |
-| **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks                     |
-| **Personalized advice**  | An LLM turns the computed CRS breakdown and eligibility results into ranked, profile-specific recommendations, without recalculating scores |
-
+| Area                     | What it delivers                                                                                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Profile intelligence** | Converts unstructured text into a validated applicant profile, flagging missing or ambiguous fields instead of inventing data                        |
+| **Occupation matching**  | pgvector semantic search retrieves official NOC 2021 profiles, an LLM then picks a unit group, TEER, and confidence score from those candidates only |
+| **CRS scoring**          | Full Comprehensive Ranking System breakdown: core human capital, spouse factors, skill transferability, and additional points                        |
+| **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks                                |
+| **Personalized advice**  | An LLM turns the computed CRS breakdown and eligibility results into ranked, profile-specific recommendations, without recalculating scores          |
 
 **Language support:** IELTS, CELPIP, and PTE (English); TEF and TCF (French), converted to CLB / NCLC before scoring.
 
 ---
-
-
 
 ## Engineering highlights
 
 Skills this project is designed to demonstrate:
 
 - **Agentic workflow design** with LangGraph (event routing, typed state, multi-step profile → score → eligibility pipeline)
-- **Hybrid search** combining BM25 full-text retrieval, pgvector semantic search, Reciprocal Rank Fusion, and Cohere reranking
+- **Four retrieval pipelines** implemented side by side: BM25 full-text, pgvector semantic search, Reciprocal Rank Fusion, and RRF + Cohere reranking (hybrid). The shipped method is picked by measured results, not assumed
 - **Retrieval-augmented generation (RAG)** for NOC classification: retrieved occupation records are passed as context, and the model must choose from that list rather than invent a code
 - **LLM structured extraction** with LangChain / OpenAI, constrained to stated facts, with missing-field and warning lists
 - **Domain rule engines** for CRS and Express Entry, implemented in Python with Pydantic models (auditable point tables, not prompt-only scoring)
-- **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 300-query labelled set, the shipped vector pipeline scores **0.609 NDCG@10** (+0.026 over Hybrid) with a **99% top-10 hit rate**, results are shown on the frontend's benchmark page
+- **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 300-query labelled set, the shipped vector pipeline scores **0.609 NDCG@10** (+0.026 over Hybrid) with a **99% top-10 hit rate**. Results are shown on the frontend's benchmark page, with a paginated per-example report
 - **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
 - **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, results, CRS simulator, NOC search, eligibility, advice, and retrieval benchmark views) calling the FastAPI backend
 - **Automated test suite** with pytest covering the graph, services, and API layer
 
 ---
-
-
 
 ## Architecture
 
@@ -67,7 +66,7 @@ Event (profile_draft | profile_confirm)
                         ├── profile_draft   ──► parse_profile   (LLM structured output) ──► END
                         │
                         └── profile_confirm ──► create_profile
-                                                  ├── retrieve NOC candidates (hybrid search)
+                                                  ├── retrieve NOC candidates (pgvector semantic search)
                                                   └── classify occupation from retrieved context
                                                         │
                                                         ▼
@@ -83,43 +82,37 @@ Event (profile_draft | profile_confirm)
                                   JSON result (occupation, CRS breakdown, eligibility, advice)
 ```
 
-
-| Module          | Responsibility                                                                |
-| --------------- | ----------------------------------------------------------------------------- |
-| `graph/`        | Workflow graph, routers, and shared application state                         |
-| `user_profile/` | Profile parse, occupation classification, score and eligibility orchestration |
-| `noc/`          | NOC ingest, hybrid search, retrieval evaluation                               |
-| `crs/`          | CRS points, language conversion, skill transferability                        |
-| `eligibility/`  | FSW, CEC, and FST rule evaluation                                             |
-| `db/`           | SQLAlchemy models and persistence                                             |
-| `api/`          | REST API                                                                      |
+| Module          | Responsibility                                                                                             |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| `graph/`        | Workflow graph, routers, and shared application state                                                      |
+| `user_profile/` | Profile parse, occupation classification, score and eligibility orchestration                              |
+| `noc/`          | NOC ingest, keyword / semantic / hybrid search, retrieval evaluation                                       |
+| `crs/`          | CRS points, language conversion, skill transferability                                                     |
+| `eligibility/`  | FSW, CEC, and FST rule evaluation                                                                          |
+| `db/`           | SQLAlchemy models and persistence                                                                          |
+| `api/`          | REST API                                                                                                   |
 | `frontend/`     | Next.js application (intake, confirmation, results, simulator, NOC search, eligibility, advice, benchmark) |
-| `tests/`        | pytest suite mirroring the module layout above                               |
-
+| `tests/`        | pytest suite mirroring the module layout above                                                             |
 
 ---
-
-
 
 ## Tech stack
 
-**Languages & runtime:** Python 3.12, uv, Node.js  
+**Languages & runtime:** Python 3.12, uv, Node.js
 
-**AI & retrieval:** LangGraph, LangChain, OpenAI (`gpt-5.4-mini` chat, `text-embedding-3-large` embeddings), Cohere Rerank (`rerank-english-v3.0`)  
+**AI & retrieval:** LangGraph, LangChain, OpenAI (`gpt-5.4-mini` chat, `text-embedding-3-large` embeddings), Cohere Rerank (`rerank-english-v3.0`, used by the hybrid method in the benchmark)
 
-**Backend:** FastAPI, Pydantic, SQLAlchemy  
+**Backend:** FastAPI, Pydantic, SQLAlchemy
 
-**Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS  
+**Frontend:** Next.js (App Router), React, TypeScript, Tailwind CSS
 
-**Data:** PostgreSQL, pgvector, BM25 (`pg_textsearch`)  
+**Data:** PostgreSQL, pgvector, BM25 (`pg_textsearch`)
 
-**Ops:** Docker Compose, Makefile, Railway (backend + database), Vercel (frontend)  
+**Ops:** Docker Compose, Makefile, Railway (backend + database), Vercel (frontend)
 
-**Testing:** pytest  
+**Testing:** pytest
 
 ---
-
-
 
 ## Getting started
 
@@ -143,14 +136,12 @@ npm install
 npm run dev   # http://localhost:3000, expects the API at http://localhost:8000 (override with API_URL)
 ```
 
-
 | Method | Endpoint            | Description                                                 |
-| ------ | ------------------- | ------------------------------------------------------------|
+| ------ | ------------------- | ----------------------------------------------------------- |
 | `POST` | `/profile/parse`    | Extract a structured draft from free-text                   |
-| `POST` | `/profile/complete` | Confirm a profile; return occupation, CRS, and eligibility   |
+| `POST` | `/profile/complete` | Confirm a profile; return occupation, CRS, and eligibility  |
 | `POST` | `/crs/simulate`     | Recalculate CRS score and eligibility for an edited profile |
-| `GET`  | `/evaluate`         | Run the NOC retrieval benchmark and return its report        |
-
+| `GET`  | `/evaluate`         | Run the NOC retrieval benchmark and return its report       |
 
 Sample graph run without the API: `uv run python main.py`.
 
@@ -167,8 +158,6 @@ Run the test suite: `make test` (or `uv run pytest`).
 Stop the database with `make pgdown` (add `make pgdownvol` to drop the volume). Initial `init_db.py` scrapes official NOC profiles and may take a substantial amount of time.
 
 ---
-
-
 
 ## Deployment
 
@@ -205,15 +194,13 @@ nohup python init_db.py > init_db.log 2>&1 &   # then: tail -f init_db.log
 
 ---
 
-
-
 ## Roadmap
 
 **Current (v1)**  
-AI profile extraction · hybrid NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite · containerized deployment (Railway + Vercel)  
+AI profile extraction · benchmarked semantic NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite · containerized deployment (Railway + Vercel)
 
 **Next**  
-Policy Q&A with cited IRCC sources · Alberta (AAIP) pathways · journey planning · policy monitoring and notifications  
+Policy Q&A with cited IRCC sources · Alberta (AAIP) pathways · journey planning · policy monitoring and notifications
 
 ---
 
