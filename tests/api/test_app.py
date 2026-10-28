@@ -50,6 +50,8 @@ def _confirm_payload_json():
     return payload.model_dump(mode="json")
 
 
+# ===================  Test /profile/parse ===================
+# Test return result and event of /profile/parse route
 def test_parse_profile_builds_profile_draft_event_and_returns_result():
     with patch("api.app.compiled_graph") as mock_graph:
         mock_graph.invoke.return_value = {"profile": {"age": 30}}
@@ -62,6 +64,29 @@ def test_parse_profile_builds_profile_draft_event_and_returns_result():
     assert called_state["event"].payload.text == "hello"
 
 
+# Test 400 error of /profile/parse
+def test_parse_profile_value_error_returns_400():
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.side_effect = ValueError("No matching NOC occupation found")
+        response = client.post("/profile/parse", params={"profile_text": "hello"})
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "No matching NOC occupation found"}
+
+
+# Test 500 error of /profile/parse
+def test_parse_profile_unexpected_error_returns_500_without_leaking_details():
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.side_effect = RuntimeError("db connection refused")
+        response = client.post("/profile/parse", params={"profile_text": "hello"})
+
+    assert response.status_code == 500
+    assert "db connection refused" not in response.text
+    assert response.json() == {"detail": "Failed to parse profile"}
+
+
+# ===================  Test /profile/complete ===================
+# Test return result and event of /profile/complete route
 def test_complete_profile_builds_profile_confirm_event_and_returns_result():
     with patch("api.app.compiled_graph") as mock_graph:
         mock_graph.invoke.return_value = {"profile": {"age": 30}}
@@ -74,29 +99,13 @@ def test_complete_profile_builds_profile_confirm_event_and_returns_result():
     assert called_state["event"].payload.job_title == "Software Engineer"
 
 
+# Test invalid body return 422 from /profile/complete
 def test_complete_profile_invalid_body_returns_422():
     response = client.post("/profile/complete", json={})
     assert response.status_code == 422
 
 
-def test_parse_profile_value_error_returns_400():
-    with patch("api.app.compiled_graph") as mock_graph:
-        mock_graph.invoke.side_effect = ValueError("No matching NOC occupation found")
-        response = client.post("/profile/parse", params={"profile_text": "hello"})
-
-    assert response.status_code == 400
-    assert response.json() == {"detail": "No matching NOC occupation found"}
-
-
-def test_parse_profile_unexpected_error_returns_500_without_leaking_details():
-    with patch("api.app.compiled_graph") as mock_graph:
-        mock_graph.invoke.side_effect = RuntimeError("db connection refused")
-        response = client.post("/profile/parse", params={"profile_text": "hello"})
-
-    assert response.status_code == 500
-    assert "db connection refused" not in response.text
-
-
+# Test 400 error of /profile/complete
 def test_complete_profile_value_error_returns_400():
     with patch("api.app.compiled_graph") as mock_graph:
         mock_graph.invoke.side_effect = ValueError("Spouse information is required")
@@ -106,15 +115,30 @@ def test_complete_profile_value_error_returns_400():
     assert response.json() == {"detail": "Spouse information is required"}
 
 
+# Test 429 error of /profile/complete
 def test_complete_profile_rate_limited_returns_429_with_actionable_detail():
     with patch("api.app.compiled_graph") as mock_graph:
-        mock_graph.invoke.side_effect = TooManyRequestsError(body={"message": "rate limited"})
+        mock_graph.invoke.side_effect = TooManyRequestsError(
+            body={"message": "rate limited"}
+        )
         response = client.post("/profile/complete", json=_confirm_payload_json())
 
     assert response.status_code == 429
-    assert "try again" in response.json()["detail"].lower()
+    assert response.json() == {
+        "detail": "The occupation classifier's search service is rate-limited right now. Please try again in about a minute."
+    }
 
 
+def test_complete_profile_unexpected_error_return_500():
+    with patch("api.app.compiled_graph") as mock_graph:
+        mock_graph.invoke.side_effect = RuntimeError("db connection refused")
+        response = client.post("/profile/complete", json=_confirm_payload_json())
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Failed to complete profile"}
+
+
+# =================== Test /crs/simulate ===================
 def _minimal_user_profile_json():
     return {
         "age": 30,
@@ -131,13 +155,16 @@ def _minimal_user_profile_json():
     }
 
 
+# Test simulate_crs return
 def test_simulate_crs_returns_score_and_eligibility():
     with (
         patch("api.app.crs_service") as mock_crs_service,
         patch("api.app.eligibility_service") as mock_eligibility_service,
     ):
         mock_crs_service.calculate_crs.return_value = "crs-result"
-        mock_eligibility_service.evaluate_express_entry.return_value = "eligibility-result"
+        mock_eligibility_service.evaluate_express_entry.return_value = (
+            "eligibility-result"
+        )
         response = client.post("/crs/simulate", json=_minimal_user_profile_json())
 
     assert response.status_code == 200
@@ -147,20 +174,56 @@ def test_simulate_crs_returns_score_and_eligibility():
     }
 
 
+# Test 422 error from simulate_crs
 def test_simulate_crs_invalid_body_returns_422():
     response = client.post("/crs/simulate", json={"age": "not-a-number"})
     assert response.status_code == 422
 
 
+# Test 400 error from simulate_crs
+def test_simulate_crs_value_error_returns_400():
+    with patch("api.app.crs_service") as mock_crs_service:
+        mock_crs_service.calculate_crs.side_effect = ValueError("invalid value")
+        response = client.post("/crs/simulate", json=_minimal_user_profile_json())
+    assert response.status_code == 400
+    assert response.json() == {"detail": "invalid value"}
+
+
+# Test 500 error from simulate_crs
 def test_simulate_crs_unexpected_error_returns_500_without_leaking_details():
     with patch("api.app.crs_service") as mock_crs_service:
-        mock_crs_service.calculate_crs.side_effect = RuntimeError("db connection refused")
+        mock_crs_service.calculate_crs.side_effect = RuntimeError(
+            "db connection refused"
+        )
         response = client.post("/crs/simulate", json=_minimal_user_profile_json())
 
     assert response.status_code == 500
     assert "db connection refused" not in response.text
 
 
+# Test missing field when calling /crs/simulate
+def test_simulate_crs_empty_profile_returns_422_listing_missing_fields():
+    with patch("api.app.crs_service") as mock_crs_service:
+        response = client.post("/crs/simulate", json={})
+
+    assert response.status_code == 422
+    detail = response.json()["detail"]
+    for field in ("age", "occupation", "languages", "education"):
+        assert field in detail
+    mock_crs_service.calculate_crs.assert_not_called()
+
+
+# Test missing spouse profle in /crs/simulate
+def test_simulate_crs_married_without_spouse_returns_422():
+    profile = _minimal_user_profile_json() | {"marital_status": "married"}
+    response = client.post("/crs/simulate", json=profile)
+
+    assert response.status_code == 422
+    assert "spouse" in response.json()["detail"]
+
+
+# =================== Test /evaluate ===================
+# Test missing file 500 error
 def test_noc_retrieval_evaluate_missing_file_returns_500():
     with patch(
         "api.app.noc_retrieval_method_evaluate",
@@ -171,6 +234,7 @@ def test_noc_retrieval_evaluate_missing_file_returns_500():
     assert response.status_code == 500
 
 
+# Test rate limited 429 error
 def test_noc_retrieval_evaluate_rate_limited_returns_429_with_actionable_detail():
     with patch(
         "api.app.noc_retrieval_method_evaluate",
@@ -182,6 +246,7 @@ def test_noc_retrieval_evaluate_rate_limited_returns_429_with_actionable_detail(
     assert "try again" in response.json()["detail"].lower()
 
 
+# Test examples and mean report
 def test_noc_retrieval_evaluate_returns_examples_and_mean_report():
     single = SingleExampleReport(
         case_type="core",
@@ -208,6 +273,19 @@ def test_noc_retrieval_evaluate_returns_examples_and_mean_report():
     mock_eval.assert_called_once_with("data/noc_eval_labels.csv")
 
 
+def test_noc_retrieval_evaluate_returns_500_unexpected_error():
+    with patch(
+        "api.app.noc_retrieval_method_evaluate",
+        side_effect=RuntimeError("runtime error"),
+    ):
+        response = client.get("/evaluate")
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": "Failed to run NOC retrieval evaluation"}
+
+
+# =================== Test API key  ===================
+# Test request allowed without API key
 def test_requests_allowed_without_key_when_api_key_unset(monkeypatch):
     monkeypatch.delenv("API_KEY", raising=False)
     with patch("api.app.compiled_graph") as mock_graph:
@@ -217,6 +295,7 @@ def test_requests_allowed_without_key_when_api_key_unset(monkeypatch):
     assert response.status_code == 200
 
 
+# Test missing API key when API key is set
 def test_missing_api_key_returns_401_when_api_key_set(monkeypatch):
     monkeypatch.setenv("API_KEY", "secret")
     with patch("api.app.compiled_graph") as mock_graph:
@@ -226,6 +305,7 @@ def test_missing_api_key_returns_401_when_api_key_set(monkeypatch):
     mock_graph.invoke.assert_not_called()
 
 
+# Test wrong API key when API key is set
 def test_wrong_api_key_returns_401_when_api_key_set(monkeypatch):
     monkeypatch.setenv("API_KEY", "secret")
     response = client.get("/evaluate", headers={"X-API-Key": "wrong"})
@@ -233,6 +313,7 @@ def test_wrong_api_key_returns_401_when_api_key_set(monkeypatch):
     assert response.status_code == 401
 
 
+# Test correct API key
 def test_correct_api_key_is_accepted_when_api_key_set(monkeypatch):
     monkeypatch.setenv("API_KEY", "secret")
     with patch("api.app.compiled_graph") as mock_graph:
@@ -244,22 +325,3 @@ def test_correct_api_key_is_accepted_when_api_key_set(monkeypatch):
         )
 
     assert response.status_code == 200
-
-
-def test_simulate_crs_empty_profile_returns_422_listing_missing_fields():
-    with patch("api.app.crs_service") as mock_crs_service:
-        response = client.post("/crs/simulate", json={})
-
-    assert response.status_code == 422
-    detail = response.json()["detail"]
-    for field in ("age", "occupation", "languages", "education"):
-        assert field in detail
-    mock_crs_service.calculate_crs.assert_not_called()
-
-
-def test_simulate_crs_married_without_spouse_returns_422():
-    profile = _minimal_user_profile_json() | {"marital_status": "married"}
-    response = client.post("/crs/simulate", json=profile)
-
-    assert response.status_code == 422
-    assert "spouse" in response.json()["detail"]

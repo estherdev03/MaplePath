@@ -77,7 +77,7 @@ def test_create_maps_payload_and_resolved_occupation_into_user_profile(monkeypat
 
 # ---- _get_occupation ----
 def test_get_occupation_builds_occupation_from_noc_result(monkeypatch):
-    """Mock _parse_NOC; assert Occupation fields (incl.
+    """Mock _parse_NOC, assert Occupation fields (incl.
     have_canada_job_offer passthrough) map from NOCResult."""
     service = _service()
     noc_result = NOCResult(
