@@ -3,7 +3,9 @@ from graph.state.profile import FrenchTest, LanguageScore, NCLCScore
 
 
 class FrenchService:
-    def tef_to_nclc(self, score: LanguageScore) -> NCLCScore:
+    def tef_to_nclc(self, score: LanguageScore | None) -> NCLCScore:
+        if not score:
+            return NCLCScore(speaking=0, writing=0, listening=0, reading=0)
         return NCLCScore(
             speaking=self._tef_speaking_to_nclc(score.speaking),
             writing=self._tef_writing_to_nclc(score.writing),
@@ -96,7 +98,9 @@ class FrenchService:
         return 0
 
     # ================= TCF CANADA =====================================
-    def tcf_to_nclc(self, score: LanguageScore) -> NCLCScore:
+    def tcf_to_nclc(self, score: LanguageScore | None) -> NCLCScore:
+        if not score:
+            return NCLCScore(speaking=0, writing=0, listening=0, reading=0)
         return NCLCScore(
             speaking=self._tcf_speaking_to_nclc(score.speaking),
             writing=self._tcf_writing_to_nclc(score.writing),
@@ -188,7 +192,7 @@ class FrenchService:
 
         return 0
 
-    def french_to_nclc(self, test: FrenchTest, scores: LanguageScore):
+    def french_to_nclc(self, test: FrenchTest, scores: LanguageScore | None):
         match test:
             case FrenchTest.TCF:
                 return self.tcf_to_nclc(scores)

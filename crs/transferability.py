@@ -81,7 +81,7 @@ class TransferabilityService:
         return edu_lang_points
 
     def education_can_exp_points_calc(self, profile: UserProfile) -> int:
-        # invalid experience
+        # invalid experience | 0 canada yoe
         if not profile.work_experience or not profile.work_experience.canada_years:
             return 0
 
@@ -101,8 +101,6 @@ class TransferabilityService:
             return EDUCATION_CAN_EXP[profile.education.level][0]
         elif can_exp > 1:
             return EDUCATION_CAN_EXP[profile.education.level][1]
-        else:
-            return 0
 
     def foreign_exp_lang_points_calc(self, profile: UserProfile) -> int:
         _, all_clb7, all_clb9 = self._language_range(profile)

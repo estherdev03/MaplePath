@@ -19,7 +19,7 @@ from graph.state.profile import (
 from graph.state.shared import UserProfile
 
 
-# ---- _age_points ----
+# =========== _age_points ===========
 def test_age_points_below_18_returns_zero(crs_service):
     assert crs_service._age_points(UserProfile(age=17)) == 0
     assert crs_service._age_points(UserProfile(age=None)) == 0
@@ -47,7 +47,7 @@ def test_age_points_married_table_18_to_44(crs_service):
     assert crs_service._age_points(UserProfile(age=44, marital_status=married)) == 5
 
 
-# ---- _education_points ----
+# =========== _education_points ===========
 def test_education_points_no_education_returns_zero(crs_service):
     assert crs_service._education_points(UserProfile(education=None)) == 0
 
@@ -73,7 +73,7 @@ def test_education_points_single_vs_married_tables(crs_service):
     assert crs_service._education_points(married) == 140
 
 
-# ---- _first/_second_language_points ----
+# =========== _first/_second_language_points ===========
 def test_first_language_points_english_first_language(crs_service):
     """Also asserts profile.languages.english.clb_scores gets populated."""
     score = LanguageScore(
@@ -192,14 +192,21 @@ def test_second_language_points_no_second_language_returns_zero(crs_service):
     assert crs_service._second_language_points(profile) == 0
 
 
-# ---- _canadian_experience_points ----
+# =========== _canadian_experience_points ===========
 def test_canadian_experience_points_no_experience_returns_zero(crs_service):
     """No work_experience, or canada_years < 1 -> 0."""
+    # No work experience
     assert (
         crs_service._canadian_experience_points(UserProfile(work_experience=None)) == 0
     )
-    profile = UserProfile(work_experience=Experience(canada_years=0))
-    assert crs_service._canadian_experience_points(profile) == 0
+
+    # No canada work experience
+    assert (
+        crs_service._canadian_experience_points(
+            UserProfile(work_experience=Experience(canada_years=0))
+        )
+        == 0
+    )
 
 
 def test_canadian_experience_points_capped_at_five_years(crs_service):
@@ -218,7 +225,7 @@ def test_canadian_experience_points_single_vs_married_tables(crs_service):
     assert crs_service._canadian_experience_points(married) == 56
 
 
-# ---- _spouse_points ----
+# =========== _spouse_points ===========
 def test_spouse_points_no_spouse_education_returns_zero_education_points(crs_service):
     profile = UserProfile(spouse=SpouseProfile(education=None))
     _, breakdown = crs_service._spouse_points(profile)
@@ -290,6 +297,21 @@ def test_spouse_points_french_language_scores(crs_service):
     assert breakdown.language == 5 * 4
 
 
+def test_spouse_points_empty_french_test_score_returns_zero_languages_points(
+    crs_service,
+):
+    profile = UserProfile(
+        spouse=SpouseProfile(
+            languages=Languages(
+                english=None,
+                french=FrenchScore(test_name=FrenchTest.TCF, detail_scores=None),
+            )
+        )
+    )
+    _, breakdown = crs_service._spouse_points(profile)
+    assert breakdown.language == 0
+
+
 def test_spouse_points_missing_test_scores_returns_zero_language_points(crs_service):
     profile = UserProfile(
         spouse=SpouseProfile(
@@ -344,7 +366,7 @@ def test_spouse_points_returns_correct_total_and_breakdown(crs_service):
     )
 
 
-# ---- _skill_transferability_points ----
+# =========== _skill_transferability_points ===========
 def test_skill_transferability_points_sums_all_five_components(crs_service):
     score = LanguageScore(speaking=6.0, writing=6.0, listening=6.0, reading=6.0)  # CLB7
     profile = UserProfile(
@@ -385,7 +407,7 @@ def test_skill_transferability_points_capped_at_100(crs_service):
     assert result == 100
 
 
-# ---- _canadian_study_points ----
+# =========== _canadian_study_points ===========
 def test_canadian_study_points_no_canada_education_returns_zero(crs_service):
     assert crs_service._canadian_study_points(UserProfile(canada_education=None)) == 0
 
@@ -422,7 +444,7 @@ def test_canadian_study_points_more_than_two_years_returns_30(crs_service):
     assert crs_service._canadian_study_points(profile) == 30
 
 
-# ---- _french_bonus_points ----
+# =========== _french_bonus_points ===========
 def test_french_bonus_points_no_french_returns_zero(crs_service):
     assert crs_service._french_bonus_points(UserProfile(languages=None)) == 0
 
@@ -508,7 +530,7 @@ def test_french_bonus_points_nclc7_plus_clb5_plus_returns_50(crs_service):
     assert crs_service._french_bonus_points(profile) == 50
 
 
-# ---- calculate_crs ----
+# =========== calculate_crs ===========
 def test_calculate_crs_single_applicant_end_to_end(crs_service):
     """No spouse_breakdown attached; total matches sum of breakdown fields."""
     profile = UserProfile(
@@ -602,11 +624,7 @@ def test_calculate_crs_additional_points_under_600_not_capped(crs_service):
 
 
 def test_calculate_crs_additional_points_over_600_are_capped(crs_service):
-    """Construct a profile where additional points exceed 600 (e.g.
-    provincial_nomination=True contributes 600 alone, plus french_bonus,
-    sibling_in_can, and canadian study credits) and assert the capped
-    total formula in CRSService.calculate_crs is applied correctly.
-    """
+    """Construct a profile where additional points exceed 600"""
     fr_score = LanguageScore(
         speaking=10, writing=10, listening=458, reading=453
     )  # NCLC7

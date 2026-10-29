@@ -261,8 +261,6 @@ class CRSService:
                 )
             else:
                 language_points = 0
-        else:
-            language_points = 0
 
         can_exp_points = SPOUSE_CANADIAN_EXPERIENCE[
             min(int(profile.spouse.canadian_experience), 5)

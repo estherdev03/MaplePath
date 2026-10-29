@@ -1,5 +1,6 @@
 """Tests for crs.transferability.TransferabilityService."""
 
+from crs.constants import FOREIGN_CAN_EXP
 from graph.state.profile import (
     CLBScore,
     Education,
@@ -23,6 +24,13 @@ EDUCATION_LEVEL_LOW_HIGH = {
     EducationLevel.TWO_OR_MORE: (25, 50),
     EducationLevel.MASTERS: (25, 50),
     EducationLevel.PHD: (25, 50),
+}
+
+FOREIGN_EXP_LANGUAGE_LOW_HIGH = {
+    0: (0, 0),
+    1: (13, 25),
+    2: (13, 25),
+    3: (25, 50),
 }
 
 
@@ -51,7 +59,7 @@ def _all_clb_profile(level: int) -> UserProfile:
     return _clb_english_profile(level, level, level, level)
 
 
-# ---- _language_range ----
+# =========== _language_range ===========
 def test_language_range_english_first_language(transferability_service):
     """Returns (all_clb5+, all_clb7+, all_clb9+) computed from CLB scores;
     also verify it lazily fills clb_scores when missing."""
@@ -100,14 +108,14 @@ def test_language_range_no_first_language_returns_all_false(transferability_serv
 
     Note: Languages.validate_languages auto-sets is_first_language=True when
     only one language is given, and requires exactly one is_first_language
-    when both are given -- so "neither marked first" can't actually be
+    when both are given -> so "neither marked first" can't actually be
     constructed. Only the "no languages" path is exercised here.
     """
     profile = UserProfile(languages=None)
     assert transferability_service._language_range(profile) == (False, False, False)
 
 
-# ---- education_language_points_calc ----
+# =========== education_language_points_calc ===========
 def test_education_language_points_invalid_education_returns_zero(
     transferability_service,
 ):
@@ -141,11 +149,12 @@ def test_education_language_points_clb7_uses_low_tier_per_level(
 
 def test_education_language_points_below_clb7_returns_zero(transferability_service):
     profile = _all_clb_profile(6)
-    profile.education = Education(level=EducationLevel.BACHELOR, from_canada=True)
-    assert transferability_service.education_language_points_calc(profile) == 0
+    for level, _ in EDUCATION_LEVEL_LOW_HIGH.items():
+        profile.education = Education(level=level, from_canada=True)
+        assert transferability_service.education_language_points_calc(profile) == 0
 
 
-# ---- education_can_exp_points_calc ----
+# =========== education_can_exp_points_calc ===========
 def test_education_can_exp_points_no_work_experience_returns_zero(
     transferability_service,
 ):
@@ -194,7 +203,7 @@ def test_education_can_exp_points_more_than_one_year_uses_high_tier_per_level(
         assert transferability_service.education_can_exp_points_calc(profile) == high
 
 
-# ---- foreign_exp_lang_points_calc ----
+# =========== foreign_exp_lang_points_calc ===========
 def test_foreign_exp_lang_points_no_foreign_experience_returns_zero(
     transferability_service,
 ):
@@ -206,36 +215,45 @@ def test_foreign_exp_lang_points_no_foreign_experience_returns_zero(
 
 
 def test_foreign_exp_lang_points_years_capped_at_three(transferability_service):
-    """foreign_years of 3, 4, 5 all resolve to the yoe=3 bucket."""
-    profile = _all_clb_profile(9)
-    expected = None
+    """foreign_years of 3 or greater are all resolve to the yoe=3 bucket."""
+    profile_low = _all_clb_profile(7)
+    profile_high = _all_clb_profile(9)
+
+    # yoe >= 3
     for years in (3, 4, 5):
-        profile.work_experience = Experience(foreign_years=years)
-        result = transferability_service.foreign_exp_lang_points_calc(profile)
-        if expected is None:
-            expected = result
-        assert result == expected
-    assert expected == 50  # FOREIGN_EXP_LANGUAGE[3][1]
+        profile_low.work_experience = Experience(foreign_years=years)
+        profile_high.work_experience = Experience(foreign_years=years)
+        result_low = transferability_service.foreign_exp_lang_points_calc(profile_low)
+        result_high = transferability_service.foreign_exp_lang_points_calc(profile_high)
+        # yoe capped at 3
+        assert result_low == FOREIGN_EXP_LANGUAGE_LOW_HIGH[3][0]
+        assert result_high == FOREIGN_EXP_LANGUAGE_LOW_HIGH[3][1]
 
 
 def test_foreign_exp_lang_points_clb9_vs_clb7_vs_below(transferability_service):
     """FOREIGN_EXP_LANGUAGE[yoe][1] for clb9, [yoe][0] for clb7, else 0."""
-    work_experience = Experience(foreign_years=1)  # yoe=1 -> (13, 25)
+    work_experience = Experience(foreign_years=1)
 
     profile9 = _all_clb_profile(9)
     profile9.work_experience = work_experience
-    assert transferability_service.foreign_exp_lang_points_calc(profile9) == 25
+    assert (
+        transferability_service.foreign_exp_lang_points_calc(profile9)
+        == FOREIGN_EXP_LANGUAGE_LOW_HIGH[1][1]
+    )
 
     profile7 = _all_clb_profile(7)
     profile7.work_experience = work_experience
-    assert transferability_service.foreign_exp_lang_points_calc(profile7) == 13
+    assert (
+        transferability_service.foreign_exp_lang_points_calc(profile7)
+        == FOREIGN_EXP_LANGUAGE_LOW_HIGH[1][0]
+    )
 
     profile6 = _all_clb_profile(6)
     profile6.work_experience = work_experience
     assert transferability_service.foreign_exp_lang_points_calc(profile6) == 0
 
 
-# ---- foreign_can_exp_points_calc ----
+# =========== foreign_can_exp_points_calc ===========
 def test_foreign_can_exp_points_missing_or_zero_canada_years_returns_zero(
     transferability_service,
 ):
@@ -257,12 +275,10 @@ def test_foreign_can_exp_points_missing_foreign_years_returns_zero(
 def test_foreign_can_exp_points_axes_capped_at_two_and_three(transferability_service):
     """canada_years capped at 2, foreign_years capped at 3 before lookup."""
     profile = UserProfile(work_experience=Experience(canada_years=5, foreign_years=10))
-    # can_yoe = min(5, 2) = 2 -> index 1; foreign_yoe = min(10, 3) = 3
-    # FOREIGN_CAN_EXP[3] == (25, 50)
     assert transferability_service.foreign_can_exp_points_calc(profile) == 50
 
 
-# ---- trade_lang_points_calc ----
+# =========== trade_lang_points_calc ===========
 def test_trade_lang_points_no_coq_returns_zero(transferability_service):
     """No education, or has_COQ falsy -> 0."""
     profile = _all_clb_profile(9)

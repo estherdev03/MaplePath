@@ -4,7 +4,7 @@ import pytest
 from graph.state.profile import CLBScore, EnglishTest, LanguageScore
 
 
-# ---- IELTS ----
+# === IELTS ===
 def test_ielts_speaking_to_clb_boundaries(english_service):
     """Each band boundary (7.5/7.0/6.5/6.0/5.5/5.0/4.0) and below-4.0 -> 0."""
     assert english_service._ielts_speaking_to_clb(7.5) == 10
@@ -54,11 +54,13 @@ def test_ielts_reading_to_clb_boundaries(english_service):
 
 
 def test_ielts_to_clb_none_score_returns_zero(english_service):
-    """None for any skill -> 0 for that skill (all four helpers)."""
-    assert english_service._ielts_speaking_to_clb(None) == 0
-    assert english_service._ielts_reading_to_clb(None) == 0
-    assert english_service._ielts_listening_to_clb(None) == 0
-    assert english_service._ielts_writing_to_clb(None) == 0
+    result = english_service.ielts_to_clb(None)
+    assert result == CLBScore(speaking=0, writing=0, listening=0, reading=0)
+
+
+def test_ielts_to_clb_empty_score_returns_zero(english_service):
+    result = english_service.ielts_to_clb(LanguageScore())
+    assert result == CLBScore(speaking=0, writing=0, listening=0, reading=0)
 
 
 def test_ielts_to_clb_combines_all_four_skills(english_service):
@@ -68,9 +70,9 @@ def test_ielts_to_clb_combines_all_four_skills(english_service):
     assert result == CLBScore(speaking=10, writing=7, listening=10, reading=4)
 
 
-# ---- CELPIP ----
+# === CELPIP ===
 def test_celpip_score_to_clb_boundaries(english_service):
-    """Score 10..4 map 1:1 to CLB 10..4; below 4 -> 0; int() truncation."""
+    """Score 10..4 map 1:1 to CLB 10..4, below 4 -> 0, int() truncation."""
     assert english_service._celpip_score_to_clb(10) == 10
     assert english_service._celpip_score_to_clb(9) == 9
     assert english_service._celpip_score_to_clb(8) == 8
@@ -84,11 +86,16 @@ def test_celpip_score_to_clb_boundaries(english_service):
 
 
 def test_celpip_to_clb_none_score_returns_zero(english_service):
+    result = english_service.celpip_to_clb(None)
+    assert result == CLBScore(speaking=0, writing=0, listening=0, reading=0)
+
+
+def test_celpip_to_clb_empty_score_returns_zero(english_service):
     result = english_service.celpip_to_clb(LanguageScore())
     assert result == CLBScore(speaking=0, writing=0, listening=0, reading=0)
 
 
-# ---- PTE ----
+# === PTE ===
 def test_pte_speaking_to_clb_boundaries(english_service):
     assert english_service._pte_speaking_to_clb(89) == 10
     assert english_service._pte_speaking_to_clb(84) == 9
@@ -134,11 +141,16 @@ def test_pte_reading_to_clb_boundaries(english_service):
 
 
 def test_pte_to_clb_none_score_returns_zero(english_service):
+    result = english_service.pte_to_clb(None)
+    assert result == CLBScore(speaking=0, writing=0, listening=0, reading=0)
+
+
+def test_pte_to_clb_empty_score_returns_zero(english_service):
     result = english_service.pte_to_clb(LanguageScore())
     assert result == CLBScore(speaking=0, writing=0, listening=0, reading=0)
 
 
-# ---- dispatch ----
+# === dispatch ===
 def test_english_to_clb_dispatches_ielts_celpip_pte(english_service):
     """english_to_clb() routes to the right *_to_clb() by EnglishTest enum."""
     score = LanguageScore(speaking=7.5, writing=7.5, listening=8.5, reading=8.0)
@@ -160,7 +172,7 @@ def test_english_to_clb_unsupported_test_raises_value_error(english_service):
         english_service.english_to_clb(test="toeic", scores=LanguageScore())
 
 
-# ---- clb_to_points ----
+# === clb_to_points ===
 def test_clb_to_points_first_language_single_all_bands(english_service):
     """CLB 4..10 -> FIRST_LANGUAGE_SINGLE table per skill; below 4 -> 0."""
     table = {4: 6, 5: 6, 6: 9, 7: 17, 8: 23, 9: 31, 10: 34}

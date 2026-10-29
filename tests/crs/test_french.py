@@ -4,7 +4,7 @@ import pytest
 from graph.state.profile import FrenchTest, LanguageScore, NCLCScore
 
 
-# ---- TEF ----
+# ========== TEF ==========
 def test_tef_speaking_to_nclc_boundaries(french_service):
     """Boundaries 393/371/349/310/271/226/181 (scale /450); below-181 -> 0."""
     assert french_service._tef_speaking_to_nclc(393) == 10
@@ -42,8 +42,7 @@ def test_tef_listening_to_nclc_boundaries(french_service):
 
 
 def test_tef_reading_to_nclc_boundaries(french_service):
-    """Boundaries 263/248/233/207/181/151/121 (scale /300) -- distinct table
-    from listening despite overlapping raw numbers; assert they diverge."""
+    """Boundaries 263/248/233/207/181/151/121 (scale /300)"""
     assert french_service._tef_reading_to_nclc(263) == 10
     assert french_service._tef_reading_to_nclc(248) == 9
     assert french_service._tef_reading_to_nclc(233) == 8
@@ -53,20 +52,18 @@ def test_tef_reading_to_nclc_boundaries(french_service):
     assert french_service._tef_reading_to_nclc(121) == 4
     assert french_service._tef_reading_to_nclc(120) == 0
 
-    # Same raw score (181) lands on NCLC 6 for reading but NCLC 5 for
-    # listening -- the two tables must not be aliases of one another.
-    assert french_service._tef_reading_to_nclc(181) == 6
-    assert french_service._tef_listening_to_nclc(181) == 5
+
+def test_tef_to_nclc_empty_score_returns_zero(french_service):
+    result = french_service.tef_to_nclc(LanguageScore())
+    assert result == NCLCScore(speaking=0, writing=0, reading=0, listening=0)
 
 
 def test_tef_to_nclc_none_score_returns_zero(french_service):
-    assert french_service._tef_speaking_to_nclc(None) == 0
-    assert french_service._tef_writing_to_nclc(None) == 0
-    assert french_service._tef_listening_to_nclc(None) == 0
-    assert french_service._tef_reading_to_nclc(None) == 0
+    result = french_service.tef_to_nclc(None)
+    assert result == NCLCScore(speaking=0, writing=0, reading=0, listening=0)
 
 
-# ---- TCF Canada ----
+# ========== TCF Canada ==========
 def test_tcf_speaking_to_nclc_boundaries(french_service):
     """Boundaries 16/14/12/10/7/6/4."""
     assert french_service._tcf_speaking_to_nclc(16) == 10
@@ -119,14 +116,17 @@ def test_tcf_reading_to_nclc_boundaries(french_service):
     assert french_service._tcf_reading_to_nclc(523) == 8
 
 
+def test_tcf_to_nclc_empty_score_returns_zero(french_service):
+    result = french_service.tcf_to_nclc(LanguageScore())
+    assert result == NCLCScore(speaking=0, writing=0, reading=0, listening=0)
+
+
 def test_tcf_to_nclc_none_score_returns_zero(french_service):
-    assert french_service._tcf_speaking_to_nclc(None) == 0
-    assert french_service._tcf_writing_to_nclc(None) == 0
-    assert french_service._tcf_listening_to_nclc(None) == 0
-    assert french_service._tcf_reading_to_nclc(None) == 0
+    result = french_service.tcf_to_nclc(None)
+    assert result == NCLCScore(speaking=0, writing=0, reading=0, listening=0)
 
 
-# ---- dispatch ----
+# ========== dispatch ==========
 def test_french_to_nclc_dispatches_tef_tcf(french_service):
     """french_to_nclc() routes to the right *_to_nclc() by FrenchTest enum."""
     tef_score = LanguageScore(speaking=393, writing=393, listening=316, reading=263)
@@ -141,13 +141,12 @@ def test_french_to_nclc_dispatches_tef_tcf(french_service):
 
 
 def test_french_to_nclc_unsupported_test_raises_value_error(french_service):
-    """Unknown FrenchTest -> ValueError (same missing-f-prefix caveat as
-    EnglishService.english_to_clb -- see tests/crs/test_english.py)."""
+    """Unknown FrenchTest -> ValueError"""
     with pytest.raises(ValueError, match="ielts test score is not accepted"):
         french_service.french_to_nclc(test="ielts", scores=LanguageScore())
 
 
-# ---- nclc_to_points ----
+# ========== nclc_to_points ==========
 def test_nclc_to_points_first_language_single_all_bands(french_service):
     """NCLC 4..10 -> FIRST_LANGUAGE_SINGLE table per skill; below 4 -> 0."""
     table = {4: 6, 5: 6, 6: 9, 7: 17, 8: 23, 9: 31, 10: 34}
@@ -185,7 +184,7 @@ def test_nclc_to_points_first_language_married_all_bands(french_service):
 
 
 def test_nclc_to_points_second_language_all_bands(french_service):
-    """NCLC 5..10 -> SECOND_LANGUAGE table per skill; below 5 -> 0."""
+    """NCLC 5..10 -> SECOND_LANGUAGE table per skill, below 5 -> 0."""
     table = {5: 1, 6: 1, 7: 3, 8: 3, 9: 6, 10: 6}
 
     for nclc, points in table.items():

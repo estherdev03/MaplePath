@@ -4,7 +4,9 @@ from graph.state.profile import CLBScore, EnglishTest, LanguageScore
 
 class EnglishService:
     # ================= IELTS ==========================================
-    def ielts_to_clb(self, score: LanguageScore) -> CLBScore:
+    def ielts_to_clb(self, score: LanguageScore | None) -> CLBScore:
+        if not score:
+            return CLBScore(speaking=0, writing=0, listening=0, reading=0)
         return CLBScore(
             speaking=self._ielts_speaking_to_clb(score.speaking),
             writing=self._ielts_writing_to_clb(score.writing),
@@ -97,7 +99,9 @@ class EnglishService:
         return 0
 
     # ================= CELPIP ==========================================
-    def celpip_to_clb(self, score: LanguageScore) -> CLBScore:
+    def celpip_to_clb(self, score: LanguageScore | None) -> CLBScore:
+        if not score:
+            return CLBScore(speaking=0, writing=0, listening=0, reading=0)
         return CLBScore(
             speaking=self._celpip_score_to_clb(score.speaking),
             writing=self._celpip_score_to_clb(score.writing),
@@ -129,7 +133,9 @@ class EnglishService:
         return 0
 
     # ================= PTE ============================================
-    def pte_to_clb(self, score: LanguageScore) -> CLBScore:
+    def pte_to_clb(self, score: LanguageScore | None) -> CLBScore:
+        if not score:
+            return CLBScore(speaking=0, writing=0, listening=0, reading=0)
         return CLBScore(
             speaking=self._pte_speaking_to_clb(score.speaking),
             writing=self._pte_writing_to_clb(score.writing),
@@ -221,7 +227,7 @@ class EnglishService:
 
         return 0
 
-    def english_to_clb(self, test: EnglishTest, scores: LanguageScore):
+    def english_to_clb(self, test: EnglishTest, scores: LanguageScore | None):
         match test:
             case EnglishTest.IELTS:
                 return self.ielts_to_clb(scores)
