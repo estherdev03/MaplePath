@@ -17,7 +17,11 @@ const METHOD_LABELS: {
     note: "embedding similarity only",
   },
   { key: "rrf", name: "Reciprocal rank fusion", note: "both lists merged" },
-  { key: "hybrid", name: "Hybrid + Cohere rerank", note: "shipped" },
+  {
+    key: "hybrid",
+    name: "Hybrid + Cohere rerank",
+    note: "rerank with Cohere after merging",
+  },
 ];
 
 function pct(score: RetrievalScore): number {
