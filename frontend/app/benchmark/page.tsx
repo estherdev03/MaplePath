@@ -77,8 +77,8 @@ export default async function BenchmarkPage() {
     },
     {
       label: "Lift over keyword search",
-      value: `${mean_report.vector[0] - mean_report.hybrid[0] >= 0 ? "+" : ""}${(mean_report.vector[0] - mean_report.hybrid[0]).toFixed(3)}`,
-      note: "NDCG vs Hybrid alone",
+      value: `${mean_report.vector[0] - mean_report.bm25[0] >= 0 ? "+" : ""}${(mean_report.vector[0] - mean_report.bm25[0]).toFixed(3)}`,
+      note: "Vector vs BM25 alone",
       color: "#b5abfc",
     },
     {
