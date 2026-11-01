@@ -183,7 +183,7 @@ def test_parse_nocs_returns_reasoning_and_ordered_candidates_on_match(monkeypatc
         inclusions=[],
         exclusions=[],
     )
-    service.noc_service.noc_hybrid_search.return_value = [top_candidate, runner_up]
+    service.noc_service.noc_semantic_search.return_value = [top_candidate, runner_up]
     service.noc_service.get_one_by_noc_code.return_value = MagicMock(
         title="Software Engineer",
         noc_code="21232",

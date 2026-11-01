@@ -66,7 +66,7 @@ class EnglishScore(BaseModel):
 class FrenchScore(BaseModel):
     test_name: FrenchTest
     overall_score: float | None = None
-    detail_scores: LanguageScore | None
+    detail_scores: LanguageScore | None = None
     nclc_scores: NCLCScore | None = None
     is_first_language: bool = False
 
