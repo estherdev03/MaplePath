@@ -226,7 +226,7 @@ export default function ConfirmForm() {
 
         <div>
           <h6 className="mb-3 text-[#9184d9]">Language</h6>
-          <label className="radio mb-3">
+          <label className="radio mb-3 flex w-fit">
             <input
               type="checkbox"
               name="has_english"
@@ -299,7 +299,7 @@ export default function ConfirmForm() {
             </div>
           )}
 
-          <label className="radio mx-0 mt-4 mb-3">
+          <label className="radio mt-4 mb-3 flex w-fit">
             <input
               type="checkbox"
               name="has_french"
