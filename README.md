@@ -4,7 +4,7 @@
 
 **Live demo:** [maple-path-black.vercel.app](https://maple-path-black.vercel.app/)
 
-[![estherdev03/maplepath, explained in a one-minute video](https://gitdiagram.com/api/video/file?username=estherdev03&repo=maplepath&format=poster)](https://gitdiagram.com/estherdev03/maplepath/video)
+https://github.com/user-attachments/assets/07fc5f8e-afa8-4bba-98dd-c01c466e4bb5
 
 MaplePath helps prospective immigrants understand where they stand: it extracts a structured profile from natural language, classifies the occupation under **NOC 2021**, calculates a **CRS** score, and assesses eligibility for **Federal Skilled Worker**, **Canadian Experience Class**, and **Federal Skilled Trades**.
 
