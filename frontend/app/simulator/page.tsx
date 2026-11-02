@@ -7,10 +7,9 @@ import SimulatorView from "./SimulatorView";
 
 export default function SimulatorPage() {
   const profile = useRequireProfile();
-  const initial = useMemo(() => profileToSimProfile(profile), [profile]);
-  const confirmedTotal = profile?.crs_score?.total ?? null;
+  const initial = useMemo(() => (profile ? profileToSimProfile(profile) : null), [profile]);
 
-  if (!profile) return null;
+  if (!profile || !initial || !profile.crs_score) return null;
 
-  return <SimulatorView initial={initial} confirmedTotal={confirmedTotal} />;
+  return <SimulatorView profile={profile} initial={initial} baseline={profile.crs_score} />;
 }

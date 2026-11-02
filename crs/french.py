@@ -1,5 +1,5 @@
 from crs.constants import FIRST_LANGUAGE_MARRIED, FIRST_LANGUAGE_SINGLE, SECOND_LANGUAGE
-from graph.state.profile import FrenchTest, LanguageScore, NCLCScore
+from graph.state.profile import FrenchScore, FrenchTest, LanguageScore, NCLCScore
 
 
 class FrenchService:
@@ -200,6 +200,13 @@ class FrenchService:
                 return self.tef_to_nclc(scores)
             case _:
                 raise ValueError(f"{test} test score is not accepted.")
+
+    def resolve_nclc(self, french: FrenchScore) -> NCLCScore:
+        # NCLC levels sent without raw test scores (e.g. by the score
+        # simulator) are taken as given, otherwise convert the test scores
+        if french.detail_scores is None and french.nclc_scores is not None:
+            return french.nclc_scores
+        return self.french_to_nclc(french.test_name, french.detail_scores)
 
     def nclc_to_points(
         self,

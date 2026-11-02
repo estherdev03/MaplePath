@@ -124,10 +124,8 @@ class CRSService:
             and profile.languages.english
             and profile.languages.english.is_first_language
         ):
-            test_name = profile.languages.english.test_name
-            scores = profile.languages.english.detail_scores
-            profile.languages.english.clb_scores = self.english_service.english_to_clb(
-                test_name, scores
+            profile.languages.english.clb_scores = self.english_service.resolve_clb(
+                profile.languages.english
             )
             return self.english_service.clb_to_points(
                 profile.languages.english.clb_scores, is_married, True
@@ -137,10 +135,8 @@ class CRSService:
             and profile.languages.french
             and profile.languages.french.is_first_language
         ):
-            test_name = profile.languages.french.test_name
-            scores = profile.languages.french.detail_scores
-            profile.languages.french.nclc_scores = self.french_service.french_to_nclc(
-                test_name, scores
+            profile.languages.french.nclc_scores = self.french_service.resolve_nclc(
+                profile.languages.french
             )
             return self.french_service.nclc_to_points(
                 profile.languages.french.nclc_scores, is_married, True
@@ -153,10 +149,8 @@ class CRSService:
             profile.languages.english
             and not profile.languages.english.is_first_language
         ):
-            test_name = profile.languages.english.test_name
-            scores = profile.languages.english.detail_scores
-            profile.languages.english.clb_scores = self.english_service.english_to_clb(
-                test_name, scores
+            profile.languages.english.clb_scores = self.english_service.resolve_clb(
+                profile.languages.english
             )
             return self.english_service.clb_to_points(
                 scores=profile.languages.english.clb_scores, is_married=is_married
@@ -164,10 +158,8 @@ class CRSService:
         elif (
             profile.languages.french and not profile.languages.french.is_first_language
         ):
-            test_name = profile.languages.french.test_name
-            scores = profile.languages.french.detail_scores
-            profile.languages.french.nclc_scores = self.french_service.french_to_nclc(
-                test_name, scores
+            profile.languages.french.nclc_scores = self.french_service.resolve_nclc(
+                profile.languages.french
             )
             return self.french_service.nclc_to_points(
                 scores=profile.languages.french.nclc_scores, is_married=is_married

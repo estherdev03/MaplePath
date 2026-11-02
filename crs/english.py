@@ -1,5 +1,5 @@
 from crs.constants import FIRST_LANGUAGE_MARRIED, FIRST_LANGUAGE_SINGLE, SECOND_LANGUAGE
-from graph.state.profile import CLBScore, EnglishTest, LanguageScore
+from graph.state.profile import CLBScore, EnglishScore, EnglishTest, LanguageScore
 
 
 class EnglishService:
@@ -237,6 +237,13 @@ class EnglishService:
                 return self.celpip_to_clb(scores)
             case _:
                 raise ValueError(f"{test} test score is not accepted.")
+
+    def resolve_clb(self, english: EnglishScore) -> CLBScore:
+        # CLB levels sent without raw test scores (e.g. by the score
+        # simulator) are taken as given, otherwise convert the test scores
+        if english.detail_scores is None and english.clb_scores is not None:
+            return english.clb_scores
+        return self.english_to_clb(english.test_name, english.detail_scores)
 
     def clb_to_points(
         self,

@@ -4,6 +4,7 @@ import pytest
 
 from graph.state.profile import (
     CanadaEducation,
+    CLBScore,
     Education,
     EducationLevel,
     EnglishScore,
@@ -14,6 +15,7 @@ from graph.state.profile import (
     LanguageScore,
     Languages,
     MaritalStatus,
+    NCLCScore,
     SpouseProfile,
 )
 from graph.state.shared import UserProfile
@@ -118,6 +120,26 @@ def test_first_language_points_french_first_language(crs_service):
         "reading": 10,
     }
     assert result == 34 * 4
+
+
+def test_language_points_use_given_levels_without_test_scores(crs_service):
+    """CLB/NCLC levels sent with no raw test scores (the simulator's shape)
+    are scored as given rather than reset to zero."""
+    profile = UserProfile(
+        languages=Languages(
+            english=EnglishScore(
+                test_name=EnglishTest.CELPIP,
+                clb_scores=CLBScore(speaking=9, writing=8, listening=10, reading=7),
+                is_first_language=True,
+            ),
+            french=FrenchScore(
+                test_name=FrenchTest.TEF,
+                nclc_scores=NCLCScore(speaking=7, writing=7, listening=7, reading=7),
+            ),
+        )
+    )
+    assert crs_service._first_language_points(profile) == 31 + 23 + 34 + 17
+    assert crs_service._second_language_points(profile) == 3 * 4
 
 
 def test_first_language_points_no_languages_returns_zero(crs_service):

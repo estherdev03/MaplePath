@@ -1,51 +1,88 @@
 "use client";
 
-import { useState } from "react";
-import {
-  EDU_LABEL,
-  calculateCrs,
-  type EducationLevel,
-  type SimProfile,
-} from "@/lib/crs";
+import { useEffect, useRef, useState } from "react";
+import { simulateCrsAction } from "@/lib/actions";
+import { EDUCATION_OPTIONS } from "@/lib/confirm-form";
 import { CRS_TOTAL_MAX } from "@/lib/crs-maxes";
 import { LATEST_DRAW } from "@/lib/latest-draw";
+import { simToUserProfile, type CanStudy, type SimProfile } from "@/lib/sim-profile";
+import type { CRSBreakdown, CRSScore, EducationLevel, UserProfile } from "@/lib/types";
 
-const EDU_OPTIONS: EducationLevel[] = [
-  "secondary",
-  "one_year",
-  "two_year",
-  "bachelor",
-  "two_or_more_credentials",
-  "masters",
-  "phd",
+// Waits for the slider to settle before asking the backend to rescore.
+const RESCORE_DELAY_MS = 250;
+
+const CAN_STUDY_OPTIONS: { value: CanStudy; label: string }[] = [
+  { value: "none", label: "None" },
+  { value: "short", label: "1-2 year credential (+15)" },
+  { value: "long", label: "3+ year credential (+30)" },
 ];
 
+function sameSim(a: SimProfile, b: SimProfile): boolean {
+  return (Object.keys(a) as (keyof SimProfile)[]).every((k) => a[k] === b[k]);
+}
 
 export default function SimulatorView({
+  profile,
   initial,
-  confirmedTotal,
+  baseline,
 }: {
+  profile: UserProfile;
   initial: SimProfile;
-  confirmedTotal: number | null;
+  baseline: CRSScore;
 }) {
   const [sim, setSim] = useState<SimProfile>({ ...initial });
+  // null while the controls match the confirmed profile - the baseline score
+  // already is the backend's answer for that.
+  const [scored, setScored] = useState<CRSScore | null>(null);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const requestId = useRef(0);
+
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  // Every change is rescored by the backend's own CRS engine, so the
+  // simulator can never disagree with the results page.
+  const update = (next: SimProfile) => {
+    setSim(next);
+    clearTimeout(timer.current);
+    const id = ++requestId.current;
+    if (sameSim(next, initial)) {
+      setScored(null);
+      setError(null);
+      setPending(false);
+      return;
+    }
+    setPending(true);
+    timer.current = setTimeout(async () => {
+      const res = await simulateCrsAction(simToUserProfile(profile, next, initial));
+      // A newer change has been made since - its request owns the result.
+      if (id !== requestId.current) return;
+      setPending(false);
+      if ("error" in res) {
+        setError(res.error);
+      } else {
+        setError(null);
+        setScored(res.crs_score);
+      }
+    }, RESCORE_DELAY_MS);
+  };
 
   const setField = <K extends keyof SimProfile>(
     key: K,
     value: SimProfile[K],
   ) => {
-    setSim((s) => ({ ...s, [key]: value }));
+    update({ ...sim, [key]: value });
   };
 
-  const now = calculateCrs(sim);
-  const base = calculateCrs(initial);
-  const d = now.total - base.total;
+  const now = scored ?? baseline;
+  const d = now.total - baseline.total;
 
-  const row = (label: string, key: keyof typeof now) => {
-    const delta = now[key] - base[key];
+  const row = (label: string, key: keyof CRSBreakdown) => {
+    const delta = now.breakdown[key] - baseline.breakdown[key];
     return {
       label,
-      pts: now[key],
+      pts: now.breakdown[key],
       delta: delta === 0 ? "-" : delta > 0 ? `+${delta}` : String(delta),
       dColorClass:
         delta > 0
@@ -56,15 +93,18 @@ export default function SimulatorView({
     };
   };
 
-  const sliders: {
+  type Slider = {
     label: string;
     value: number;
     min: number;
     max: number;
     step: number;
     display: string;
-    onInput: (v: number) => void;
-  }[] = [
+    key: "age" | "canYears" | "foreignYears" | "clb" | "nclc" | "spouseLang" | "spouseCanYears";
+  };
+  const years = (n: number) => n + (n === 1 ? " year" : " years");
+
+  const sliders: Slider[] = [
     {
       label: "Age",
       value: sim.age,
@@ -72,7 +112,7 @@ export default function SimulatorView({
       max: 44,
       step: 1,
       display: String(sim.age),
-      onInput: (v) => setField("age", v),
+      key: "age",
     },
     {
       label: "Canadian work experience",
@@ -80,8 +120,8 @@ export default function SimulatorView({
       min: 0,
       max: 5,
       step: 1,
-      display: sim.canYears + (sim.canYears === 1 ? " year" : " years"),
-      onInput: (v) => setField("canYears", v),
+      display: years(sim.canYears),
+      key: "canYears",
     },
     {
       label: "Foreign work experience",
@@ -89,8 +129,8 @@ export default function SimulatorView({
       min: 0,
       max: 5,
       step: 1,
-      display: sim.foreignYears + (sim.foreignYears === 1 ? " year" : " years"),
-      onInput: (v) => setField("foreignYears", v),
+      display: years(sim.foreignYears),
+      key: "foreignYears",
     },
     {
       label: "English - lowest CLB across abilities",
@@ -99,7 +139,7 @@ export default function SimulatorView({
       max: 10,
       step: 1,
       display: sim.clb === 0 ? "no test" : "CLB " + sim.clb,
-      onInput: (v) => setField("clb", v),
+      key: "clb",
     },
     {
       label: "French - lowest NCLC across abilities",
@@ -108,16 +148,56 @@ export default function SimulatorView({
       max: 10,
       step: 1,
       display: sim.nclc === 0 ? "no test" : "NCLC " + sim.nclc,
-      onInput: (v) => setField("nclc", v),
+      key: "nclc",
     },
   ];
+
+  const spouseSliders: Slider[] = [
+    {
+      label: "Spouse language - lowest CLB/NCLC",
+      value: sim.spouseLang,
+      min: 0,
+      max: 10,
+      step: 1,
+      display: sim.spouseLang === 0 ? "no test" : "level " + sim.spouseLang,
+      key: "spouseLang",
+    },
+    {
+      label: "Spouse Canadian work experience",
+      value: sim.spouseCanYears,
+      min: 0,
+      max: 5,
+      step: 1,
+      display: years(sim.spouseCanYears),
+      key: "spouseCanYears",
+    },
+  ];
+
+  const renderSlider = (s: Slider) => (
+    <div key={s.label}>
+      <div className="mb-[7px] flex justify-between text-[12.5px]">
+        <span className="text-[rgba(233,233,237,.7)]">{s.label}</span>
+        <span className="font-medium">{s.display}</span>
+      </div>
+      <input
+        type="range"
+        min={s.min}
+        max={s.max}
+        step={s.step}
+        value={s.value}
+        onChange={(e) => setField(s.key, +e.target.value)}
+        className="w-full"
+      />
+    </div>
+  );
 
   const simRows = [
     row("Age", "age"),
     row("Education", "education"),
-    row("First language", "first"),
-    row("Second language", "second"),
+    row("First language", "first_language"),
+    row("Second language", "second_language"),
     row("Canadian experience", "canadian_experience"),
+    ...(sim.married || initial.married ? [row("Spouse factors", "spouse_total")] : []),
     row("Skill transferability", "skill_transferability"),
     row("French bonus", "french_bonus"),
     row("Provincial nomination", "provincial_nomination"),
@@ -149,35 +229,40 @@ export default function SimulatorView({
       <div className="flex flex-wrap items-baseline gap-3">
         <h3 className="m-0">Score simulator</h3>
         <span className="tag tag-outline">
-          live · same tables as the scorer
+          live · same engine as your results
         </span>
       </div>
       <p className="mt-1.5 mb-6 text-[14px] text-[rgba(233,233,237,.6)]">
-        Move any input and the CRS recomputes from the published point tables -
-        age, education, CLB/NCLC, Canadian experience, transferability tiers and
-        the 600-point additional cap. This simplified model covers a single
-        applicant&apos;s core and additional points. It does not model spouse or
-        arranged-employment factors.
+        Move any input and your confirmed profile is rescored by the same CRS
+        engine as your results, including marital status and spouse factors.
+        Anything the controls don&apos;t cover stays as you confirmed it.
       </p>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-5">
         <div className="flex flex-col gap-4.5 rounded-[14px] bg-[#161826] p-5 shadow-[var(--shadow-sm)]">
-          {sliders.map((s) => (
-            <div key={s.label}>
-              <div className="mb-[7px] flex justify-between text-[12.5px]">
-                <span className="text-[rgba(233,233,237,.7)]">{s.label}</span>
-                <span className="font-medium">{s.display}</span>
-              </div>
-              <input
-                type="range"
-                min={s.min}
-                max={s.max}
-                step={s.step}
-                value={s.value}
-                onChange={(e) => s.onInput(+e.target.value)}
-                className="w-full"
-              />
+          <div className="field">
+            <label>Marital status</label>
+            <div className="seg w-full">
+              <label className="seg-opt flex-1 justify-center">
+                <input
+                  type="radio"
+                  name="sim_marital_status"
+                  checked={!sim.married}
+                  onChange={() => setField("married", false)}
+                />
+                Single
+              </label>
+              <label className="seg-opt flex-1 justify-center">
+                <input
+                  type="radio"
+                  name="sim_marital_status"
+                  checked={sim.married}
+                  onChange={() => setField("married", true)}
+                />
+                Married
+              </label>
             </div>
-          ))}
+          </div>
+          {sliders.map(renderSlider)}
           <div className="field">
             <label>Highest education</label>
             <select
@@ -187,9 +272,9 @@ export default function SimulatorView({
                 setField("edu", e.target.value as EducationLevel)
               }
             >
-              {EDU_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {EDU_LABEL[opt]}
+              {EDUCATION_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </select>
@@ -213,20 +298,50 @@ export default function SimulatorView({
               <span className="dot" />
               Sibling in Canada (+15)
             </label>
-            <label className="radio">
-              <input
-                type="checkbox"
-                checked={sim.canStudy}
-                onChange={(e) => setField("canStudy", e.target.checked)}
-              />
-              <span className="dot" />
-              Canadian post-secondary credential, 3+ years (+30)
-            </label>
           </div>
+          <div className="field">
+            <label>Canadian post-secondary credential</label>
+            <select
+              className="input"
+              value={sim.canStudy}
+              onChange={(e) => setField("canStudy", e.target.value as CanStudy)}
+            >
+              {CAN_STUDY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {sim.married && (
+            <div className="flex flex-col gap-4.5 border-t border-[rgba(233,233,237,.12)] pt-4">
+              <div className="text-[10px] tracking-[.1em] text-[#9184d9] uppercase">
+                Spouse or partner
+              </div>
+              <div className="field">
+                <label>Spouse highest education</label>
+                <select
+                  className="input"
+                  value={sim.spouseEdu}
+                  onChange={(e) =>
+                    setField("spouseEdu", e.target.value as EducationLevel | "none")
+                  }
+                >
+                  <option value="none">No credential</option>
+                  {EDUCATION_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {spouseSliders.map(renderSlider)}
+            </div>
+          )}
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() => setSim({ ...initial })}
+            onClick={() => update({ ...initial })}
           >
             Reset to your confirmed inputs
           </button>
@@ -237,7 +352,10 @@ export default function SimulatorView({
               Simulated CRS
             </div>
             <div className="mt-1.5 flex items-baseline gap-3">
-              <span className="text-[56px] leading-none font-medium tracking-[-.03em] tabular-nums">
+              <span
+                className={`text-[56px] leading-none font-medium tracking-[-.03em] tabular-nums transition-opacity ${pending ? "opacity-50" : ""}`}
+                aria-busy={pending}
+              >
                 {now.total}
               </span>
               <span className={`text-[15px] font-medium ${deltaColorClass}`}>
@@ -256,15 +374,18 @@ export default function SimulatorView({
             </div>
             <div className="mt-2 flex justify-between text-[11.5px] text-[rgba(233,233,237,.55)]">
               <span>
-                {confirmedTotal != null
-                  ? `Confirmed profile: ${confirmedTotal}`
-                  : "No profile confirmed yet"}
+                Confirmed profile: {baseline.total}
               </span>
               <span>Latest draw cut-off: {LATEST_DRAW.cutoff}</span>
             </div>
             <div className="mt-4 text-[13.5px] text-[rgba(233,233,237,.78)]">
               {verdict}
             </div>
+            {error && (
+              <p className="mt-3 mb-0 text-[13px] text-[#f2a3a3]">
+                Couldn&apos;t rescore these inputs: {error}
+              </p>
+            )}
           </div>
           <div className="rounded-[14px] bg-[#161826] px-4 pt-1.5 pb-3 shadow-[var(--shadow-sm)]">
             <table className="table">
