@@ -67,7 +67,7 @@ def test_calculate_hit_rate_present_absent_and_empty():
     assert service.calculate_hit_rate([], ideal) == 0
 
 
-# ---- _hash_labels_file ----
+# =========== _hash_labels_file ===========
 def test_hash_labels_file_is_stable_and_content_sensitive(tmp_path):
     file_a = tmp_path / "a.csv"
     file_a.write_text("same content")
@@ -81,7 +81,7 @@ def test_hash_labels_file_is_stable_and_content_sensitive(tmp_path):
     assert _hash_labels_file(str(file_a)) != _hash_labels_file(str(file_c))
 
 
-# ---- noc_retrieval_method_evaluate caching ----
+# =========== noc_retrieval_method_evaluate caching ===========
 def _labels_csv(tmp_path):
     labels_file = tmp_path / "labels.csv"
     labels_file.write_text(

@@ -300,7 +300,7 @@ def test_fsw_language_french_first_language(eligibility_service):
 # ============ _evaluate_canadian_exp_class ============
 def test_cec_gates_and_teer_dependent_language_requirement(eligibility_service):
     """TEER 0/1 needs CLB7+, TEER 2/3 needs CLB5+, TEER 4/5 never satisfies
-    the language gate (documented quirk, not a fix -- see source)."""
+    the language gate."""
     work = Experience(canada_work_exp_within_3_years=1, canada_years=1)
     eng7 = EnglishScore(
         test_name=EnglishTest.IELTS,
