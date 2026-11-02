@@ -13,9 +13,9 @@ export default function NocPage() {
 
   if (!occupation) {
     return (
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}>
-        <h3 style={{ margin: 0 }}>Occupation match</h3>
-        <p style={{ margin: "10px 0 22px", fontSize: 14, color: "rgba(233,233,237,.6)" }}>
+      <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
+        <h3 className="m-0">Occupation match</h3>
+        <p className="mt-2.5 mb-[22px] text-[14px] text-[rgba(233,233,237,.6)]">
           Confirm your profile first — the occupation classifier runs once your job title and duties are submitted.
         </p>
         <Link href="/intake" className="btn btn-primary">

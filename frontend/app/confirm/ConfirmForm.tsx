@@ -111,30 +111,30 @@ export default function ConfirmForm() {
       ref={formRef}
       action={formAction}
       onChange={persist}
-      style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}
+      className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20"
     >
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 12 }}>
-        <h3 style={{ margin: 0 }}>Confirm your profile</h3>
+      <div className="flex flex-wrap items-baseline gap-3">
+        <h3 className="m-0">Confirm your profile</h3>
         <span className="tag tag-outline">POST /profile/complete</span>
       </div>
-      <p style={{ margin: "6px 0 26px", fontSize: 14, color: "rgba(233,233,237,.6)" }}>
+      <p className="mt-1.5 mb-[26px] text-[14px] text-[rgba(233,233,237,.6)]">
         {draft
           ? "Pre-filled from the description you entered. Anything you change is re-validated by the same rules the scorer uses."
           : "Fill in your details below. Every field is re-validated by the same rules the scorer uses."}
       </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+      <div className="flex flex-col gap-[26px]">
         <div>
-          <h6 style={{ color: "#9184d9", marginBottom: 12 }}>Applicant</h6>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14 }}>
+          <h6 className="mb-3 text-[#9184d9]">Applicant</h6>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
             <div className="field">
               <label htmlFor="age">Age</label>
               <input id="age" name="age" type="number" className="input" defaultValue={draft?.age ?? undefined} required />
             </div>
             <div className="field">
               <label>Marital status</label>
-              <div className="seg" style={{ width: "100%" }}>
-                <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+              <div className="seg w-full">
+                <label className="seg-opt flex-1 justify-center">
                   <input
                     type="radio"
                     name="marital_status"
@@ -144,7 +144,7 @@ export default function ConfirmForm() {
                   />
                   Single
                 </label>
-                <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+                <label className="seg-opt flex-1 justify-center">
                   <input
                     type="radio"
                     name="marital_status"
@@ -171,8 +171,8 @@ export default function ConfirmForm() {
         </div>
 
         <div>
-          <h6 style={{ color: "#9184d9", marginBottom: 12 }}>Occupation</h6>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14 }}>
+          <h6 className="mb-3 text-[#9184d9]">Occupation</h6>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
             <div className="field">
               <label htmlFor="job_title">Job title</label>
               <input
@@ -183,19 +183,18 @@ export default function ConfirmForm() {
                 required
               />
             </div>
-            <div className="field" style={{ gridColumn: "span 2" }}>
+            <div className="field col-span-2">
               <label htmlFor="job_responsibility">Main responsibilities — used for NOC classification</label>
               <textarea
                 id="job_responsibility"
                 name="job_responsibility"
-                className="input"
-                style={{ minHeight: 36 }}
+                className="input min-h-9"
                 defaultValue={draft?.job_responsibility ?? ""}
                 required
               />
             </div>
           </div>
-          <label className="radio" style={{ marginTop: 12 }}>
+          <label className="radio mt-3">
             <input type="checkbox" name="have_canada_job_offer" />
             <span className="dot" />
             I have a Canadian job offer of at least one year
@@ -203,8 +202,8 @@ export default function ConfirmForm() {
         </div>
 
         <div>
-          <h6 style={{ color: "#9184d9", marginBottom: 12 }}>Language</h6>
-          <label className="radio" style={{ marginBottom: 12 }}>
+          <h6 className="mb-3 text-[#9184d9]">Language</h6>
+          <label className="radio mb-3">
             <input
               type="checkbox"
               name="has_english"
@@ -215,7 +214,7 @@ export default function ConfirmForm() {
             English test
           </label>
           {hasEnglish && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 14 }}>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5">
               <div className="field">
                 <label htmlFor="english_test">Test</label>
                 <select id="english_test" name="english_test" className="input" defaultValue={en?.test_name ?? "ielts"}>
@@ -277,7 +276,7 @@ export default function ConfirmForm() {
             </div>
           )}
 
-          <label className="radio" style={{ margin: "16px 0 12px" }}>
+          <label className="radio mx-0 mt-4 mb-3">
             <input
               type="checkbox"
               name="has_french"
@@ -288,7 +287,7 @@ export default function ConfirmForm() {
             French test
           </label>
           {hasFrench && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 14 }}>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5">
               <div className="field">
                 <label htmlFor="french_test">Test</label>
                 <select id="french_test" name="french_test" className="input" defaultValue={fr?.test_name ?? "tef"}>
@@ -347,10 +346,10 @@ export default function ConfirmForm() {
           )}
 
           {hasEnglish && hasFrench && (
-            <div className="field" style={{ marginTop: 14, maxWidth: 260 }}>
+            <div className="field mt-3.5 max-w-[260px]">
               <label>First official language</label>
-              <div className="seg" style={{ width: "100%" }}>
-                <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+              <div className="seg w-full">
+                <label className="seg-opt flex-1 justify-center">
                   <input
                     type="radio"
                     name="first_language"
@@ -360,7 +359,7 @@ export default function ConfirmForm() {
                   />
                   English
                 </label>
-                <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+                <label className="seg-opt flex-1 justify-center">
                   <input
                     type="radio"
                     name="first_language"
@@ -376,8 +375,8 @@ export default function ConfirmForm() {
         </div>
 
         <div>
-          <h6 style={{ color: "#9184d9", marginBottom: 12 }}>Work experience — full-time years, within the last ten</h6>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", gap: 14 }}>
+          <h6 className="mb-3 text-[#9184d9]">Work experience — full-time years, within the last ten</h6>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3.5">
             <div className="field">
               <label htmlFor="work_foreign_years">Foreign</label>
               <input id="work_foreign_years" name="work_foreign_years" type="number" step="0.5" className="input" defaultValue={wx?.foreign_years ?? 0} />
@@ -435,15 +434,15 @@ export default function ConfirmForm() {
               <input id="work_alberta_years" name="work_alberta_years" type="number" step="0.5" className="input" defaultValue={wx?.alberta_years ?? 0} />
             </div>
           </div>
-          <p style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(233,233,237,.5)" }}>
+          <p className="mt-2 mb-0 text-[12px] text-[rgba(233,233,237,.5)]">
             Validated: continuous years cannot exceed total years, and Canada-within-3 cannot exceed total Canadian
             years.
           </p>
         </div>
 
         <div>
-          <h6 style={{ color: "#9184d9", marginBottom: 12 }}>Education &amp; adaptability</h6>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14 }}>
+          <h6 className="mb-3 text-[#9184d9]">Education &amp; adaptability</h6>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
             <div className="field">
               <label htmlFor="education_level">Highest level</label>
               <select id="education_level" name="education_level" className="input" defaultValue={edu?.level ?? "bachelor"}>
@@ -456,8 +455,8 @@ export default function ConfirmForm() {
             </div>
             <div className="field">
               <label>Where was it earned?</label>
-              <div className="seg" style={{ width: "100%" }}>
-                <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+              <div className="seg w-full">
+                <label className="seg-opt flex-1 justify-center">
                   <input
                     type="radio"
                     name="education_location"
@@ -467,7 +466,7 @@ export default function ConfirmForm() {
                   />
                   Outside Canada
                 </label>
-                <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+                <label className="seg-opt flex-1 justify-center">
                   <input
                     type="radio"
                     name="education_location"
@@ -481,14 +480,14 @@ export default function ConfirmForm() {
             </div>
           </div>
           {educationLocation === "outside" && (
-            <label className="radio" style={{ marginTop: 12 }}>
+            <label className="radio mt-3">
               <input type="checkbox" name="education_eca_completed" defaultChecked={edu?.eca_completed ?? false} />
               <span className="dot" />
               Educational Credential Assessment (ECA) completed
             </label>
           )}
 
-          <div style={{ marginTop: 18 }}>
+          <div className="mt-4.5">
             <label className="radio">
               <input
                 type="checkbox"
@@ -500,7 +499,7 @@ export default function ConfirmForm() {
               Completed a Canadian post-secondary credential
             </label>
             {canadaEducationCompleted && (
-              <div className="field" style={{ marginTop: 10, maxWidth: 220 }}>
+              <div className="field mt-2.5 max-w-[220px]">
                 <label htmlFor="canada_education_years">Canadian credential years</label>
                 <input
                   id="canada_education_years"
@@ -514,7 +513,7 @@ export default function ConfirmForm() {
             )}
           </div>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 16 }}>
+          <div className="mt-4 flex flex-wrap gap-4">
             <label className="radio">
               <input type="checkbox" name="provincial_nomination" defaultChecked={draft?.provincial_nomination ?? false} />
               <span className="dot" />
@@ -540,8 +539,8 @@ export default function ConfirmForm() {
 
         {maritalStatus === "married" && (
           <div>
-            <h6 style={{ color: "#9184d9", marginBottom: 12 }}>Spouse or common-law partner</h6>
-            <label className="radio" style={{ marginBottom: 12 }}>
+            <h6 className="mb-3 text-[#9184d9]">Spouse or common-law partner</h6>
+            <label className="radio mb-3">
               <input
                 type="checkbox"
                 name="has_spouse_education"
@@ -552,7 +551,7 @@ export default function ConfirmForm() {
               Spouse has a post-secondary credential
             </label>
             {hasSpouseEducation && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14, marginBottom: 12 }}>
+              <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
                 <div className="field">
                   <label htmlFor="spouse_education_level">Highest level</label>
                   <select id="spouse_education_level" name="spouse_education_level" className="input" defaultValue="bachelor">
@@ -565,8 +564,8 @@ export default function ConfirmForm() {
                 </div>
                 <div className="field">
                   <label>Where was it earned?</label>
-                  <div className="seg" style={{ width: "100%" }}>
-                    <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+                  <div className="seg w-full">
+                    <label className="seg-opt flex-1 justify-center">
                       <input
                         type="radio"
                         name="spouse_education_location"
@@ -576,7 +575,7 @@ export default function ConfirmForm() {
                       />
                       Outside Canada
                     </label>
-                    <label className="seg-opt" style={{ flex: 1, justifyContent: "center" }}>
+                    <label className="seg-opt flex-1 justify-center">
                       <input
                         type="radio"
                         name="spouse_education_location"
@@ -598,7 +597,7 @@ export default function ConfirmForm() {
               </div>
             )}
 
-            <label className="radio" style={{ marginBottom: 12 }}>
+            <label className="radio mb-3">
               <input
                 type="checkbox"
                 name="spouse_has_english"
@@ -609,7 +608,7 @@ export default function ConfirmForm() {
               Spouse has an English test
             </label>
             {spouseHasEnglish && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 14, marginBottom: 12 }}>
+              <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5">
                 <div className="field">
                   <label htmlFor="spouse_english_test">Test</label>
                   <select id="spouse_english_test" name="spouse_english_test" className="input" defaultValue="ielts">
@@ -639,7 +638,7 @@ export default function ConfirmForm() {
               </div>
             )}
 
-            <label className="radio" style={{ marginBottom: 12 }}>
+            <label className="radio mb-3">
               <input
                 type="checkbox"
                 name="spouse_has_french"
@@ -650,7 +649,7 @@ export default function ConfirmForm() {
               Spouse has a French test
             </label>
             {spouseHasFrench && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 14, marginBottom: 12 }}>
+              <div className="mb-3 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3.5">
                 <div className="field">
                   <label htmlFor="spouse_french_test">Test</label>
                   <select id="spouse_french_test" name="spouse_french_test" className="input" defaultValue="tef">
@@ -680,7 +679,7 @@ export default function ConfirmForm() {
               </div>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 14 }}>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
               <div className="field">
                 <label htmlFor="spouse_canadian_experience">Spouse Canadian work experience (years)</label>
                 <input
@@ -693,7 +692,7 @@ export default function ConfirmForm() {
                 />
               </div>
             </div>
-            <label className="radio" style={{ marginTop: 12 }}>
+            <label className="radio mt-3">
               <input type="checkbox" name="spouse_relative_in_can" defaultChecked={draft?.spouse?.relative_in_can ?? false} />
               <span className="dot" />
               Spouse has a relative in Canada
@@ -703,20 +702,10 @@ export default function ConfirmForm() {
       </div>
 
       {state.error && (
-        <p style={{ margin: "20px 0 0", fontSize: 13.5, color: "#f2a3a3" }}>{state.error}</p>
+        <p className="mt-5 mb-0 text-[13.5px] text-[#f2a3a3]">{state.error}</p>
       )}
 
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          marginTop: 30,
-          paddingTop: 20,
-          background:
-            "linear-gradient(to right,transparent,rgba(233,233,237,.16) 48px,rgba(233,233,237,.16) calc(100% - 48px),transparent) no-repeat top / 100% 1px",
-        }}
-      >
+      <div className="mt-[30px] flex flex-wrap gap-2.5 pt-5 [background:linear-gradient(to_right,transparent,rgba(233,233,237,.16)_48px,rgba(233,233,237,.16)_calc(100%_-_48px),transparent)_no-repeat_top_/_100%_1px]">
         <button type="submit" className="btn btn-primary" disabled={pending}>
           {pending ? "Scoring…" : "Confirm and score"}
         </button>

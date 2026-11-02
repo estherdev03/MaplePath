@@ -47,8 +47,12 @@ export default function SimulatorView({
       label,
       pts: now[key],
       delta: delta === 0 ? "—" : delta > 0 ? `+${delta}` : String(delta),
-      dColor:
-        delta > 0 ? "#b5abfc" : delta < 0 ? "#cfd3e5" : "rgba(233,233,237,.35)",
+      dColorClass:
+        delta > 0
+          ? "text-[#b5abfc]"
+          : delta < 0
+            ? "text-[#cfd3e5]"
+            : "text-[rgba(233,233,237,.35)]",
     };
   };
 
@@ -128,74 +132,39 @@ export default function SimulatorView({
       : d > 0
         ? `+${d} vs your inputs`
         : `${d} vs your inputs`;
-  const deltaColor =
-    d > 0 ? "#b5abfc" : d < 0 ? "#cfd3e5" : "rgba(233,233,237,.5)";
+  const deltaColorClass =
+    d > 0
+      ? "text-[#b5abfc]"
+      : d < 0
+        ? "text-[#cfd3e5]"
+        : "text-[rgba(233,233,237,.5)]";
   const verdict =
     now.total >= LAST_CEC_CUTOFF
       ? `Above the last CEC cut-off by ${now.total - LAST_CEC_CUTOFF} points. A profile at this score would have been invited in the most recent round.`
       : `Below the last CEC cut-off by ${LAST_CEC_CUTOFF - now.total} points. This score would not have been invited in the most recent round.`;
 
   return (
-    <div
-      style={{ maxWidth: 1040, margin: "0 auto", padding: "34px 26px 80px" }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "baseline",
-          gap: 12,
-        }}
-      >
-        <h3 style={{ margin: 0 }}>Score simulator</h3>
+    <div className="mx-auto max-w-[1040px] px-[26px] pt-[34px] pb-20">
+      <div className="flex flex-wrap items-baseline gap-3">
+        <h3 className="m-0">Score simulator</h3>
         <span className="tag tag-outline">
           live · same tables as the scorer
         </span>
       </div>
-      <p
-        style={{
-          margin: "6px 0 24px",
-          fontSize: 14,
-          color: "rgba(233,233,237,.6)",
-        }}
-      >
+      <p className="mt-1.5 mb-6 text-[14px] text-[rgba(233,233,237,.6)]">
         Move any input and the CRS recomputes from the published point tables -
         age, education, CLB/NCLC, Canadian experience, transferability tiers and
         the 600-point additional cap. This simplified model covers a single
         applicant&apos;s core and additional points; it does not model spouse or
         arranged-employment factors.
       </p>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))",
-          gap: 20,
-          alignItems: "start",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 18,
-            padding: 20,
-            borderRadius: 14,
-            background: "#161826",
-            boxShadow: "var(--shadow-sm)",
-          }}
-        >
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-5">
+        <div className="flex flex-col gap-4.5 rounded-[14px] bg-[#161826] p-5 shadow-[var(--shadow-sm)]">
           {sliders.map((s) => (
             <div key={s.label}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: 12.5,
-                  marginBottom: 7,
-                }}
-              >
-                <span style={{ color: "rgba(233,233,237,.7)" }}>{s.label}</span>
-                <span style={{ fontWeight: 500 }}>{s.display}</span>
+              <div className="mb-[7px] flex justify-between text-[12.5px]">
+                <span className="text-[rgba(233,233,237,.7)]">{s.label}</span>
+                <span className="font-medium">{s.display}</span>
               </div>
               <input
                 type="range"
@@ -204,7 +173,7 @@ export default function SimulatorView({
                 step={s.step}
                 value={s.value}
                 onChange={(e) => s.onInput(+e.target.value)}
-                style={{ width: "100%" }}
+                className="w-full"
               />
             </div>
           ))}
@@ -224,7 +193,7 @@ export default function SimulatorView({
               ))}
             </select>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="flex flex-col gap-2.5">
             <label className="radio">
               <input
                 type="checkbox"
@@ -261,90 +230,30 @@ export default function SimulatorView({
             Reset to your confirmed inputs
           </button>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div
-            style={{
-              padding: 20,
-              borderRadius: 14,
-              background:
-                "radial-gradient(120% 90% at 50% 0%,#2b2741,#161826 72%)",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 10,
-                letterSpacing: ".1em",
-                textTransform: "uppercase",
-                color: "#9184d9",
-              }}
-            >
+        <div className="flex flex-col gap-3.5">
+          <div className="rounded-[14px] bg-[radial-gradient(120%_90%_at_50%_0%,#2b2741,#161826_72%)] p-5 shadow-[var(--shadow-sm)]">
+            <div className="text-[10px] tracking-[.1em] text-[#9184d9] uppercase">
               Simulated CRS
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 12,
-                marginTop: 6,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 56,
-                  lineHeight: 1,
-                  fontWeight: 500,
-                  letterSpacing: "-.03em",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
+            <div className="mt-1.5 flex items-baseline gap-3">
+              <span className="text-[56px] leading-none font-medium tracking-[-.03em] tabular-nums">
                 {now.total}
               </span>
-              <span
-                style={{ fontSize: 15, fontWeight: 500, color: deltaColor }}
-              >
+              <span className={`text-[15px] font-medium ${deltaColorClass}`}>
                 {deltaLabel}
               </span>
             </div>
-            <div
-              style={{
-                marginTop: 16,
-                position: "relative",
-                height: 10,
-                borderRadius: 5,
-                background: "rgba(233,233,237,.1)",
-                overflow: "visible",
-              }}
-            >
+            <div className="relative mt-4 h-2.5 overflow-visible rounded-[5px] bg-[rgba(233,233,237,.1)]">
               <div
-                style={{
-                  position: "absolute",
-                  inset: "0 auto 0 0",
-                  width: `${simPct}%`,
-                  background: "#9184d9",
-                  borderRadius: 5,
-                }}
+                className="absolute inset-y-0 right-auto left-0 rounded-[5px] bg-[#9184d9]"
+                style={{ width: `${simPct}%` }}
               />
               <div
-                style={{
-                  position: "absolute",
-                  left: `${(LAST_CEC_CUTOFF / CRS_TOTAL_MAX) * 100}%`,
-                  top: -5,
-                  bottom: -5,
-                  width: 1,
-                  background: "#e9e9ed",
-                }}
+                className="absolute -top-[5px] -bottom-[5px] w-px bg-[#e9e9ed]"
+                style={{ left: `${(LAST_CEC_CUTOFF / CRS_TOTAL_MAX) * 100}%` }}
               />
             </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: 8,
-                fontSize: 11.5,
-                color: "rgba(233,233,237,.55)",
-              }}
-            >
+            <div className="mt-2 flex justify-between text-[11.5px] text-[rgba(233,233,237,.55)]">
               <span>
                 {confirmedTotal != null
                   ? `Confirmed profile: ${confirmedTotal}`
@@ -352,46 +261,20 @@ export default function SimulatorView({
               </span>
               <span>Last CEC cut-off: {LAST_CEC_CUTOFF}</span>
             </div>
-            <div
-              style={{
-                marginTop: 16,
-                fontSize: 13.5,
-                color: "rgba(233,233,237,.78)",
-              }}
-            >
+            <div className="mt-4 text-[13.5px] text-[rgba(233,233,237,.78)]">
               {verdict}
             </div>
           </div>
-          <div
-            style={{
-              padding: "6px 16px 12px",
-              borderRadius: 14,
-              background: "#161826",
-              boxShadow: "var(--shadow-sm)",
-            }}
-          >
+          <div className="rounded-[14px] bg-[#161826] px-4 pt-1.5 pb-3 shadow-[var(--shadow-sm)]">
             <table className="table">
               <tbody>
                 {simRows.map((r) => (
                   <tr key={r.label}>
-                    <td style={{ fontSize: 13 }}>{r.label}</td>
-                    <td
-                      style={{
-                        textAlign: "right",
-                        fontVariantNumeric: "tabular-nums",
-                        width: 70,
-                      }}
-                    >
+                    <td className="text-[13px]">{r.label}</td>
+                    <td className="w-[70px] text-right tabular-nums">
                       {r.pts}
                     </td>
-                    <td
-                      style={{
-                        textAlign: "right",
-                        width: 56,
-                        fontSize: 12,
-                        color: r.dColor,
-                      }}
-                    >
+                    <td className={`w-14 text-right text-[12px] ${r.dColorClass}`}>
                       {r.delta}
                     </td>
                   </tr>

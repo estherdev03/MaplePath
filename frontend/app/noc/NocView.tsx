@@ -22,38 +22,18 @@ export default function NocView({ occupation }: { occupation: Occupation }) {
   const [page, setPage] = useState<number>(1);
 
   return (
-    <div
-      style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 20,
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-        }}
-      >
+    <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
+      <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
-          <div
-            style={{
-              fontSize: 10,
-              letterSpacing: ".1em",
-              textTransform: "uppercase",
-              color: "#9184d9",
-              marginBottom: 8,
-            }}
-          >
+          <div className="mb-2 text-[10px] tracking-[.1em] text-[#9184d9] uppercase">
             Occupation match
           </div>
-          <h3 style={{ margin: 0 }}>
+          <h3 className="m-0">
             {occupation.noc_code
               ? `${occupation.noc_code} · ${occupation.title}`
               : "No confident match"}
           </h3>
-          <div
-            style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}
-          >
+          <div className="mt-2.5 flex flex-wrap gap-2">
             {groupTags.length > 0 ? (
               groupTags.map((t) => (
                 <span key={t} className="tag tag-outline">
@@ -65,62 +45,29 @@ export default function NocView({ occupation }: { occupation: Occupation }) {
             )}
           </div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div
-            style={{
-              fontSize: 11,
-              letterSpacing: ".08em",
-              textTransform: "uppercase",
-              color: "rgba(233,233,237,.6)",
-            }}
-          >
+        <div className="text-right">
+          <div className="text-[11px] tracking-[.08em] text-[rgba(233,233,237,.6)] uppercase">
             Confidence
           </div>
-          <div style={{ fontSize: 34, fontWeight: 500 }}>
+          <div className="text-[34px] font-medium">
             {confidence.toFixed(2)}
           </div>
-          <div
-            style={{
-              width: 130,
-              height: 5,
-              borderRadius: 3,
-              background: "rgba(233,233,237,.1)",
-              marginTop: 4,
-            }}
-          >
+          <div className="mt-1 h-[5px] w-[130px] rounded-[3px] bg-[rgba(233,233,237,.1)]">
             <div
-              style={{
-                width: `${confidence * 100}%`,
-                height: 5,
-                borderRadius: 3,
-                background: "#9184d9",
-              }}
+              className="h-[5px] rounded-[3px] bg-[#9184d9]"
+              style={{ width: `${confidence * 100}%` }}
             />
           </div>
         </div>
       </div>
       {occupation.reasoning && (
-        <p
-          style={{
-            margin: "18px 0 0",
-            fontSize: 14,
-            color: "rgba(233,233,237,.75)",
-            maxWidth: "74ch",
-          }}
-        >
+        <p className="mx-0 mt-4.5 mb-0 max-w-[74ch] text-[14px] text-[rgba(233,233,237,.75)]">
           {occupation.reasoning}
         </p>
       )}
-      <div
-        style={{
-          margin: "26px 0 12px",
-          display: "flex",
-          alignItems: "baseline",
-          gap: 10,
-        }}
-      >
-        <h5 style={{ margin: 0 }}>Retrieved candidates</h5>
-        <span style={{ fontSize: 12, color: "rgba(233,233,237,.5)" }}>
+      <div className="mt-[26px] mb-3 flex items-baseline gap-2.5">
+        <h5 className="m-0">Retrieved candidates</h5>
+        <span className="text-[12px] text-[rgba(233,233,237,.5)]">
           Semantic search - the model could only choose a NOC code from this
           list
         </span>
@@ -130,9 +77,9 @@ export default function NocView({ occupation }: { occupation: Occupation }) {
           <table className="table">
             <thead>
               <tr>
-                <th style={{ width: 74 }}>NOC</th>
+                <th className="w-[74px]">NOC</th>
                 <th>Title</th>
-                <th style={{ width: 100 }}>Outcome</th>
+                <th className="w-[100px]">Outcome</th>
               </tr>
             </thead>
             <tbody>
@@ -140,21 +87,15 @@ export default function NocView({ occupation }: { occupation: Occupation }) {
                 .slice((page - 1) * 10, page * 10)
                 .map((c) => {
                   const chosen = c.noc_code === occupation.noc_code;
+                  const textClass = chosen
+                    ? "text-[#e9e9ed]"
+                    : "text-[rgba(233,233,237,.62)]";
                   return (
                     <tr key={c.noc_code}>
-                      <td
-                        style={{
-                          fontVariantNumeric: "tabular-nums",
-                          color: chosen ? "#e9e9ed" : "rgba(233,233,237,.62)",
-                        }}
-                      >
+                      <td className={`tabular-nums ${textClass}`}>
                         {c.noc_code}
                       </td>
-                      <td
-                        style={{
-                          color: chosen ? "#e9e9ed" : "rgba(233,233,237,.62)",
-                        }}
-                      >
+                      <td className={textClass}>
                         {c.title}
                       </td>
                       <td>
@@ -198,13 +139,11 @@ export default function NocView({ occupation }: { occupation: Occupation }) {
           </div>
         </>
       ) : (
-        <p style={{ fontSize: 13.5, color: "rgba(233,233,237,.5)" }}>
+        <p className="text-[13.5px] text-[rgba(233,233,237,.5)]">
           No candidates were retrieved for this profile.
         </p>
       )}
-      <div
-        style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 22 }}
-      >
+      <div className="mt-[22px] flex flex-wrap gap-2.5">
         <Link href="/benchmark" className="btn btn-ghost">
           How accurate is this search? ↗
         </Link>

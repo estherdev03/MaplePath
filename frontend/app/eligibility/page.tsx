@@ -11,9 +11,9 @@ export default function EligibilityPage() {
 
   if (!profile.eligibility) {
     return (
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}>
-        <h3 style={{ margin: 0 }}>Express Entry eligibility</h3>
-        <p style={{ margin: "10px 0 22px", fontSize: 14, color: "rgba(233,233,237,.6)" }}>
+      <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
+        <h3 className="m-0">Express Entry eligibility</h3>
+        <p className="mt-2.5 mb-[22px] text-[14px] text-[rgba(233,233,237,.6)]">
           Confirm your profile first — eligibility is computed once the scorer has a complete profile.
         </p>
         <Link href="/intake" className="btn btn-primary">
@@ -28,49 +28,39 @@ export default function EligibilityPage() {
   const fswGrid = fsw?.selection_factor_breakdown;
 
   return (
-    <div style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}>
-      <h3 style={{ margin: 0 }}>Express Entry eligibility</h3>
-      <p style={{ margin: "6px 0 22px", fontSize: 14, color: "rgba(233,233,237,.6)" }}>
+    <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
+      <h3 className="m-0">Express Entry eligibility</h3>
+      <p className="mt-1.5 mb-[22px] text-[14px] text-[rgba(233,233,237,.6)]">
         Requirement-level results. A program is eligible only when every requirement is met.
       </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="flex flex-col gap-3.5">
         {programs.map((p) => (
           <div
             key={p.name}
-            style={{ borderRadius: 14, background: "#161826", boxShadow: `0 0 0 1px ${p.edge}`, overflow: "hidden" }}
+            className={`overflow-hidden rounded-[14px] bg-[#161826] ${p.edgeClass}`}
           >
-            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, padding: "16px 20px" }}>
-              <div style={{ flex: 1, minWidth: 200 }}>
-                <div style={{ fontSize: 18, fontWeight: 500 }}>{p.name}</div>
-                <div style={{ fontSize: 12, color: "rgba(233,233,237,.55)" }}>{p.sub}</div>
+            <div className="flex flex-wrap items-center gap-3 px-5 py-4">
+              <div className="min-w-[200px] flex-1">
+                <div className="text-[18px] font-medium">{p.name}</div>
+                <div className="text-[12px] text-[rgba(233,233,237,.55)]">{p.sub}</div>
               </div>
               <span className={`tag ${p.tagClass}`}>{p.verdict}</span>
             </div>
-            <div style={{ padding: "0 20px 18px", display: "flex", flexDirection: "column", gap: 1 }}>
+            <div className="flex flex-col gap-px px-5 pt-0 pb-4.5">
               {p.reqs.map((r) => (
                 <div
                   key={r.label}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 10,
-                    padding: "9px 0",
-                    borderTop: "1px solid rgba(233,233,237,.07)",
-                  }}
+                  className="flex items-start gap-2.5 border-t border-[rgba(233,233,237,.07)] py-[9px]"
                 >
                   <span
-                    style={{
-                      color: r.ok ? "#b5abfc" : "rgba(233,233,237,.35)",
-                      fontSize: 13,
-                      width: 14,
-                      flex: "none",
-                      textAlign: "center",
-                    }}
+                    className={`w-3.5 flex-none text-center text-[13px] ${
+                      r.ok ? "text-[#b5abfc]" : "text-[rgba(233,233,237,.35)]"
+                    }`}
                   >
                     {r.ok ? "●" : "○"}
                   </span>
-                  <span style={{ fontSize: 13.5, flex: 1 }}>{r.label}</span>
-                  <span style={{ fontSize: 12.5, color: "rgba(233,233,237,.55)", textAlign: "right", maxWidth: "44%" }}>
+                  <span className="flex-1 text-[13.5px]">{r.label}</span>
+                  <span className="max-w-[44%] text-right text-[12.5px] text-[rgba(233,233,237,.55)]">
                     {r.detail}
                   </span>
                 </div>
@@ -80,20 +70,20 @@ export default function EligibilityPage() {
         ))}
       </div>
       {fswGrid && fsw && (
-        <div style={{ marginTop: 20, borderRadius: 14, background: "#161826", boxShadow: "var(--shadow-sm)", padding: "18px 20px" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 10, marginBottom: 12 }}>
-            <h5 style={{ margin: 0 }}>FSW selection grid — 67-point threshold</h5>
+        <div className="mt-5 rounded-[14px] bg-[#161826] px-5 py-4.5 shadow-[var(--shadow-sm)]">
+          <div className="mb-3 flex flex-wrap items-baseline gap-2.5">
+            <h5 className="m-0">FSW selection grid — 67-point threshold</h5>
             <span className={`tag ${fsw.selection_factor_passed ? "tag-accent" : "tag-neutral"}`}>
               {fsw.selection_factor_score} / 100 · {fsw.selection_factor_passed ? "passed" : "not passed"}
             </span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
             {(Object.keys(FSW_GRID_LABELS) as (keyof typeof FSW_GRID_LABELS)[]).map((key) => (
-              <div key={key} style={{ padding: "11px 13px", borderRadius: 8, background: "#1b1e2d" }}>
-                <div style={{ fontSize: 11.5, color: "rgba(233,233,237,.58)" }}>{FSW_GRID_LABELS[key]}</div>
-                <div style={{ fontSize: 19, fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
+              <div key={key} className="rounded-lg bg-[#1b1e2d] px-[13px] py-[11px]">
+                <div className="text-[11.5px] text-[rgba(233,233,237,.58)]">{FSW_GRID_LABELS[key]}</div>
+                <div className="text-[19px] font-medium tabular-nums">
                   {fswGrid[key]}
-                  <span style={{ fontSize: 12, color: "rgba(233,233,237,.45)" }}> / {FSW_GRID_MAX[key]}</span>
+                  <span className="text-[12px] text-[rgba(233,233,237,.45)]"> / {FSW_GRID_MAX[key]}</span>
                 </div>
               </div>
             ))}

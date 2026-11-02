@@ -49,60 +49,28 @@ export default function IntakeForm() {
   };
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))",
-        gap: 1,
-        background: "rgba(233,233,237,.1)",
-        minHeight: "calc(100vh - 57px)",
-      }}
-    >
-      <div
-        style={{
-          background: "#0f111c",
-          padding: 26,
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
+    <div className="grid min-h-[calc(100vh-57px)] grid-cols-[repeat(auto-fit,minmax(340px,1fr))] gap-px bg-[rgba(233,233,237,.1)]">
+      <div className="flex flex-col gap-4 bg-[#0f111c] p-[26px]">
         <div>
-          <h4 style={{ margin: 0 }}>Describe your situation</h4>
-          <p
-            style={{
-              margin: "4px 0 0",
-              fontSize: 13,
-              color: "rgba(233,233,237,.55)",
-            }}
-          >
+          <h4 className="m-0">Describe your situation</h4>
+          <p className="mt-1 mb-0 text-[13px] text-[rgba(233,233,237,.55)]">
             POST /profile/parse · structured extraction
           </p>
         </div>
         <form
           action={formAction}
-          className="field"
-          style={{ display: "flex", flexDirection: "column" }}
+          className="field flex flex-col"
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              gap: 12,
-              marginBottom: 5,
-            }}
-          >
+          <div className="mb-[5px] flex items-baseline justify-between gap-3">
             <label
               htmlFor="text"
-              style={{ fontSize: 12, color: "rgba(233,233,237,.7)" }}
+              className="text-[12px] text-[rgba(233,233,237,.7)]"
             >
               Your profile, in your own words
             </label>
             <button
               type="button"
-              className="btn btn-ghost"
-              style={{ fontSize: 12 }}
+              className="btn btn-ghost text-[12px]"
               onClick={fillExample}
             >
               Use example profile
@@ -112,37 +80,22 @@ export default function IntakeForm() {
             id="text"
             name="text"
             ref={textareaRef}
-            className="input"
-            style={{ height: 300, lineHeight: 1.6, resize: "vertical" }}
+            className="input h-[300px] resize-y leading-[1.6]"
             defaultValue={intakeText}
             placeholder={EXAMPLE_TEXT}
             onChange={(e) => setIntakeText(e.target.value)}
           />
-          <p
-            style={{
-              margin: "8px 0 0",
-              fontSize: 12.5,
-              color: "rgba(233,233,237,.55)",
-            }}
-          >
+          <p className="mt-2 mb-0 text-[12.5px] text-[rgba(233,233,237,.55)]">
             Age, duties, work history, test scores, education, marital status,
             family in Canada, funds. Anything left out is reported as missing —
             never guessed.
           </p>
           {state.error && (
-            <p style={{ margin: "10px 0 0", fontSize: 13, color: "#f2a3a3" }}>
+            <p className="mt-2.5 mb-0 text-[13px] text-[#f2a3a3]">
               {state.error}
             </p>
           )}
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 10,
-              alignItems: "center",
-              marginTop: 12,
-            }}
-          >
+          <div className="mt-3 flex flex-wrap items-center gap-2.5">
             <button
               type="submit"
               className="btn btn-primary"
@@ -153,36 +106,15 @@ export default function IntakeForm() {
             <Link href="/confirm" className="btn btn-secondary">
               Skip - fill the form myself
             </Link>
-            <span
-              style={{
-                marginLeft: "auto",
-                fontSize: 11.5,
-                color: "rgba(233,233,237,.45)",
-              }}
-            >
+            <span className="ml-auto text-[11.5px] text-[rgba(233,233,237,.45)]">
               Parsed into the fields on the right
             </span>
           </div>
         </form>
       </div>
-      <div
-        style={{
-          background: "#13151f",
-          padding: 26,
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <h4 style={{ margin: 0 }}>Extracted profile</h4>
+      <div className="flex flex-col gap-3.5 bg-[#13151f] p-[26px]">
+        <div className="flex items-baseline justify-between gap-3">
+          <h4 className="m-0">Extracted profile</h4>
           {draft && (
             <span className="tag tag-accent">
               {rows.length - missingCount} of {rows.length} fields
@@ -190,59 +122,35 @@ export default function IntakeForm() {
           )}
         </div>
         {!draft && (
-          <p style={{ fontSize: 13.5, color: "rgba(233,233,237,.5)" }}>
+          <p className="text-[13.5px] text-[rgba(233,233,237,.5)]">
             Extract a profile to see what was read from your description, field
             by field.
           </p>
         )}
         {draft && (
           <>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-                borderRadius: 12,
-                overflow: "hidden",
-                background: "rgba(233,233,237,.08)",
-              }}
-            >
+            <div className="flex flex-col gap-px overflow-hidden rounded-xl bg-[rgba(233,233,237,.08)]">
               {rows.map((row) => (
                 <div
                   key={row.label}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "11px 14px",
-                    background: "#161826",
-                  }}
+                  className="flex items-center gap-2.5 bg-[#161826] px-3.5 py-[11px]"
                 >
-                  <span
-                    style={{
-                      fontSize: 13,
-                      color: "rgba(233,233,237,.62)",
-                      width: "38%",
-                    }}
-                  >
+                  <span className="w-[38%] text-[13px] text-[rgba(233,233,237,.62)]">
                     {row.label}
                   </span>
                   <span
-                    style={{
-                      fontSize: 13.5,
-                      flex: 1,
-                      color: row.missing ? "#b5abfc" : "#e9e9ed",
-                    }}
+                    className={`flex-1 text-[13.5px] ${
+                      row.missing ? "text-[#b5abfc]" : "text-[#e9e9ed]"
+                    }`}
                   >
                     {row.value}
                   </span>
                   <span
-                    style={{
-                      fontSize: 10.5,
-                      letterSpacing: ".04em",
-                      textTransform: "uppercase",
-                      color: row.missing ? "#b5abfc" : "rgba(233,233,237,.4)",
-                    }}
+                    className={`text-[10.5px] tracking-[.04em] uppercase ${
+                      row.missing
+                        ? "text-[#b5abfc]"
+                        : "text-[rgba(233,233,237,.4)]"
+                    }`}
                   >
                     {row.missing ? "missing" : "read"}
                   </span>
@@ -250,36 +158,15 @@ export default function IntakeForm() {
               ))}
             </div>
             {draft.warnings.length > 0 && (
-              <div
-                style={{
-                  borderRadius: 12,
-                  padding: "16px 18px",
-                  background: "#161826",
-                  boxShadow: "0 0 0 1px #3f424d",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: ".1em",
-                    textTransform: "uppercase",
-                    color: "rgba(233,233,237,.6)",
-                    marginBottom: 10,
-                  }}
-                >
+              <div className="rounded-xl bg-[#161826] px-4.5 py-4 shadow-[0_0_0_1px_#3f424d]">
+                <div className="mb-2.5 text-[10px] tracking-[.1em] text-[rgba(233,233,237,.6)] uppercase">
                   Warning · {draft.warnings.length}
                 </div>
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                >
+                <div className="flex flex-col gap-2">
                   {draft.warnings.map((w) => (
                     <p
                       key={w}
-                      style={{
-                        margin: 0,
-                        fontSize: 13,
-                        color: "rgba(233,233,237,.72)",
-                      }}
+                      className="m-0 text-[13px] text-[rgba(233,233,237,.72)]"
                     >
                       {w}
                     </p>
@@ -289,18 +176,11 @@ export default function IntakeForm() {
             )}
             <Link
               href="/confirm"
-              className="btn btn-primary btn-block"
-              style={{ textAlign: "center" }}
+              className="btn btn-primary btn-block text-center"
             >
               Continue to the confirm form
             </Link>
-            <p
-              style={{
-                margin: 0,
-                fontSize: 11.5,
-                color: "rgba(233,233,237,.45)",
-              }}
-            >
+            <p className="m-0 text-[11.5px] text-[rgba(233,233,237,.45)]">
               Nothing here is scored until you confirm it. You can correct any
               extracted value on the next step.
             </p>

@@ -43,23 +43,14 @@ export default async function BenchmarkPage() {
 
   if (error || !report) {
     return (
-      <div
-        style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "baseline",
-            gap: 12,
-          }}
-        >
-          <h3 style={{ margin: 0 }}>
+      <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <h3 className="m-0">
             Does the occupation search actually work?
           </h3>
           <span className="tag tag-outline">GET /evaluate</span>
         </div>
-        <p style={{ margin: "16px 0 0", fontSize: 14, color: "#f2a3a3" }}>
+        <p className="mt-4 mb-0 text-[14px] text-[#f2a3a3]">
           {error}
         </p>
       </div>
@@ -83,7 +74,7 @@ export default async function BenchmarkPage() {
       label: "Lift over keyword search",
       value: `${mean_report.vector[0] - mean_report.bm25[0] >= 0 ? "+" : ""}${(mean_report.vector[0] - mean_report.bm25[0]).toFixed(3)}`,
       note: "Vector vs BM25 alone",
-      color: "#b5abfc",
+      colorClass: "text-[#b5abfc]",
     },
     {
       label: "Misses",
@@ -100,34 +91,18 @@ export default async function BenchmarkPage() {
       ndcg: score[0].toFixed(3),
       hit: score[1].toFixed(2),
       pctVal: pct(score),
-      fg: shipped ? "#b5abfc" : "rgba(233,233,237,.72)",
-      bar: shipped ? "#9184d9" : "#595d6c",
+      fgClass: shipped ? "text-[#b5abfc]" : "text-[rgba(233,233,237,.72)]",
+      barClass: shipped ? "bg-[#9184d9]" : "bg-[#595d6c]",
     };
   });
 
   return (
-    <div
-      style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 26px 80px" }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "baseline",
-          gap: 12,
-        }}
-      >
-        <h3 style={{ margin: 0 }}>Does the occupation search actually work?</h3>
+    <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
+      <div className="flex flex-wrap items-baseline gap-3">
+        <h3 className="m-0">Does the occupation search actually work?</h3>
         <span className="tag tag-outline">GET /evaluate</span>
       </div>
-      <p
-        style={{
-          margin: "8px 0 0",
-          maxWidth: "72ch",
-          fontSize: 15,
-          color: "rgba(233,233,237,.72)",
-        }}
-      >
+      <p className="mt-2 mb-0 max-w-[72ch] text-[15px] text-[rgba(233,233,237,.72)]">
         Classifying a job description into one of the NOC 2021 unit groups is
         the one place in MaplePath where a wrong answer is plausible and
         consequential - it decides TEER, and TEER decides program eligibility.
@@ -135,149 +110,69 @@ export default async function BenchmarkPage() {
         descriptions, hand-labelled with their correct NOC code, run through
         four retrieval methods with identical queries.
       </p>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))",
-          gap: 14,
-          marginTop: 26,
-        }}
-      >
+      <div className="mt-[26px] grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3.5">
         {stats.map((s) => (
           <div
             key={s.label}
-            style={{
-              padding: "16px 18px",
-              borderRadius: 12,
-              background: "#161826",
-              boxShadow: "var(--shadow-sm)",
-            }}
+            className="rounded-xl bg-[#161826] px-4.5 py-4 shadow-[var(--shadow-sm)]"
           >
-            <div
-              style={{
-                fontSize: 11,
-                letterSpacing: ".06em",
-                textTransform: "uppercase",
-                color: "rgba(233,233,237,.55)",
-              }}
-            >
+            <div className="text-[11px] tracking-[.06em] text-[rgba(233,233,237,.55)] uppercase">
               {s.label}
             </div>
-            <div
-              style={{
-                fontSize: 32,
-                fontWeight: 500,
-                marginTop: 4,
-                color: s.color,
-              }}
-            >
+            <div className={`mt-1 text-[32px] font-medium ${s.colorClass ?? ""}`}>
               {s.value}
             </div>
-            <div style={{ fontSize: 12, color: "rgba(233,233,237,.5)" }}>
+            <div className="text-[12px] text-[rgba(233,233,237,.5)]">
               {s.note}
             </div>
           </div>
         ))}
       </div>
-      <h5 style={{ margin: "32px 0 4px" }}>
+      <h5 className="mx-0 mt-8 mb-1">
         Each method against the same {examples_report.length} labels
       </h5>
-      <p
-        style={{
-          margin: "0 0 16px",
-          fontSize: 13,
-          color: "rgba(233,233,237,.55)",
-        }}
-      >
+      <p className="mt-0 mb-4 text-[13px] text-[rgba(233,233,237,.55)]">
         Higher NDCG@10 means the correct code sits nearer the top of the list.
         The shipped method is the{" "}
-        <span style={{ color: "#b5abfc" }}>second</span> row.
+        <span className="text-[#b5abfc]">second</span> row.
       </p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <div className="flex flex-col gap-0.5">
         {methodRows.map((m) => (
           <div
             key={m.name}
-            style={{
-              padding: "13px 0",
-              borderTop: "1px solid rgba(233,233,237,.08)",
-            }}
+            className="border-t border-[rgba(233,233,237,.08)] py-[13px]"
           >
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "baseline",
-                gap: 8,
-                fontSize: 14,
-              }}
-            >
-              <span style={{ color: m.fg, minWidth: 190 }}>{m.name}</span>
-              <span style={{ fontSize: 12, color: "rgba(233,233,237,.45)" }}>
+            <div className="flex flex-wrap items-baseline gap-2 text-[14px]">
+              <span className={`min-w-[190px] ${m.fgClass}`}>{m.name}</span>
+              <span className="text-[12px] text-[rgba(233,233,237,.45)]">
                 {m.note}
               </span>
               <span
-                style={{
-                  marginLeft: "auto",
-                  fontVariantNumeric: "tabular-nums",
-                  color: m.fg,
-                  width: 66,
-                  textAlign: "right",
-                }}
+                className={`ml-auto w-[66px] text-right tabular-nums ${m.fgClass}`}
               >
                 {m.ndcg}
               </span>
-              <span
-                style={{
-                  fontSize: 12,
-                  color: "rgba(233,233,237,.45)",
-                  width: 86,
-                  textAlign: "right",
-                }}
-              >
+              <span className="w-[86px] text-right text-[12px] text-[rgba(233,233,237,.45)]">
                 hit {m.hit}
               </span>
             </div>
-            <div
-              style={{
-                marginTop: 8,
-                height: 6,
-                borderRadius: 3,
-                background: "rgba(233,233,237,.1)",
-              }}
-            >
+            <div className="mt-2 h-1.5 rounded-[3px] bg-[rgba(233,233,237,.1)]">
               <div
-                style={{
-                  width: `${m.pctVal}%`,
-                  height: 6,
-                  borderRadius: 3,
-                  background: m.bar,
-                }}
+                className={`h-1.5 rounded-[3px] ${m.barClass}`}
+                style={{ width: `${m.pctVal}%` }}
               />
             </div>
           </div>
         ))}
       </div>
-      <h5 style={{ margin: "34px 0 4px" }}>Per-example report</h5>
-      <p
-        style={{
-          margin: "0 0 14px",
-          fontSize: 13,
-          color: "rgba(233,233,237,.55)",
-        }}
-      >
+      <h5 className="mx-0 mt-[34px] mb-1">Per-example report</h5>
+      <p className="mt-0 mb-3.5 text-[13px] text-[rgba(233,233,237,.55)]">
         One row per labelled description, from{" "}
-        <code style={{ fontSize: 12 }}>examples_report</code>. NDCG and hit are
+        <code className="text-[12px]">examples_report</code>. NDCG and hit are
         for the shipped vector method.
       </p>
       <EvaluationExampleTable examples_report={examples_report} />
-      <p
-        style={{
-          margin: "18px 0 0",
-          fontSize: 12,
-          color: "rgba(233,233,237,.45)",
-          maxWidth: "74ch",
-        }}
-      >
+      <p className="mt-4.5 mb-0 max-w-[74ch] text-[12px] text-[rgba(233,233,237,.45)]">
         Labels live in data/noc_eval_labels.csv. This report is produced live by
         the /evaluate endpoint on each visit.
       </p>

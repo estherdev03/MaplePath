@@ -18,17 +18,17 @@ export interface ProgramView {
   sub: string;
   verdict: string;
   tagClass: string;
-  edge: string;
+  edgeClass: string;
   reqs: RequirementRow[];
 }
 
-function verdictFor(eligible: boolean, reqs: RequirementRow[]): { verdict: string; tagClass: string; edge: string } {
-  if (eligible) return { verdict: "Eligible", tagClass: "tag-accent", edge: "#5d5294" };
+function verdictFor(eligible: boolean, reqs: RequirementRow[]): { verdict: string; tagClass: string; edgeClass: string } {
+  if (eligible) return { verdict: "Eligible", tagClass: "tag-accent", edgeClass: "shadow-[0_0_0_1px_#5d5294]" };
   const open = reqs.filter((r) => !r.ok).length;
   return {
     verdict: open === reqs.length ? "Not eligible" : `${open} requirement${open === 1 ? "" : "s"} open`,
     tagClass: "tag-neutral",
-    edge: "#3f424d",
+    edgeClass: "shadow-[0_0_0_1px_#3f424d]",
   };
 }
 

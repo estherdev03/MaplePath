@@ -33,75 +33,37 @@ export default function Home() {
 
   return (
     <div>
-      <section
-        style={{ maxWidth: 1080, margin: "0 auto", padding: "78px 26px 56px" }}
-      >
+      <section className="mx-auto max-w-[1080px] px-[26px] pt-[78px] pb-14">
         <span className="tag tag-outline">Express Entry · NOC 2021 · CRS</span>
-        <h1
-          style={{
-            fontSize: "clamp(38px,5.4vw,62px)",
-            margin: "20px 0 0",
-            maxWidth: "19ch",
-            letterSpacing: "-.03em",
-          }}
-        >
+        <h1 className="mt-5 mb-0 max-w-[19ch] text-[clamp(38px,5.4vw,62px)] tracking-[-.03em]">
           Know exactly where you stand - category by category.
         </h1>
-        <p
-          style={{
-            margin: "20px 0 0",
-            maxWidth: "56ch",
-            fontSize: 17,
-            color: "rgba(233,233,237,.72)",
-          }}
-        >
+        <p className="mt-5 mb-0 max-w-[56ch] text-[17px] text-[rgba(233,233,237,.72)]">
           MaplePath reads your situation in plain language, classifies your
           occupation against the official NOC 2021 profiles, and computes your
           CRS score and program eligibility with published point tables. Every
           number is inspectable.
         </p>
-        <div
-          style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 30 }}
-        >
+        <div className="mt-[30px] flex flex-wrap gap-2.5">
           <Link
             href="/intake"
-            className="btn btn-primary"
-            style={{ fontSize: 15, padding: "10px 18px" }}
+            className="btn btn-primary px-[18px] py-2.5 text-[15px]"
           >
             Describe your situation
           </Link>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "26px 44px",
-            marginTop: 46,
-            paddingTop: 26,
-            background:
-              "linear-gradient(to right,transparent,rgba(233,233,237,.16) 48px,rgba(233,233,237,.16) calc(100% - 48px),transparent) no-repeat top / 100% 1px",
-          }}
-        >
+        <div className="mt-[46px] flex flex-wrap gap-x-11 gap-y-[26px] pt-[26px] [background:linear-gradient(to_right,transparent,rgba(233,233,237,.16)_48px,rgba(233,233,237,.16)_calc(100%_-_48px),transparent)_no-repeat_top_/_100%_1px]">
           {stats.map((s) => (
             <div key={s.label}>
-              <div style={{ fontSize: 30, fontWeight: 500 }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: "rgba(233,233,237,.55)" }}>
+              <div className="text-[30px] font-medium">{s.value}</div>
+              <div className="text-[12px] text-[rgba(233,233,237,.55)]">
                 {s.label}
               </div>
             </div>
           ))}
         </div>
       </section>
-      <section
-        style={{
-          maxWidth: 1080,
-          margin: "0 auto",
-          padding: "10px 26px 40px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(255px,1fr))",
-          gap: 14,
-        }}
-      >
+      <section className="mx-auto grid max-w-[1080px] grid-cols-[repeat(auto-fit,minmax(255px,1fr))] gap-3.5 px-[26px] pt-2.5 pb-10">
         {steps.map((s) => (
           <div className="card elev-sm" key={s.kicker}>
             <div className="card-kicker">{s.kicker}</div>
@@ -110,16 +72,8 @@ export default function Home() {
           </div>
         ))}
       </section>
-      <section
-        style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 26px 90px" }}
-      >
-        <p
-          style={{
-            fontSize: 12,
-            color: "rgba(233,233,237,.45)",
-            maxWidth: "72ch",
-          }}
-        >
+      <section className="mx-auto max-w-[1080px] px-[26px] pt-4 pb-[90px]">
+        <p className="max-w-[72ch] text-[12px] text-[rgba(233,233,237,.45)]">
           MaplePath is an engineering demonstration. It is not legal advice and
           does not replace IRCC tools or a licensed representative.
         </p>

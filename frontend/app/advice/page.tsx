@@ -13,17 +13,9 @@ export default function AdvicePage() {
 
   if (!advice) {
     return (
-      <div
-        style={{ maxWidth: 880, margin: "0 auto", padding: "34px 26px 80px" }}
-      >
-        <h3 style={{ margin: 0 }}>What to do next</h3>
-        <p
-          style={{
-            margin: "10px 0 22px",
-            fontSize: 14,
-            color: "rgba(233,233,237,.6)",
-          }}
-        >
+      <div className="mx-auto max-w-[880px] px-[26px] pt-[34px] pb-20">
+        <h3 className="m-0">What to do next</h3>
+        <p className="mt-2.5 mb-[22px] text-[14px] text-[rgba(233,233,237,.6)]">
           Confirm your profile first — advice is generated from your CRS
           breakdown and eligibility results.
         </p>
@@ -35,36 +27,16 @@ export default function AdvicePage() {
   }
 
   return (
-    <div style={{ maxWidth: 880, margin: "0 auto", padding: "34px 26px 80px" }}>
-      <h3 style={{ margin: 0 }}>What to do next</h3>
-      <p
-        style={{
-          margin: "6px 0 24px",
-          fontSize: 14,
-          color: "rgba(233,233,237,.6)",
-        }}
-      >
+    <div className="mx-auto max-w-[880px] px-[26px] pt-[34px] pb-20">
+      <h3 className="m-0">What to do next</h3>
+      <p className="mt-1.5 mb-6 text-[14px] text-[rgba(233,233,237,.6)]">
         Generated from your own CRS breakdown and eligibility results - not
         open-ended model output.
       </p>
-      <div
-        style={{
-          padding: "22px 24px",
-          borderRadius: 14,
-          background: "#161826",
-          boxShadow: "var(--shadow-sm)",
-        }}
-      >
+      <div className="rounded-[14px] bg-[#161826] px-6 py-[22px] shadow-[var(--shadow-sm)]">
         {renderAdvice(advice)}
       </div>
-      <p
-        style={{
-          margin: "22px 0 0",
-          fontSize: 12,
-          color: "rgba(233,233,237,.45)",
-          maxWidth: "70ch",
-        }}
-      >
+      <p className="mt-[22px] mb-0 max-w-[70ch] text-[12px] text-[rgba(233,233,237,.45)]">
         This is not legal advice and does not replace IRCC tools or a licensed
         representative.
       </p>

@@ -11,17 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          minHeight: "100vh",
-          background: "#0f111c",
-          color: "#e9e9ed",
-          fontFamily: "'Inter',system-ui,sans-serif",
-          fontSize: 15,
-          lineHeight: 1.55,
-        }}
-      >
+      <body className="m-0 min-h-screen bg-[#0f111c] font-[family-name:var(--font-body)] text-[15px] leading-[1.55] text-[#e9e9ed]">
         <ProfileProvider>
           <Header />
           {children}

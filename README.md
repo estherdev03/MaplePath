@@ -4,6 +4,8 @@
 
 **Live demo:** [maple-path-black.vercel.app](https://maple-path-black.vercel.app/)
 
+[![estherdev03/maplepath, explained in a one-minute video](https://gitdiagram.com/api/video/file?username=estherdev03&repo=maplepath&format=poster)](https://gitdiagram.com/estherdev03/maplepath/video)
+
 MaplePath helps prospective immigrants understand where they stand: it extracts a structured profile from natural language, classifies the occupation under **NOC 2021**, calculates a **CRS** score, and assesses eligibility for **Federal Skilled Worker**, **Canadian Experience Class**, and **Federal Skilled Trades**.
 
 Built as a production-oriented **Python** backend: **LangGraph** orchestration, pgvector semantic retrieval over PostgreSQL (chosen by benchmark against keyword, RRF, and reranked hybrid search), retrieval-augmented occupation classification, and **rule-based** scoring engines that stay explainable. A **Next.js** frontend walks applicants through intake, confirmation, and results against that API.
@@ -13,9 +15,9 @@ Built as a production-oriented **Python** backend: **LangGraph** orchestration, 
 ## Recent changes
 
 - **Occupation classification now uses pgvector semantic search instead of the reranked hybrid pipeline.** On the expanded labelled set, vector search scored higher NDCG@10 than hybrid (0.609 vs 0.583) with a 99% top-10 hit rate, so `/profile/complete` now retrieves NOC candidates with `noc_semantic_search`. BM25, RRF, and hybrid remain in `noc/` for comparison in the benchmark.
-- **Labelled evaluation set grew from 9 to 300 job descriptions** (`data/noc_eval_labels.csv`).
-- **Hit rate is now strictly top-10.** `calculate_hit_rate` only checks the first `k` results, previously there was a bug that makes a match anywhere in the result list counted.
-- **Benchmark page:** the shipped method is labelled "vector", and the per-example report is a paginated table (20 rows per page) in `frontend/components/EvaluationExampleTable.tsx`.
+- **Labelled evaluation set grew from 9 to 300 job descriptions** (`data/noc_eval_labels.csv`), and hit rate is now strictly top-10. A bug had counted a match anywhere in the result list.
+- **Frontend styling moved from inline styles to Tailwind CSS.** The design-system rules in `frontend/app/globals.css` now sit in CSS layers so utility classes can override them.
+- **100% test coverage on the CRS engine (`crs/`) and REST API (`api/app.py`).** The new tests also led to fixes for crashes on missing language scores and on profiles without an occupation. Run `make testcov` for a coverage report.
 
 ---
 
@@ -51,36 +53,13 @@ Skills this project is designed to demonstrate:
 - **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 300-query labelled set, the shipped vector pipeline scores **0.609 NDCG@10** (+0.026 over Hybrid) with a **99% top-10 hit rate**. Results are shown on the frontend's benchmark page, with a paginated per-example report
 - **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
 - **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, results, CRS simulator, NOC search, eligibility, advice, and retrieval benchmark views) calling the FastAPI backend
-- **Automated test suite** with pytest covering the graph, services, and API layer
+- **Automated test suite** with pytest covering the graph, services, and API layer, with 100% line coverage on the CRS engine (`crs/`) and the REST API (`api/app.py`)
 
 ---
 
 ## Architecture
 
-```
-Event (profile_draft | profile_confirm)
-        │
-        ▼
-   orchestrator ──► profile_router
-                        │
-                        ├── profile_draft   ──► parse_profile   (LLM structured output) ──► END
-                        │
-                        └── profile_confirm ──► create_profile
-                                                  ├── retrieve NOC candidates (pgvector semantic search)
-                                                  └── classify occupation from retrieved context
-                                                        │
-                                                        ▼
-                                                  calculate_crs          (deterministic)
-                                                        │
-                                                        ▼
-                                                  evaluate_express_entry (deterministic)
-                                                        │
-                                                        ▼
-                                                  create_advice          (LLM) ──► END
-                                                        │
-                                                        ▼
-                                  JSON result (occupation, CRS breakdown, eligibility, advice)
-```
+[![Architecture diagram of estherdev03/maplepath](docs/architecture.png)](https://gitdiagram.com/estherdev03/maplepath?utm_source=readme&utm_medium=picture)
 
 | Module          | Responsibility                                                                                             |
 | --------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -143,8 +122,6 @@ npm run dev   # http://localhost:3000, expects the API at http://localhost:8000 
 | `POST` | `/crs/simulate`     | Recalculate CRS score and eligibility for an edited profile |
 | `GET`  | `/evaluate`         | Run the NOC retrieval benchmark and return its report       |
 
-Sample graph run without the API: `uv run python main.py`.
-
 NOC retrieval benchmark (labelled set in `data/noc_eval_labels.csv`): call `GET /evaluate`, open the frontend's `/benchmark` page, or run it directly:
 
 ```bash
@@ -153,7 +130,7 @@ uv run python -c "from noc.evaluate import noc_retrieval_method_evaluate as run;
 
 Results are cached in the database by the labels file's hash, so the benchmark only re-runs (and calls Cohere) when the labelled set changes.
 
-Run the test suite: `make test` (or `uv run pytest`).
+Run the test suite with `uv run pytest`, or `make testcov` for a coverage report.
 
 Stop the database with `make pgdown` (add `make pgdownvol` to drop the volume). Initial `init_db.py` scrapes official NOC profiles and may take a substantial amount of time.
 

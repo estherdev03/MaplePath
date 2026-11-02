@@ -18,9 +18,9 @@ export default function EvaluationExampleTable({
         <thead>
           <tr>
             <th>Job title</th>
-            <th style={{ width: 130 }}>Case type</th>
-            <th style={{ textAlign: "right", width: 78 }}>NDCG</th>
-            <th style={{ width: 96 }}>Outcome</th>
+            <th className="w-[130px]">Case type</th>
+            <th className="w-[78px] text-right">NDCG</th>
+            <th className="w-24">Outcome</th>
           </tr>
         </thead>
         <tbody>
@@ -36,27 +36,21 @@ export default function EvaluationExampleTable({
                   : hit === 1
                     ? "tag-outline"
                     : "tag-neutral";
-              const color =
+              const colorClass =
                 ndcg === 1
-                  ? "#b5abfc"
+                  ? "text-[#b5abfc]"
                   : hit === 1
-                    ? "rgba(233,233,237,.82)"
-                    : "#cfd3e5";
+                    ? "text-[rgba(233,233,237,.82)]"
+                    : "text-[#cfd3e5]";
               return (
                 <tr key={`${e.job_title}-${e.case_type}`}>
-                  <td style={{ color: "rgba(233,233,237,.85)" }}>
+                  <td className="text-[rgba(233,233,237,.85)]">
                     {e.job_title}
                   </td>
-                  <td style={{ color: "rgba(233,233,237,.62)" }}>
+                  <td className="text-[rgba(233,233,237,.62)]">
                     {e.case_type}
                   </td>
-                  <td
-                    style={{
-                      textAlign: "right",
-                      fontVariantNumeric: "tabular-nums",
-                      color,
-                    }}
-                  >
+                  <td className={`text-right tabular-nums ${colorClass}`}>
                     {ndcg.toFixed(3)}
                   </td>
                   <td>

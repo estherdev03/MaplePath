@@ -39,9 +39,9 @@ export function renderAdvice(text: string): ReactNode[] {
   const flushList = () => {
     if (list.length === 0) return;
     blocks.push(
-      <ul key={`ul-${key++}`} style={{ margin: "0 0 14px", paddingLeft: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+      <ul key={`ul-${key++}`} className="mt-0 mb-3.5 flex flex-col gap-1.5 pl-5">
         {list.map((item, i) => (
-          <li key={i} style={{ fontSize: 14, color: "rgba(233,233,237,.82)" }}>
+          <li key={i} className="text-[14px] text-[rgba(233,233,237,.82)]">
             {inline(item)}
           </li>
         ))}
@@ -64,13 +64,13 @@ export function renderAdvice(text: string): ReactNode[] {
     flushList();
     if (looksLikeHeading(line)) {
       blocks.push(
-        <h6 key={`h-${key++}`} style={{ margin: "18px 0 8px", color: "#9184d9" }}>
+        <h6 key={`h-${key++}`} className="mt-4.5 mb-2 text-[#9184d9]">
           {line.replace(/\*\*/g, "").replace(/:$/, "")}
         </h6>
       );
     } else {
       blocks.push(
-        <p key={`p-${key++}`} style={{ margin: "0 0 12px", fontSize: 14, lineHeight: 1.65, color: "rgba(233,233,237,.82)" }}>
+        <p key={`p-${key++}`} className="mt-0 mb-3 text-[14px] leading-[1.65] text-[rgba(233,233,237,.82)]">
           {inline(line)}
         </p>
       );
