@@ -16,6 +16,9 @@ Built as a production-oriented **Python** backend: **LangGraph** orchestration, 
 
 ## Recent changes
 
+- **The score simulator now uses the backend's CRS engine for every change.** It used to recalculate in the browser with a single-applicant copy of the rules, so married applicants saw a different score there than on the results page. Each move now sends the edited profile to `POST /crs/simulate`, so the simulator and the results page can no longer disagree. The simulator also gained a marital status toggle and spouse controls (education, language, Canadian work experience), so it covers every CRS factor. To support it, `/crs/simulate` accepts CLB/NCLC levels directly when no raw test scores are sent.
+- **CEC work experience now counts only when the occupation is TEER 0–3.** Applicants aren't asked the TEER of past work, so the classified occupation stands in for it.
+- **Clearer confirm form.** Required fields are marked, the work experience section is grouped by inside and outside Canada, and each field has a hint explaining what counts (fulltime vs part-time, and work that doesn't count for Express Entry).
 - **CRS and eligibility rules checked against IRCC's current pages, and corrected.** Fixes include:
   - FSW no longer requires a second-language test.
   - Age points stop at 46.
@@ -24,7 +27,7 @@ Built as a production-oriented **Python** backend: **LangGraph** orchestration, 
   - Canadian study points follow IRCC's 1–2 year and 3+ year bands.
   - Proof of funds now scales with family size (spouse and dependent children) and is waived only with a job offer *and* work authorization.
   
-  The profile, AI parser, and confirm form gained the fields these rules need. The simulator's copy of the CRS rules was brought in line with the backend.
+  The profile, AI parser, and confirm form gained the fields these rules need.
 - **Occupation classification now uses pgvector semantic search instead of the reranked hybrid pipeline.** On the expanded labelled set, vector search scored higher NDCG@10 than hybrid (0.609 vs 0.583) with a 99% top-10 hit rate, so `/profile/complete` now retrieves NOC candidates with `noc_semantic_search`. BM25, RRF, and hybrid remain in `noc/` for comparison in the benchmark.
 - **Labelled evaluation set grew from 9 to 300 job descriptions** (`data/noc_eval_labels.csv`), and hit rate is now strictly top-10. A bug had counted a match anywhere in the result list.
 - **Frontend styling moved from inline styles to Tailwind CSS.** The design-system rules in `frontend/app/globals.css` now sit in CSS layers so utility classes can override them.
@@ -45,10 +48,11 @@ Express Entry decisions depend on occupation codes, language conversions, and pr
 | **Profile intelligence** | Converts unstructured text into a validated applicant profile, flagging missing or ambiguous fields instead of inventing data                        |
 | **Occupation matching**  | pgvector semantic search retrieves official NOC 2021 profiles, an LLM then picks a unit group, TEER, and confidence score from those candidates only |
 | **CRS scoring**          | Full Comprehensive Ranking System breakdown: core human capital, spouse factors, skill transferability, and additional points                        |
+| **Score simulator**      | Adjust age, languages, work experience, education, marital status, spouse factors and additional points, and see the CRS rescored by the same engine as the results |
 | **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks by family size                |
 | **Personalized advice**  | An LLM turns the computed CRS breakdown and eligibility results into ranked, profile-specific recommendations, without recalculating scores          |
 
-**Language support:** IELTS, CELPIP, and PTE (English); TEF and TCF (French), converted to CLB / NCLC before scoring.
+**Language support:** IELTS, CELPIP, and PTE (English), TEF and TCF (French), converted to CLB / NCLC before scoring. CLB / NCLC levels can also be sent directly, which is how the simulator expresses language changes.
 
 ---
 
@@ -63,14 +67,88 @@ Skills this project is designed to demonstrate:
 - **Domain rule engines** for CRS and Express Entry, implemented in Python with Pydantic models (auditable point tables, not prompt-only scoring)
 - **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 300-query labelled set, the shipped vector pipeline scores **0.609 NDCG@10** (+0.026 over Hybrid) with a **99% top-10 hit rate**. Results are shown on the frontend's benchmark page, with a paginated per-example report
 - **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
-- **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, results, CRS simulator, NOC search, eligibility, advice, and retrieval benchmark views) calling the FastAPI backend
+- **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, results, CRS simulator, NOC match, eligibility, advice, and retrieval benchmark views) calling the FastAPI backend
 - **Automated test suite** with pytest covering the graph, services, and API layer, with 100% line coverage on the CRS engine (`crs/`) and the REST API (`api/app.py`)
 
 ---
 
 ## Architecture
 
-[![Architecture diagram of estherdev03/maplepath](docs/architecture.png)](https://gitdiagram.com/estherdev03/maplepath?utm_source=readme&utm_medium=picture)
+```mermaid
+flowchart TD
+    applicant(("Applicant"))
+
+    subgraph web["Frontend (Next.js)"]
+        intake["Profile intake<br/>IntakeForm.tsx"]
+        confirm["Profile confirmation<br/>ConfirmForm.tsx"]
+        context["Confirmed profile in the browser<br/>profile-context.tsx"]
+        views["Results, NOC match,<br/>eligibility and advice pages"]
+        simulator["CRS simulator<br/>SimulatorView.tsx"]
+        benchmark["Retrieval benchmark<br/>benchmark/page.tsx"]
+        client["Server actions and API client<br/>actions.ts, api.ts"]
+    end
+
+    subgraph backend["Backend (FastAPI)"]
+        api["REST API<br/>api/app.py"]
+
+        subgraph workflow["LangGraph workflow"]
+            lg["Graph and routers<br/>construct.py, routers.py"]
+            nodes["Nodes<br/>parse, create profile, CRS,<br/>eligibility, advice"]
+            profile["Profile service<br/>user_profile/service.py"]
+        end
+
+        subgraph scoring["Scoring and eligibility (rule-based)"]
+            crs["CRS scoring<br/>crs/service.py"]
+            lang["Language conversion<br/>english.py, french.py"]
+            transfer["Skill transferability<br/>transferability.py"]
+            elig["Program eligibility<br/>eligibility/service.py"]
+        end
+
+        subgraph noc["NOC classification"]
+            nocsvc["NOC search<br/>noc/service.py"]
+            nocrepo["NOC repository<br/>noc/repository.py"]
+            evaluate["Retrieval evaluation<br/>noc/evaluate.py"]
+        end
+    end
+
+    subgraph external["External services"]
+        openai["OpenAI<br/>chat model and embeddings"]
+        cohere["Cohere Rerank"]
+    end
+
+    db[("PostgreSQL + pgvector<br/>NOC records, benchmark cache")]
+
+    applicant --> intake
+    intake -->|"POST /profile/parse"| client
+    confirm -->|"POST /profile/complete"| client
+    simulator -->|"POST /crs/simulate on each change"| client
+    benchmark -->|"GET /evaluate"| client
+    client -->|"stores confirmed profile"| context
+    context --> views
+    context --> simulator
+    client -->|"HTTP, X-API-Key"| api
+
+    api -->|"parse and complete"| lg
+    lg --> nodes
+    nodes --> profile
+    profile -->|"LLM calls"| openai
+    profile -->|"NOC candidates"| nocsvc
+    profile --> crs
+    profile --> elig
+
+    api -->|"simulate, no LLM"| crs
+    api -->|"simulate"| elig
+    crs --> lang
+    crs --> transfer
+
+    api -->|"evaluate"| evaluate
+    evaluate -->|"BM25, vector, RRF, hybrid"| nocsvc
+    nocsvc -->|"embeddings"| openai
+    nocsvc -->|"hybrid rerank"| cohere
+    nocsvc --> nocrepo
+    nocrepo --> db
+    evaluate -->|"caches results"| db
+```
 
 | Module          | Responsibility                                                                                             |
 | --------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -81,7 +159,7 @@ Skills this project is designed to demonstrate:
 | `eligibility/`  | FSW, CEC, and FST rule evaluation                                                                          |
 | `db/`           | SQLAlchemy models and persistence                                                                          |
 | `api/`          | REST API                                                                                                   |
-| `frontend/`     | Next.js application (intake, confirmation, results, simulator, NOC search, eligibility, advice, benchmark) |
+| `frontend/`     | Next.js application (intake, confirmation, results, simulator, NOC match, eligibility, advice, benchmark) |
 | `tests/`        | pytest suite mirroring the module layout above                                                             |
 
 ---
@@ -130,7 +208,7 @@ npm run dev   # http://localhost:3000, expects the API at http://localhost:8000 
 | ------ | ------------------- | ----------------------------------------------------------- |
 | `POST` | `/profile/parse`    | Extract a structured draft from free-text                   |
 | `POST` | `/profile/complete` | Confirm a profile; return occupation, CRS, and eligibility  |
-| `POST` | `/crs/simulate`     | Recalculate CRS score and eligibility for an edited profile |
+| `POST` | `/crs/simulate`     | Recalculate CRS score and eligibility for an edited profile (used by the simulator on every change) |
 | `GET`  | `/evaluate`         | Run the NOC retrieval benchmark and return its report       |
 
 NOC retrieval benchmark (labelled set in `data/noc_eval_labels.csv`): call `GET /evaluate`, open the frontend's `/benchmark` page, or run it directly:
