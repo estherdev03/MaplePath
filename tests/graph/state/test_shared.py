@@ -5,7 +5,7 @@ from graph.state.shared import MainState, UserProfile
 
 
 def test_user_profile_defaults():
-    """provincial_nomination/sibling_in_can/relative_in_can default False;
+    """provincial_nomination/sibling_in_can/relative_in_can default False,
     current_available_funds defaults 0; optional fields default None."""
     profile = UserProfile()
     assert profile.provincial_nomination is False
@@ -25,7 +25,7 @@ def test_user_profile_update_sets_fields_and_bumps_updated_at():
 
 
 def test_main_state_accepts_profile_draft_or_user_profile():
-    """profile: UserProfile | ProfileDraft -- both should validate."""
+    """profile: UserProfile | ProfileDraft, both should validate."""
     event = ProfileDraftEvent(
         event_type="profile_draft", payload=ProfileDraftPayload(text="hi")
     )

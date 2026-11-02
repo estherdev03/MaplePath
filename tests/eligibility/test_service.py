@@ -1,5 +1,6 @@
 """Tests for eligibility.service.EligibilityService."""
 
+from crs.constants import SECOND_LANGUAGE
 from graph.state.profile import (
     CanadaEducation,
     CLBScore,
@@ -10,7 +11,9 @@ from graph.state.profile import (
     Experience,
     FrenchScore,
     FrenchTest,
+    LanguageScore,
     Languages,
+    MaritalStatus,
     NCLCScore,
     Occupation,
     SpouseProfile,
@@ -22,8 +25,8 @@ def _occ(**kw):
     return Occupation(title="x", **kw)
 
 
-# ---- _calculate_fsw ----
-def test_calculate_fsw_education_language_and_work_points(eligibility_service):
+# ============ _calculate_fsw ============
+def test_calculate_fsw_education_english_language_and_work_points(eligibility_service):
     """Education table, CLB7+-only first-language points, and the combined
     work-experience-years cap all feed the FSW selection score."""
     user = UserProfile(
@@ -46,10 +49,85 @@ def test_calculate_fsw_education_language_and_work_points(eligibility_service):
     assert breakdown.work_exp_pts == 15  # WORK_EXPERIENCE_POINTS[6] (capped)
 
 
-def test_calculate_fsw_work_exp_with_fractional_years_does_not_raise(
+def test_calculate_fsw_french_first_english_second_language_points(eligibility_service):
+    user = UserProfile(
+        languages=Languages(
+            english=EnglishScore(
+                test_name=EnglishTest.IELTS,
+                is_first_language=False,
+                clb_scores=CLBScore(speaking=6, reading=6, listening=6, writing=6),
+            ),
+            french=FrenchScore(
+                test_name=FrenchTest.TEF,
+                is_first_language=True,
+                nclc_scores=NCLCScore(speaking=9, reading=9, writing=9, listening=9),
+            ),
+        )
+    )
+    _, breakdown = eligibility_service._calculate_fsw(user)
+    assert breakdown.first_lang_pts == 6 * 4
+    assert breakdown.second_lang_pts == 4
+
+
+def test_calculate_fsw_spouse_language(eligibility_service):
+    user_english_spouse = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(
+            languages=Languages(
+                english=EnglishScore(
+                    test_name=EnglishTest.IELTS,
+                    is_first_language=True,
+                    clb_scores=CLBScore(reading=5, speaking=5, writing=5, listening=5),
+                ),
+                french=None,
+            )
+        ),
+    )
+    user_french_spouse = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(
+            languages=Languages(
+                french=FrenchScore(
+                    test_name=FrenchTest.TEF,
+                    is_first_language=True,
+                    nclc_scores=NCLCScore(
+                        reading=5, speaking=5, writing=5, listening=5
+                    ),
+                ),
+                english=None,
+            )
+        ),
+    )
+    _, breakdown_english = eligibility_service._calculate_fsw(user_english_spouse)
+    _, breakdown_french = eligibility_service._calculate_fsw(user_french_spouse)
+    assert breakdown_english.adaptability_pts == 5
+    assert breakdown_french.adaptability_pts == 5
+
+
+def test_calculate_fsw_spouse_education(eligibility_service):
+    user = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(
+            education=Education(level=EducationLevel.BACHELOR, from_canada=True)
+        ),
+    )
+    _, breakdown = eligibility_service._calculate_fsw(user)
+    assert breakdown.adaptability_pts == 5
+
+
+def test_calculate_fsw_spouse_can_exp(eligibility_service):
+    user = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(canadian_experience=2),
+    )
+    _, breakdown = eligibility_service._calculate_fsw(user)
+    assert breakdown.adaptability_pts == 5
+
+
+def test_calculate_fsw_work_exp_with_fractional_years_does_not_raise_error(
     eligibility_service,
 ):
-    """canada_years/foreign_years are floats; combined total must be cast to
+    """canada_years/foreign_years are floats, combined total must be cast to
     int before indexing WORK_EXPERIENCE_POINTS or a fractional sum (e.g. 2.5)
     raises a KeyError instead of scoring correctly."""
     user = UserProfile(
@@ -70,7 +148,7 @@ def test_calculate_fsw_age_points_capped_and_below_18(eligibility_service):
 
 
 def test_calculate_fsw_employment_and_adaptability_capped(eligibility_service):
-    """A job offer grants employment points plus an adaptability factor;
+    """A job offer grants employment points plus an adaptability factor,
     stacking enough adaptability factors is capped at ADAPTABILITY_MAX."""
     user = UserProfile(
         occupation=_occ(teer=1, have_canada_job_offer=True),
@@ -83,7 +161,7 @@ def test_calculate_fsw_employment_and_adaptability_capped(eligibility_service):
     assert breakdown.adaptability_pts == 10  # capped even though factors sum higher
 
 
-# ---- _evaluate_federal_skilled_worker ----
+# ============ _evaluate_federal_skilled_worker ============
 def test_fsw_teer_language_and_education_gates(eligibility_service):
     eng = EnglishScore(
         test_name=EnglishTest.IELTS,
@@ -186,10 +264,43 @@ def test_fsw_selection_factor_passed_at_exactly_67(eligibility_service):
     assert not_passed.selection_factor_passed is False
 
 
-# ---- _evaluate_canadian_exp_class ----
+def test_fsw_work_experience(eligibility_service):
+    work_experience = Experience(foreign_years=2, continuous_fulltime_foreign_years=1)
+    profile = UserProfile(work_experience=work_experience)
+    assert (
+        eligibility_service._evaluate_federal_skilled_worker(
+            profile
+        ).continuous_work_experience_met
+        is True
+    )
+
+
+def test_fsw_language_french_first_language(eligibility_service):
+    french_score = FrenchScore(
+        test_name=FrenchTest.TCF,
+        nclc_scores=NCLCScore(speaking=8, reading=8, listening=8, writing=8),
+        is_first_language=True,
+    )
+    english_score = EnglishScore(
+        test_name=EnglishTest.IELTS,
+        clb_scores=CLBScore(speaking=6, reading=6, writing=6, listening=6),
+        is_first_language=False,
+    )
+    profile = UserProfile(
+        languages=Languages(english=english_score, french=french_score)
+    )
+    assert (
+        eligibility_service._evaluate_federal_skilled_worker(
+            profile
+        ).language_requirement_met
+        is True
+    )
+
+
+# ============ _evaluate_canadian_exp_class ============
 def test_cec_gates_and_teer_dependent_language_requirement(eligibility_service):
-    """TEER 0/1 needs CLB7+; TEER 2/3 needs CLB5+; TEER 4/5 never satisfies
-    the language gate (documented quirk, not a fix -- see source)."""
+    """TEER 0/1 needs CLB7+, TEER 2/3 needs CLB5+, TEER 4/5 never satisfies
+    the language gate."""
     work = Experience(canada_work_exp_within_3_years=1, canada_years=1)
     eng7 = EnglishScore(
         test_name=EnglishTest.IELTS,
@@ -248,7 +359,7 @@ def test_cec_gates_and_teer_dependent_language_requirement(eligibility_service):
     )
 
 
-# ---- _evaluate_federal_skilled_trades ----
+# ============ _evaluate_federal_skilled_trades ============
 def test_fst_eligible_trade_matches_and_excludes(eligibility_service):
     """major/minor/noc_code match makes a trade eligible, except the two
     explicit major+submajor exclusions."""
@@ -301,7 +412,7 @@ def test_fst_language_and_job_offer_or_certificate(eligibility_service):
     assert result2.settlement_funds_required is False
 
 
-# ---- evaluate_express_entry ----
+# ============ evaluate_express_entry ============
 def test_evaluate_express_entry_returns_all_three_program_results(eligibility_service):
     user = UserProfile(occupation=_occ(have_canada_job_offer=False))
     result = eligibility_service.evaluate_express_entry(user)

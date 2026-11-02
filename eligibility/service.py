@@ -82,7 +82,7 @@ class EligibilityService:
             fsw_score.age_pts = AGE_POINTS[min(user.age, 46)]
 
         # employment
-        if user.occupation.have_canada_job_offer:
+        if user.occupation and user.occupation.have_canada_job_offer:
             fsw_score.employment_pts = ARRANGED_EMPLOYMENT_POINTS
 
         # Adaptability

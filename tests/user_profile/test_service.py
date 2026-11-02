@@ -52,9 +52,9 @@ def _payload():
     )
 
 
-# ---- create ----
+# ============== create ==============
 def test_create_maps_payload_and_resolved_occupation_into_user_profile(monkeypatch):
-    """Mock _get_occupation; assert UserProfile fields are populated from
+    """Mock _get_occupation, assert UserProfile fields are populated from
     the ProfileConfirmFormPayload."""
     service = _service()
     fake_occupation = Occupation(title="Software Engineer", noc_code="21232")
@@ -75,7 +75,7 @@ def test_create_maps_payload_and_resolved_occupation_into_user_profile(monkeypat
     assert user.current_available_funds == 1000
 
 
-# ---- _get_occupation ----
+# ============== _get_occupation ==============
 def test_get_occupation_builds_occupation_from_noc_result(monkeypatch):
     """Mock _parse_NOC, assert Occupation fields (incl.
     have_canada_job_offer passthrough) map from NOCResult."""
@@ -123,7 +123,7 @@ def test_get_occupation_builds_occupation_from_noc_result(monkeypatch):
     assert [c.noc_code for c in occupation.candidates] == ["21232", "21231"]
 
 
-# ---- _parse_NOC ----
+# ============== _parse_NOC ==============
 def test_parse_nocs_raises_clear_error_when_llm_finds_no_match(monkeypatch):
     """When the LLM returns noc_code=None (no confident candidate match),
     raise a clear ValueError instead of calling get_one_by_noc_code(None)."""
@@ -183,7 +183,7 @@ def test_parse_nocs_returns_reasoning_and_ordered_candidates_on_match(monkeypatc
         inclusions=[],
         exclusions=[],
     )
-    service.noc_service.noc_hybrid_search.return_value = [top_candidate, runner_up]
+    service.noc_service.noc_semantic_search.return_value = [top_candidate, runner_up]
     service.noc_service.get_one_by_noc_code.return_value = MagicMock(
         title="Software Engineer",
         noc_code="21232",
@@ -201,7 +201,7 @@ def test_parse_nocs_returns_reasoning_and_ordered_candidates_on_match(monkeypatc
     assert [c.noc_code for c in result.candidates] == ["21232", "21231"]
 
 
-# ---- calculate_CRS ----
+# ============== calculate_CRS ==============
 def test_calculate_crs_sets_user_crs_score_and_returns_same_profile():
     """Mock crs_service.calculate_crs."""
     crs_service = MagicMock()
@@ -219,7 +219,7 @@ def test_calculate_crs_sets_user_crs_score_and_returns_same_profile():
     assert user.crs_score == "crs-result"
 
 
-# ---- evaluate_express_entry ----
+# ============== evaluate_express_entry ==============
 def test_evaluate_express_entry_sets_user_eligibility_and_returns_same_profile():
     """Mock eligibility_service.evaluate_express_entry."""
     eligibility_service = MagicMock()
@@ -237,9 +237,9 @@ def test_evaluate_express_entry_sets_user_eligibility_and_returns_same_profile()
     assert user.eligibility == "eligibility-result"
 
 
-# ---- create_advice ----
+# ============== create_advice ==============
 def test_create_advice_sets_user_advice_from_llm_response_content(monkeypatch):
-    """Mock init_chat_model().invoke; assert user.advice == response.content."""
+    """Mock init_chat_model().invoke, assert user.advice == response.content."""
     fake_llm = MagicMock()
     fake_llm.invoke.return_value = MagicMock(content="Some advice")
     monkeypatch.setattr(

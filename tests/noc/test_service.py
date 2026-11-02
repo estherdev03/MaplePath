@@ -15,7 +15,7 @@ def _service(repository=None):
     return NOCService(noc_repository=repository or MagicMock())
 
 
-# ---- _rrf ----
+# =============== _rrf ===============
 def test_rrf_fuses_weights_dedupes_and_sorts_descending():
     """Vector list weighted 1.0, keyword list weighted 0.5; a NOC present in
     both lists is deduplicated and its scores summed; result sorted desc."""
@@ -32,7 +32,7 @@ def test_rrf_handles_empty_lists():
     assert [n.noc_code for n in service._rrf([noc_a], [])] == ["A"]
 
 
-# ---- _get_list_after_heading ----
+# =============== _get_list_after_heading ===============
 def test_get_list_after_heading_returns_list_items_or_empty():
     html = """
     <section><h4>Main duties</h4><ul><li>Do a thing</li><li>Do another</li></ul></section>
@@ -46,7 +46,7 @@ def test_get_list_after_heading_returns_list_items_or_empty():
     assert service._get_list_after_heading(soup, "Missing heading") == []
 
 
-# ---- _create_embedding ----
+# =============== _create_embedding ===============
 def test_create_embedding_combines_fields_and_calls_embed_query(monkeypatch):
     fake_embed_model = MagicMock()
     fake_embed_model.embed_query.return_value = [0.1, 0.2]
@@ -72,7 +72,7 @@ def test_create_embedding_combines_fields_and_calls_embed_query(monkeypatch):
     fake_embed_model.embed_query.assert_called_once_with(text)
 
 
-# ---- noc_semantic_search ----
+# =============== noc_semantic_search ===============
 def test_noc_semantic_search_embeds_query_and_delegates_to_repository(monkeypatch):
     fake_embed_model = MagicMock()
     fake_embed_model.embed_query.return_value = [0.1, 0.2]
@@ -90,7 +90,7 @@ def test_noc_semantic_search_embeds_query_and_delegates_to_repository(monkeypatc
     assert result == ["result"]
 
 
-# ---- noc_keyword_search ----
+# =============== noc_keyword_search ===============
 def test_noc_keyword_search_delegates_to_repository():
     repo = MagicMock()
     repo.keyword_search.return_value = ["result"]
@@ -99,9 +99,9 @@ def test_noc_keyword_search_delegates_to_repository():
     repo.keyword_search.assert_called_once_with("query")
 
 
-# ---- noc_hybrid_search ----
+# =============== noc_hybrid_search ===============
 def test_noc_hybrid_search_reranks_and_returns_top_10(monkeypatch):
-    """Mock rerank_engine.rerank; assert returned order follows the
+    """Mock rerank_engine.rerank, assert returned order follows the
     reranked ["index"] values mapped back into the RRF result list."""
     service = _service()
     noc_a = NOC(noc_code="A", title="A", main_duties=[], example_titles=[])
@@ -116,7 +116,7 @@ def test_noc_hybrid_search_reranks_and_returns_top_10(monkeypatch):
     assert [n.noc_code for n in result] == ["B", "A"]
 
 
-# ---- _rerank_with_retry ----
+# ============ _rerank_with_retry ============
 def test_rerank_with_retry_recovers_after_one_rate_limit(monkeypatch):
     """First call is rate-limited, second succeeds — retried once, and the
     backoff wait is exercised without actually sleeping in the test."""
@@ -147,7 +147,7 @@ def test_rerank_with_retry_raises_after_exhausting_attempts(monkeypatch):
     assert service.rerank_engine.rerank.call_count == 2
 
 
-# ---- get_one_by_noc_code ----
+# ============ get_one_by_noc_code ============
 def test_get_one_by_noc_code_found_and_not_found():
     repo = MagicMock()
     repo.get_one_by_noc_code.return_value = NOC(noc_code="A")
@@ -159,7 +159,7 @@ def test_get_one_by_noc_code_found_and_not_found():
         service.get_one_by_noc_code("missing")
 
 
-# ---- _get_noc_code_list ----
+# ============ _get_noc_code_list ============
 def test_get_noc_code_list_raises_clear_error_when_file_missing():
     service = _service()
     with pytest.raises(FileNotFoundError, match="NOC code list file not found"):
@@ -174,7 +174,7 @@ def test_get_noc_code_list_raises_clear_error_when_column_missing(tmp_path):
         service._get_noc_code_list(str(csv_path))
 
 
-# ---- _parse_noc ----
+# ============ _parse_noc ============
 def test_parse_noc_raises_clear_error_when_title_missing():
     service = _service()
     with pytest.raises(ValueError, match="Could not find NOC title"):
@@ -188,7 +188,7 @@ def test_parse_noc_raises_clear_error_when_breakdown_summary_missing():
         service._parse_noc(html)
 
 
-# ---- _fetch_and_parse_noc ----
+# ============ _fetch_and_parse_noc ============
 def test_fetch_and_parse_noc_retries_transient_failure_then_succeeds(monkeypatch):
     import requests
 
@@ -231,9 +231,8 @@ def test_fetch_and_parse_noc_raises_after_exhausting_retries(monkeypatch):
     assert get_mock.call_count == 3
 
 
-# ---- init_noc_info ----
+# ============ init_noc_info ============
 def test_init_noc_info_skips_failed_codes_and_saves_the_rest(monkeypatch):
-    import pandas as pd
     import requests
 
     repo = MagicMock()
@@ -281,7 +280,7 @@ def test_init_noc_info_raises_when_every_code_fails(monkeypatch):
     repo.save_all.assert_not_called()
 
 
-# ---- get_ideal_pool_count ----
+# ============ get_ideal_pool_count ============
 def test_get_ideal_pool_count_delegates_to_repository():
     repo = MagicMock()
     repo.get_ideal_pool_count.return_value = (2, 3)
