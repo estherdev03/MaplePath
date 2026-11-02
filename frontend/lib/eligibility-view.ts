@@ -48,10 +48,10 @@ function fundsDetail(
   required: boolean,
   met: boolean,
 ): string {
-  if (!required) return "not required — job offer and work authorization";
+  if (!required) return "not required - job offer and work authorization";
   return met
     ? `CAD ${profile.current_available_funds.toLocaleString()}`
-    : `CAD ${profile.current_available_funds.toLocaleString()} — below threshold`;
+    : `CAD ${profile.current_available_funds.toLocaleString()} - below threshold`;
 }
 
 function cecRows(
@@ -93,7 +93,7 @@ function fswRows(
       label: "1 year continuous full-time experience",
       detail: b.continuous_work_experience_met
         ? "established"
-        : "not established — field missing",
+        : "not established - field missing",
     },
     {
       ok: b.eligible_teer_met,

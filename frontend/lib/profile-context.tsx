@@ -3,7 +3,7 @@
 // In-memory only, on purpose: this is the entire "session" for the app now.
 // It lives in a client component's state, so it survives client-side
 // navigation between routes (the layout stays mounted) but is gone the
-// instant the page is refreshed or reopened — there is no cookie, storage,
+// instant the page is refreshed or reopened - there is no cookie, storage,
 // or server-side store backing it.
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import type { FormSnapshot } from "./form-persist";
@@ -13,7 +13,7 @@ export interface ProfileState {
   draftText?: string;
   draft?: ProfileDraft;
   profile?: UserProfile;
-  // Mid-edit, unsubmitted input for the intake/confirm forms — kept here
+  // Mid-edit, unsubmitted input for the intake/confirm forms - kept here
   // (rather than storage) so it survives client-side navigation between
   // routes but is gone on refresh, same as the rest of this "session".
   intakeText?: string;

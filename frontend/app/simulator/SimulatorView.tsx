@@ -46,7 +46,7 @@ export default function SimulatorView({
     return {
       label,
       pts: now[key],
-      delta: delta === 0 ? "—" : delta > 0 ? `+${delta}` : String(delta),
+      delta: delta === 0 ? "-" : delta > 0 ? `+${delta}` : String(delta),
       dColorClass:
         delta > 0
           ? "text-[#b5abfc]"
@@ -93,7 +93,7 @@ export default function SimulatorView({
       onInput: (v) => setField("foreignYears", v),
     },
     {
-      label: "English — lowest CLB across abilities",
+      label: "English - lowest CLB across abilities",
       value: sim.clb,
       min: 0,
       max: 10,
@@ -102,7 +102,7 @@ export default function SimulatorView({
       onInput: (v) => setField("clb", v),
     },
     {
-      label: "French — lowest NCLC across abilities",
+      label: "French - lowest NCLC across abilities",
       value: sim.nclc,
       min: 0,
       max: 10,
@@ -156,7 +156,7 @@ export default function SimulatorView({
         Move any input and the CRS recomputes from the published point tables -
         age, education, CLB/NCLC, Canadian experience, transferability tiers and
         the 600-point additional cap. This simplified model covers a single
-        applicant&apos;s core and additional points; it does not model spouse or
+        applicant&apos;s core and additional points. It does not model spouse or
         arranged-employment factors.
       </p>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] items-start gap-5">

@@ -1,4 +1,4 @@
-/* Nocturne — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
+/* Nocturne - design-system tokens and component classes. This file is the source of truth for the system's look. Retune it here and see readme.md. */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
@@ -191,7 +191,7 @@
     appearance: none;
   }
 
-  /* — rules — */
+  /* - rules - */
   .hr {
     height: 1px;
     border: 0;
@@ -205,7 +205,7 @@
     );
   }
 
-  /* — buttons — */
+  /* - buttons - */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -269,12 +269,37 @@
     margin-top: var(--space-2);
   }
 
-  /* — forms — */
+  /* - forms - */
+  /* Label and control share row tracks with their neighbours (subgrid), so
+     every label in a grid row starts on one line and every control starts on
+     the next - even when one label wraps or one control is taller. */
+  .grid > .field {
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    align-content: start;
+  }
   .field > label {
     display: block;
     font-size: 12px;
     margin-bottom: 5px;
     color: color-mix(in srgb, var(--color-text) 70%, transparent);
+  }
+  /* hide number spinners - Chrome/Safari/Edge, then Firefox */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .field > label.req::after,
+  .req-mark {
+    content: " *";
+    color: #f87171;
   }
   .input {
     width: 100%;
@@ -318,7 +343,7 @@
     width: 16px;
     height: 16px;
     flex: none;
-    border-radius: 50%;
+    border-radius: 3px;
     border: 1.5px solid var(--color-divider);
   }
   .radio:hover .dot {
@@ -362,7 +387,7 @@
     outline-offset: -2px;
   }
 
-  /* — cards — */
+  /* - cards - */
   .card {
     display: flex;
     flex-direction: column;
@@ -406,7 +431,7 @@
     box-shadow: var(--shadow-lg);
   }
 
-  /* — tags — */
+  /* - tags - */
   .tag {
     display: inline-flex;
     align-items: center;
@@ -432,7 +457,7 @@
     color: var(--color-accent);
   }
 
-  /* — navigation — */
+  /* - navigation - */
   .nav {
     display: flex;
     align-items: center;
@@ -456,7 +481,7 @@
     color: var(--color-accent);
   }
 
-  /* — tables — */
+  /* - tables - */
   .table {
     width: 100%;
     border-collapse: collapse;
@@ -512,7 +537,7 @@
         no-repeat bottom / 100% 1px;
   }
 
-  /* — dialog — */
+  /* - dialog - */
   .dialog-backdrop {
     position: fixed;
     inset: 0;

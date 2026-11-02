@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /** The advice model returns section headers as short bare lines (e.g. "Top
- * Recommendations", "What is strong:"), not markdown — so headings are
+ * Recommendations", "What is strong:"), not markdown - so headings are
  * detected by shape (short, title-cased, or colon-terminated) rather than
  * by a "**bold**" marker, though that's supported too if the model varies. */
 function looksLikeHeading(line: string): boolean {

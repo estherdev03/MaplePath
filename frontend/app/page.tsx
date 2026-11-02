@@ -17,7 +17,7 @@ export default function Home() {
     {
       kicker: "Step 02",
       title: "Occupation, matched not guessed",
-      body: "Hybrid retrieval over official NOC profiles; the model must choose a unit group from the retrieved candidates.",
+      body: "Hybrid retrieval over official NOC profiles. The model must choose a unit group from the retrieved candidates.",
     },
     {
       kicker: "Step 03",

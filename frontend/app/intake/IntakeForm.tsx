@@ -32,7 +32,7 @@ export default function IntakeForm() {
   const missingCount = rows.filter((r) => r.missing).length;
 
   // A freshly parsed draft supersedes whatever was mid-edit on the confirm
-  // form for a previous, unrelated description — drop that stale snapshot
+  // form for a previous, unrelated description - drop that stale snapshot
   // so confirm rehydrates from this new draft instead.
   useEffect(() => {
     if (state.draft && state.draftText != null) {
@@ -87,7 +87,7 @@ export default function IntakeForm() {
           />
           <p className="mt-2 mb-0 text-[12.5px] text-[rgba(233,233,237,.55)]">
             Age, duties, work history, test scores, education, marital status,
-            family in Canada, funds. Anything left out is reported as missing —
+            family in Canada, funds. Anything left out is reported as missing -
             never guessed.
           </p>
           {state.error && (

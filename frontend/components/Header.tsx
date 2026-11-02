@@ -10,7 +10,7 @@ const CORE_NAV_ITEMS = [
   { href: "/confirm", label: "Confirm" },
 ] as const;
 
-// These only have something to show once a profile has been confirmed —
+// These only have something to show once a profile has been confirmed -
 // gated in the nav so they're not offered before that step.
 const GATED_NAV_ITEMS = [
   { href: "/results", label: "Results" },
@@ -20,7 +20,7 @@ const GATED_NAV_ITEMS = [
   { href: "/simulator", label: "Simulator" },
 ] as const;
 
-// Not part of the profile flow at all — a standalone retrieval-accuracy
+// Not part of the profile flow at all - a standalone retrieval-accuracy
 // report. Always last in the nav and styled apart from it, so it doesn't
 // read as another step in the user's journey.
 const BENCHMARK_ITEM = { href: "/benchmark", label: "Benchmark" } as const;
@@ -72,7 +72,7 @@ export default function Header() {
       </nav>
       <Link
         href={BENCHMARK_ITEM.href}
-        title="Retrieval evaluation report — not part of your profile"
+        title="Retrieval evaluation report - not part of your profile"
         className="btn btn-secondary text-[12px]"
       >
         {BENCHMARK_ITEM.label}

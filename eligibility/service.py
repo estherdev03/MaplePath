@@ -120,8 +120,7 @@ class EligibilityService:
                     spouse_french.nclc_scores if spouse_french else None,
                 ]
                 if any(
-                    scores
-                    and all(score >= 4 for score in scores.model_dump().values())
+                    scores and all(score >= 4 for score in scores.model_dump().values())
                     for scores in spouse_scores
                 ):
                     adapt_pts += 5
@@ -212,9 +211,12 @@ class EligibilityService:
     ) -> CanadianExperienceClassEligibility:
         can_exp_class_eligibility = CanadianExperienceClassEligibility()
 
-        # work experience
+        # work experience - only skilled (TEER 0-3) work counts toward CEC.
+        # The 3-year figure is only used when their classified occupation is TEER 0-3.
         if (
             user.work_experience
+            and user.occupation
+            and user.occupation.teer in [0, 1, 2, 3]
             and user.work_experience.canada_work_exp_within_3_years >= 1
         ):
             can_exp_class_eligibility.canadian_work_experience_met = True

@@ -5,7 +5,7 @@ import { ProfileProvider } from "@/lib/profile-context";
 
 export const metadata: Metadata = {
   title: "MaplePath",
-  description: "Know exactly where you stand — category by category.",
+  description: "Know exactly where you stand - category by category.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -35,7 +35,7 @@ function educationDetail(profile: UserProfile): string {
 }
 
 /** Builds display rows for the CRS breakdown returned by the API, with maxima
- * mirrored from crs/constants.py — never invented, only ceilings. */
+ * mirrored from crs/constants.py - never invented, only ceilings. */
 export function buildCrsRows(profile: UserProfile): CrsRow[] {
   const score = profile.crs_score;
   if (!score) return [];

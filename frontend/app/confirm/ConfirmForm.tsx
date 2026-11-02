@@ -8,6 +8,7 @@ import { EDUCATION_OPTIONS, ENGLISH_TEST_OPTIONS, FRENCH_TEST_OPTIONS } from "@/
 import { applySnapshot, snapshotForm, type FormSnapshot } from "@/lib/form-persist";
 import type { MaritalStatus } from "@/lib/types";
 import { useProfile } from "@/lib/profile-context";
+import HintInput, { Hint } from "@/components/HintInput";
 
 const initialState: CompleteActionState = {};
 
@@ -48,17 +49,17 @@ export default function ConfirmForm() {
   const edu = draft?.education;
   const canEdu = draft?.canada_education;
 
-  // Restores whatever the user had mid-edit before navigating away — first
+  // Restores whatever the user had mid-edit before navigating away - first
   // the toggles that control which sections are visible, then (once that
   // render has committed and the matching fields exist) the plain field
-  // values on top of them. Runs once; later toggle changes are the user's
+  // values on top of them. Runs once. Later toggle changes are the user's
   // own, not stale saved state, so they're left alone.
   useEffect(() => {
     const saved = confirmSnapshot;
     if (!saved) return;
     restoredSnapshot.current = saved;
     // Deferred to a microtask so these are callback-scoped rather than
-    // synchronous effect-body writes — still resolves before paint.
+    // synchronous effect-body writes - still resolves before paint.
     queueMicrotask(() => {
       if (typeof saved.marital_status === "string") setMaritalStatus(saved.marital_status as MaritalStatus);
       if (typeof saved.has_english === "boolean") setHasEnglish(saved.has_english);
@@ -120,7 +121,8 @@ export default function ConfirmForm() {
       <p className="mt-1.5 mb-[26px] text-[14px] text-[rgba(233,233,237,.6)]">
         {draft
           ? "Pre-filled from the description you entered. Anything you change is re-validated by the same rules the scorer uses."
-          : "Fill in your details below. Every field is re-validated by the same rules the scorer uses."}
+          : "Fill in your details below. Every field is re-validated by the same rules the scorer uses."}{" "}
+        Fields marked <span className="req-mark" aria-hidden="true">*</span> are required.
       </p>
 
       <div className="flex flex-col gap-[26px]">
@@ -128,7 +130,7 @@ export default function ConfirmForm() {
           <h6 className="mb-3 text-[#9184d9]">Applicant</h6>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
             <div className="field">
-              <label htmlFor="age">Age</label>
+              <label htmlFor="age" className="req">Age</label>
               <input id="age" name="age" type="number" className="input" defaultValue={draft?.age ?? undefined} required />
             </div>
             <div className="field">
@@ -157,7 +159,7 @@ export default function ConfirmForm() {
               </div>
             </div>
             <div className="field">
-              <label htmlFor="current_available_funds">Settlement funds (CAD)</label>
+              <label htmlFor="current_available_funds" className="req">Settlement funds (CAD)</label>
               <input
                 id="current_available_funds"
                 name="current_available_funds"
@@ -186,7 +188,7 @@ export default function ConfirmForm() {
           <h6 className="mb-3 text-[#9184d9]">Occupation</h6>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
             <div className="field">
-              <label htmlFor="job_title">Job title</label>
+              <label htmlFor="job_title" className="req">Job title</label>
               <input
                 id="job_title"
                 name="job_title"
@@ -196,7 +198,7 @@ export default function ConfirmForm() {
               />
             </div>
             <div className="field col-span-2">
-              <label htmlFor="job_responsibility">Main responsibilities — used for NOC classification</label>
+              <label htmlFor="job_responsibility" className="req">Main responsibilities - used for NOC classification</label>
               <textarea
                 id="job_responsibility"
                 name="job_responsibility"
@@ -249,7 +251,7 @@ export default function ConfirmForm() {
                 </select>
               </div>
               <div className="field">
-                <label htmlFor="english_speaking">Speaking</label>
+                <label htmlFor="english_speaking" className="req">Speaking</label>
                 <input
                   id="english_speaking"
                   name="english_speaking"
@@ -257,11 +259,11 @@ export default function ConfirmForm() {
                   type="number"
                   step="0.5"
                   defaultValue={en?.detail_scores?.speaking ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
               <div className="field">
-                <label htmlFor="english_writing">Writing</label>
+                <label htmlFor="english_writing" className="req">Writing</label>
                 <input
                   id="english_writing"
                   name="english_writing"
@@ -269,11 +271,11 @@ export default function ConfirmForm() {
                   type="number"
                   step="0.5"
                   defaultValue={en?.detail_scores?.writing ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
               <div className="field">
-                <label htmlFor="english_listening">Listening</label>
+                <label htmlFor="english_listening" className="req">Listening</label>
                 <input
                   id="english_listening"
                   name="english_listening"
@@ -281,11 +283,11 @@ export default function ConfirmForm() {
                   type="number"
                   step="0.5"
                   defaultValue={en?.detail_scores?.listening ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
               <div className="field">
-                <label htmlFor="english_reading">Reading</label>
+                <label htmlFor="english_reading" className="req">Reading</label>
                 <input
                   id="english_reading"
                   name="english_reading"
@@ -293,7 +295,7 @@ export default function ConfirmForm() {
                   type="number"
                   step="0.5"
                   defaultValue={en?.detail_scores?.reading ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
             </div>
@@ -322,47 +324,47 @@ export default function ConfirmForm() {
                 </select>
               </div>
               <div className="field">
-                <label htmlFor="french_speaking">Speaking</label>
+                <label htmlFor="french_speaking" className="req">Speaking</label>
                 <input
                   id="french_speaking"
                   name="french_speaking"
                   className="input"
                   type="number"
                   defaultValue={fr?.detail_scores?.speaking ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
               <div className="field">
-                <label htmlFor="french_writing">Writing</label>
+                <label htmlFor="french_writing" className="req">Writing</label>
                 <input
                   id="french_writing"
                   name="french_writing"
                   className="input"
                   type="number"
                   defaultValue={fr?.detail_scores?.writing ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
               <div className="field">
-                <label htmlFor="french_listening">Listening</label>
+                <label htmlFor="french_listening" className="req">Listening</label>
                 <input
                   id="french_listening"
                   name="french_listening"
                   className="input"
                   type="number"
                   defaultValue={fr?.detail_scores?.listening ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
               <div className="field">
-                <label htmlFor="french_reading">Reading</label>
+                <label htmlFor="french_reading" className="req">Reading</label>
                 <input
                   id="french_reading"
                   name="french_reading"
                   className="input"
                   type="number"
                   defaultValue={fr?.detail_scores?.reading ?? undefined}
-                  placeholder="required"
+                  required
                 />
               </div>
             </div>
@@ -398,68 +400,113 @@ export default function ConfirmForm() {
         </div>
 
         <div>
-          <h6 className="mb-3 text-[#9184d9]">Work experience — full-time years, within the last ten</h6>
+          <div className="mb-3 flex items-center gap-2">
+            <h6 className="m-0 text-[#9184d9]">Work experience</h6>
+            <Hint
+              id="work_experience_hint"
+              align="left"
+              text="Paid work in the last 10 years, in years. Enter 0 if none. Fulltime is 30+ hours a week. Part-time counts toward totals when converted to fulltime equivalent (e.g. 15 hours a week for 2 years = 1 year). Longest stretches are fulltime only."
+            />
+          </div>
+
+          <p className="mt-0 mb-2 text-[13px] font-medium">Inside Canada</p>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3.5">
             <div className="field">
-              <label htmlFor="work_foreign_years">Foreign</label>
-              <input id="work_foreign_years" name="work_foreign_years" type="number" step="0.5" className="input" defaultValue={wx?.foreign_years ?? 0} />
-            </div>
-            <div className="field">
-              <label htmlFor="work_canada_years">In Canada</label>
-              <input id="work_canada_years" name="work_canada_years" type="number" step="0.5" className="input" defaultValue={wx?.canada_years ?? 0} />
-            </div>
-            <div className="field">
-              <label htmlFor="work_continuous_canada_years">Continuous full-time, Canada</label>
-              <input
-                id="work_continuous_canada_years"
-                name="work_continuous_canada_years"
+              <label htmlFor="work_canada_years">Total years in Canada</label>
+              <HintInput
+                id="work_canada_years"
+                name="work_canada_years"
                 type="number"
                 step="0.5"
                 className="input"
-                defaultValue={wx?.continuous_fulltime_canada_years ?? 0}
+                defaultValue={wx?.canada_years ?? 0}
+                hint="All paid work in Canada in the last 10 years. Fulltime, or part-time converted (1,560 hours = 1 year). Don't count self-employment, work while studying fulltime, or unpaid work."
               />
             </div>
             <div className="field">
-              <label htmlFor="work_canada_within_3_years">Canada, within 3 years</label>
-              <input
+              <label htmlFor="work_canada_within_3_years">Years in Canada, last 3 years only</label>
+              <HintInput
                 id="work_canada_within_3_years"
                 name="work_canada_within_3_years"
                 type="number"
                 step="0.5"
                 className="input"
                 defaultValue={wx?.canada_work_exp_within_3_years ?? 0}
+                hint="Fulltime, or part-time converted (1,560 hours = 1 year). Don't count self-employment, work while studying fulltime, co-op terms, or unpaid work."
               />
             </div>
             <div className="field">
-              <label htmlFor="work_trade_within_5_years">Skilled trade, within 5 years</label>
-              <input
-                id="work_trade_within_5_years"
-                name="work_trade_within_5_years"
+              <label htmlFor="work_continuous_canada_years">Longest fulltime stretch in Canada</label>
+              <HintInput
+                id="work_continuous_canada_years"
+                name="work_continuous_canada_years"
                 type="number"
                 step="0.5"
                 className="input"
-                defaultValue={wx?.trade_exp_within_5_years ?? 0}
+                defaultValue={wx?.continuous_fulltime_canada_years ?? 0}
+                hint="Your longest single period of fulltime work (30+ hours a week) in Canada with no gaps. Part-time doesn't count here. Can't be more than your total years in Canada."
               />
             </div>
             <div className="field">
-              <label htmlFor="work_continuous_foreign_years">Continuous full-time, foreign</label>
-              <input
+              <label htmlFor="work_alberta_years">Years in Alberta</label>
+              <HintInput
+                id="work_alberta_years"
+                name="work_alberta_years"
+                type="number"
+                step="0.5"
+                className="input"
+                defaultValue={wx?.alberta_years ?? 0}
+                hint="Paid work in Alberta in the last 10 years, fulltime or part-time converted. This is part of your total years in Canada, not extra."
+              />
+            </div>
+          </div>
+
+          <p className="mt-4 mb-2 text-[13px] font-medium">Outside Canada</p>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3.5">
+            <div className="field">
+              <label htmlFor="work_foreign_years">Total years outside Canada</label>
+              <HintInput
+                id="work_foreign_years"
+                name="work_foreign_years"
+                type="number"
+                step="0.5"
+                className="input"
+                defaultValue={wx?.foreign_years ?? 0}
+                hint="All paid work outside Canada in the last 10 years. Fulltime, or part-time converted (1,560 hours = 1 year)."
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="work_continuous_foreign_years">Longest fulltime stretch outside Canada</label>
+              <HintInput
                 id="work_continuous_foreign_years"
                 name="work_continuous_foreign_years"
                 type="number"
                 step="0.5"
                 className="input"
                 defaultValue={wx?.continuous_fulltime_foreign_years ?? 0}
+                hint="Your longest single period of fulltime work (30+ hours a week) in the same type of job outside Canada, with no gaps. Part-time doesn't count here."
               />
             </div>
-            <div className="field">
-              <label htmlFor="work_alberta_years">Alberta</label>
-              <input id="work_alberta_years" name="work_alberta_years" type="number" step="0.5" className="input" defaultValue={wx?.alberta_years ?? 0} />
+          </div>
+
+          <p className="mt-4 mb-2 text-[13px] font-medium">Skilled trades (any country)</p>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3.5">
+            <div className="field max-w-[260px]">
+              <label htmlFor="work_trade_within_5_years">Years in a skilled trade, last 5 years</label>
+              <HintInput
+                id="work_trade_within_5_years"
+                name="work_trade_within_5_years"
+                type="number"
+                step="0.5"
+                className="input"
+                defaultValue={wx?.trade_exp_within_5_years ?? 0}
+                hint="Paid work in a skilled trade (e.g. electrician, welder, cook, plumber) in the last 5 years, in or outside Canada. Fulltime, or part-time converted."
+              />
             </div>
           </div>
           <p className="mt-2 mb-0 text-[12px] text-[rgba(233,233,237,.5)]">
-            Validated: continuous years cannot exceed total years, and Canada-within-3 cannot exceed total Canadian
-            years.
+            A longest stretch can&apos;t be longer than the total for the same place, and the last-3-years figure
+            can&apos;t be more than your total years in Canada.
           </p>
         </div>
 
@@ -563,7 +610,7 @@ export default function ConfirmForm() {
         {maritalStatus === "married" && (
           <div>
             <h6 className="mb-3 text-[#9184d9]">Spouse or common-law partner</h6>
-            <label className="radio mb-3">
+            <label className="radio mb-3 flex w-fit">
               <input
                 type="checkbox"
                 name="has_spouse_education"
@@ -611,7 +658,7 @@ export default function ConfirmForm() {
                   </div>
                 </div>
                 {spouseEducationLocation === "outside" && (
-                  <label className="radio">
+                  <label className="radio row-span-2 self-center">
                     <input type="checkbox" name="spouse_education_eca_completed" />
                     <span className="dot" />
                     ECA completed
@@ -620,7 +667,7 @@ export default function ConfirmForm() {
               </div>
             )}
 
-            <label className="radio mb-3">
+            <label className="radio mb-3 flex w-fit">
               <input
                 type="checkbox"
                 name="spouse_has_english"
@@ -643,25 +690,25 @@ export default function ConfirmForm() {
                   </select>
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_english_speaking">Speaking</label>
-                  <input id="spouse_english_speaking" name="spouse_english_speaking" type="number" step="0.5" className="input" placeholder="required" />
+                  <label htmlFor="spouse_english_speaking" className="req">Speaking</label>
+                  <input id="spouse_english_speaking" name="spouse_english_speaking" type="number" step="0.5" className="input" required />
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_english_writing">Writing</label>
-                  <input id="spouse_english_writing" name="spouse_english_writing" type="number" step="0.5" className="input" placeholder="required" />
+                  <label htmlFor="spouse_english_writing" className="req">Writing</label>
+                  <input id="spouse_english_writing" name="spouse_english_writing" type="number" step="0.5" className="input" required />
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_english_listening">Listening</label>
-                  <input id="spouse_english_listening" name="spouse_english_listening" type="number" step="0.5" className="input" placeholder="required" />
+                  <label htmlFor="spouse_english_listening" className="req">Listening</label>
+                  <input id="spouse_english_listening" name="spouse_english_listening" type="number" step="0.5" className="input" required />
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_english_reading">Reading</label>
-                  <input id="spouse_english_reading" name="spouse_english_reading" type="number" step="0.5" className="input" placeholder="required" />
+                  <label htmlFor="spouse_english_reading" className="req">Reading</label>
+                  <input id="spouse_english_reading" name="spouse_english_reading" type="number" step="0.5" className="input" required />
                 </div>
               </div>
             )}
 
-            <label className="radio mb-3">
+            <label className="radio mb-3 flex w-fit">
               <input
                 type="checkbox"
                 name="spouse_has_french"
@@ -684,39 +731,40 @@ export default function ConfirmForm() {
                   </select>
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_french_speaking">Speaking</label>
-                  <input id="spouse_french_speaking" name="spouse_french_speaking" type="number" className="input" placeholder="required" />
+                  <label htmlFor="spouse_french_speaking" className="req">Speaking</label>
+                  <input id="spouse_french_speaking" name="spouse_french_speaking" type="number" className="input" required />
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_french_writing">Writing</label>
-                  <input id="spouse_french_writing" name="spouse_french_writing" type="number" className="input" placeholder="required" />
+                  <label htmlFor="spouse_french_writing" className="req">Writing</label>
+                  <input id="spouse_french_writing" name="spouse_french_writing" type="number" className="input" required />
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_french_listening">Listening</label>
-                  <input id="spouse_french_listening" name="spouse_french_listening" type="number" className="input" placeholder="required" />
+                  <label htmlFor="spouse_french_listening" className="req">Listening</label>
+                  <input id="spouse_french_listening" name="spouse_french_listening" type="number" className="input" required />
                 </div>
                 <div className="field">
-                  <label htmlFor="spouse_french_reading">Reading</label>
-                  <input id="spouse_french_reading" name="spouse_french_reading" type="number" className="input" placeholder="required" />
+                  <label htmlFor="spouse_french_reading" className="req">Reading</label>
+                  <input id="spouse_french_reading" name="spouse_french_reading" type="number" className="input" required />
                 </div>
               </div>
             )}
 
             <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5">
               <div className="field">
-                <label htmlFor="spouse_canadian_experience">Spouse Canadian work experience (years)</label>
-                <input
+                <label htmlFor="spouse_canadian_experience">Spouse total years worked in Canada</label>
+                <HintInput
                   id="spouse_canadian_experience"
                   name="spouse_canadian_experience"
                   type="number"
                   step="0.5"
                   className="input"
                   defaultValue={draft?.spouse?.canadian_experience ?? 0}
+                  hint="Paid work your spouse did in Canada in the last 10 years. Fulltime, or part-time converted (1,560 hours = 1 year). Don't count self-employment, work while studying fulltime, or unpaid work."
                 />
               </div>
               <div className="field">
-                <label htmlFor="spouse_canada_study_years">Spouse full-time study in Canada (years)</label>
-                <input
+                <label htmlFor="spouse_canada_study_years">Spouse fulltime study in Canada (years)</label>
+                <HintInput
                   id="spouse_canada_study_years"
                   name="spouse_canada_study_years"
                   type="number"
@@ -724,6 +772,7 @@ export default function ConfirmForm() {
                   min="0"
                   className="input"
                   defaultValue={draft?.spouse?.canada_study_years ?? 0}
+                  hint="Academic years your spouse spent in fulltime study at a school in Canada (high school, college or university). Enter 0 if none."
                 />
               </div>
             </div>

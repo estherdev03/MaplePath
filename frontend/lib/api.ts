@@ -1,5 +1,5 @@
 // Server-only fetch helpers for the MaplePath FastAPI backend. Never import
-// this from a "use client" component — call it from Server Components or
+// this from a "use client" component - call it from Server Components or
 // Server Actions instead, and pass the result down as props.
 import type {
   CrsSimulateResponse,
@@ -22,7 +22,7 @@ export class ApiError extends Error {
 }
 
 // fetch() throws (rather than resolving with a Response) when the backend
-// is unreachable — surface that the same way as an HTTP error so callers
+// is unreachable - surface that the same way as an HTTP error so callers
 // only ever need to handle ApiError, instead of crashing the page/action.
 async function safeFetch(url: URL, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
@@ -38,7 +38,7 @@ async function safeFetch(url: URL, init: RequestInit = {}): Promise<Response> {
 }
 
 // The backend's own ValueErrors (e.g. from the profile graph) surface as
-// Pydantic's raw ValidationError.__str__() dump — field path, indented
+// Pydantic's raw ValidationError.__str__() dump - field path, indented
 // message, then an indented pydantic.dev doc link. Pull out just the
 // messages so the app doesn't show that dump to the user.
 function formatPydanticDump(detail: string): string | null {

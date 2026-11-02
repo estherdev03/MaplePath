@@ -517,6 +517,30 @@ def test_cec_gates_and_teer_dependent_language_requirement(eligibility_service):
     )
 
 
+def test_cec_work_experience_requires_teer_0_to_3(eligibility_service):
+    """The 3-year Canadian work figure only counts when the occupation is
+    TEER 0-3; TEER 4/5 or an unclassified occupation never meets it."""
+    work = Experience(canada_work_exp_within_3_years=1, canada_years=1)
+
+    for teer in [0, 1, 2, 3]:
+        user = UserProfile(work_experience=work, occupation=_occ(teer=teer))
+        assert (
+            eligibility_service._evaluate_canadian_exp_class(
+                user
+            ).canadian_work_experience_met
+            is True
+        )
+
+    for occupation in [_occ(teer=4), _occ(teer=5), None]:
+        user = UserProfile(work_experience=work, occupation=occupation)
+        assert (
+            eligibility_service._evaluate_canadian_exp_class(
+                user
+            ).canadian_work_experience_met
+            is False
+        )
+
+
 # ============ _evaluate_federal_skilled_trades ============
 def test_fst_eligible_trade_matches_and_excludes(eligibility_service):
     """major/minor/noc_code match makes a trade eligible, except the two

@@ -16,7 +16,7 @@ export default function AdvicePage() {
       <div className="mx-auto max-w-[880px] px-[26px] pt-[34px] pb-20">
         <h3 className="m-0">What to do next</h3>
         <p className="mt-2.5 mb-[22px] text-[14px] text-[rgba(233,233,237,.6)]">
-          Confirm your profile first — advice is generated from your CRS
+          Confirm your profile first - advice is generated from your CRS
           breakdown and eligibility results.
         </p>
         <Link href="/intake" className="btn btn-primary">

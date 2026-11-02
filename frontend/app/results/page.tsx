@@ -30,7 +30,7 @@ export default function ResultsPage() {
       <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
         <h3 className="m-0">Comprehensive Ranking System</h3>
         <p className="mt-2.5 mb-[22px] text-[14px] text-[rgba(233,233,237,.6)]">
-          Confirm your profile first — the CRS score is computed once the scorer
+          Confirm your profile first - the CRS score is computed once the scorer
           has a complete profile.
         </p>
         <Link href="/intake" className="btn btn-primary">

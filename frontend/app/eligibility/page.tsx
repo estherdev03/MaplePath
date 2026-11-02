@@ -14,7 +14,7 @@ export default function EligibilityPage() {
       <div className="mx-auto max-w-[1000px] px-[26px] pt-[34px] pb-20">
         <h3 className="m-0">Express Entry eligibility</h3>
         <p className="mt-2.5 mb-[22px] text-[14px] text-[rgba(233,233,237,.6)]">
-          Confirm your profile first — eligibility is computed once the scorer has a complete profile.
+          Confirm your profile first - eligibility is computed once the scorer has a complete profile.
         </p>
         <Link href="/intake" className="btn btn-primary">
           Describe your situation
@@ -72,7 +72,7 @@ export default function EligibilityPage() {
       {fswGrid && fsw && (
         <div className="mt-5 rounded-[14px] bg-[#161826] px-5 py-4.5 shadow-[var(--shadow-sm)]">
           <div className="mb-3 flex flex-wrap items-baseline gap-2.5">
-            <h5 className="m-0">FSW selection grid — 67-point threshold</h5>
+            <h5 className="m-0">FSW selection grid - 67-point threshold</h5>
             <span className={`tag ${fsw.selection_factor_passed ? "tag-accent" : "tag-neutral"}`}>
               {fsw.selection_factor_score} / 100 · {fsw.selection_factor_passed ? "passed" : "not passed"}
             </span>

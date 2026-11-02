@@ -109,7 +109,7 @@ export function draftToRows(draft: ProfileDraft): DraftRow[] {
       value: draft.current_available_funds != null ? formatFunds(draft.current_available_funds) : "not extracted",
       missing: draft.current_available_funds == null || isMissing("current_available_funds"),
     },
-    // Optional — the parser defaults these when not mentioned, so they're never missing.
+    // Optional - the parser defaults these when not mentioned, so they're never missing.
     {
       label: "Authorized to work in Canada",
       value: draft.authorized_to_work_in_canada ? "yes" : "not stated",

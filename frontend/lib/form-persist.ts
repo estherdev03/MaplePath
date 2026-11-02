@@ -2,7 +2,7 @@
 
 export type FormSnapshot = Record<string, string | boolean>;
 
-/** Reads every named field currently in the form into a plain snapshot —
+/** Reads every named field currently in the form into a plain snapshot -
  * radios collapse to their checked value, checkboxes to a boolean, text
  * inputs/selects/textareas to their string value. */
 export function snapshotForm(form: HTMLFormElement): FormSnapshot {
@@ -33,8 +33,8 @@ export function snapshotForm(form: HTMLFormElement): FormSnapshot {
 }
 
 /** Writes a previously-saved snapshot back onto a form's DOM fields.
- * Uncontrolled fields just take the value; controlled ones (checkboxes/
- * radios wired to React state) get a matching, idempotent write — the
+ * Uncontrolled fields just take the value, while controlled ones (checkboxes/
+ * radios wired to React state) get a matching, idempotent write - the
  * corresponding state is expected to be restored separately so React's
  * next render agrees with what's written here. */
 export function applySnapshot(form: HTMLFormElement, snap: FormSnapshot): void {

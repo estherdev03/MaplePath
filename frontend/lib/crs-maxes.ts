@@ -1,6 +1,6 @@
 import type { CRSBreakdown, MaritalStatus } from "./types";
 
-// Mirrors the ceilings baked into crs/constants.py — used only to draw
+// Mirrors the ceilings baked into crs/constants.py - used only to draw
 // "share of maximum" bars next to the real points returned by the API.
 export function crsCategoryMaxes(maritalStatus: MaritalStatus | null): Record<keyof CRSBreakdown, number> {
   const married = maritalStatus === "married";
