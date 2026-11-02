@@ -16,6 +16,15 @@ Built as a production-oriented **Python** backend: **LangGraph** orchestration, 
 
 ## Recent changes
 
+- **CRS and eligibility rules checked against IRCC's current pages, and corrected.** Fixes include:
+  - FSW no longer requires a second-language test.
+  - Age points stop at 46.
+  - The skill-transferability groups are capped at 50 each.
+  - Spouse points use the spouse's first official language.
+  - Canadian study points follow IRCC's 1–2 year and 3+ year bands.
+  - Proof of funds now scales with family size (spouse and dependent children) and is waived only with a job offer *and* work authorization.
+  
+  The profile, AI parser, and confirm form gained the fields these rules need. The simulator's copy of the CRS rules was brought in line with the backend.
 - **Occupation classification now uses pgvector semantic search instead of the reranked hybrid pipeline.** On the expanded labelled set, vector search scored higher NDCG@10 than hybrid (0.609 vs 0.583) with a 99% top-10 hit rate, so `/profile/complete` now retrieves NOC candidates with `noc_semantic_search`. BM25, RRF, and hybrid remain in `noc/` for comparison in the benchmark.
 - **Labelled evaluation set grew from 9 to 300 job descriptions** (`data/noc_eval_labels.csv`), and hit rate is now strictly top-10. A bug had counted a match anywhere in the result list.
 - **Frontend styling moved from inline styles to Tailwind CSS.** The design-system rules in `frontend/app/globals.css` now sit in CSS layers so utility classes can override them.
@@ -36,7 +45,7 @@ Express Entry decisions depend on occupation codes, language conversions, and pr
 | **Profile intelligence** | Converts unstructured text into a validated applicant profile, flagging missing or ambiguous fields instead of inventing data                        |
 | **Occupation matching**  | pgvector semantic search retrieves official NOC 2021 profiles, an LLM then picks a unit group, TEER, and confidence score from those candidates only |
 | **CRS scoring**          | Full Comprehensive Ranking System breakdown: core human capital, spouse factors, skill transferability, and additional points                        |
-| **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks                                |
+| **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks by family size                |
 | **Personalized advice**  | An LLM turns the computed CRS breakdown and eligibility results into ranked, profile-specific recommendations, without recalculating scores          |
 
 **Language support:** IELTS, CELPIP, and PTE (English); TEF and TCF (French), converted to CLB / NCLC before scoring.
@@ -179,7 +188,7 @@ nohup python init_db.py > init_db.log 2>&1 &   # then: tail -f init_db.log
 AI profile extraction · benchmarked semantic NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite · containerized deployment (Railway + Vercel)
 
 **Next**  
-Policy Q&A with cited IRCC sources · Alberta (AAIP) pathways · journey planning · policy monitoring and notifications
+IRCC's November 3, 2026 CRS changes (one combined factor for Canadian work experience and job offers, with high-wage occupation points) · Policy Q&A with cited IRCC sources · Alberta (AAIP) pathways · journey planning · policy monitoring and notifications
 
 ---
 

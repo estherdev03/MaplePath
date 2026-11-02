@@ -167,6 +167,18 @@ export default function ConfirmForm() {
                 required
               />
             </div>
+            <div className="field">
+              <label htmlFor="dependent_children">Dependent children</label>
+              <input
+                id="dependent_children"
+                name="dependent_children"
+                type="number"
+                min="0"
+                step="1"
+                className="input"
+                defaultValue={draft?.dependent_children ?? 0}
+              />
+            </div>
           </div>
         </div>
 
@@ -194,11 +206,22 @@ export default function ConfirmForm() {
               />
             </div>
           </div>
-          <label className="radio mt-3">
-            <input type="checkbox" name="have_canada_job_offer" />
-            <span className="dot" />
-            I have a Canadian job offer of at least one year
-          </label>
+          <div className="mt-3 flex flex-wrap gap-4">
+            <label className="radio">
+              <input type="checkbox" name="have_canada_job_offer" />
+              <span className="dot" />
+              I have a Canadian job offer of at least one year
+            </label>
+            <label className="radio">
+              <input
+                type="checkbox"
+                name="authorized_to_work_in_canada"
+                defaultChecked={draft?.authorized_to_work_in_canada ?? false}
+              />
+              <span className="dot" />
+              I&apos;m currently authorized to work in Canada
+            </label>
+          </div>
         </div>
 
         <div>
@@ -689,6 +712,18 @@ export default function ConfirmForm() {
                   step="0.5"
                   className="input"
                   defaultValue={draft?.spouse?.canadian_experience ?? 0}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="spouse_canada_study_years">Spouse full-time study in Canada (years)</label>
+                <input
+                  id="spouse_canada_study_years"
+                  name="spouse_canada_study_years"
+                  type="number"
+                  step="0.5"
+                  min="0"
+                  className="input"
+                  defaultValue={draft?.spouse?.canada_study_years ?? 0}
                 />
               </div>
             </div>

@@ -50,6 +50,10 @@ class UserProfile(BaseModel):
 
     current_available_funds: float = 0
 
+    authorized_to_work_in_canada: bool = False
+
+    dependent_children: int = Field(default=0, ge=0)
+
     advice: str | None = None
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

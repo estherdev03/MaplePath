@@ -201,10 +201,14 @@ def test_nclc_to_points_second_language_all_bands(french_service):
     )
 
 
-def test_nclc_to_points_second_language_capped_at_22(french_service):
-    """Sum of all four second-language skills is capped at 22."""
+def test_nclc_to_points_second_language_capped_by_marital_status(french_service):
+    """Second-language points are capped at 22 with a spouse, 24 without."""
     scores = NCLCScore(speaking=10, writing=10, listening=10, reading=10)
-    result = french_service.nclc_to_points(
+    single = french_service.nclc_to_points(
         scores, is_married=False, is_first_language=False
     )
-    assert result == 22
+    married = french_service.nclc_to_points(
+        scores, is_married=True, is_first_language=False
+    )
+    assert single == 24
+    assert married == 22

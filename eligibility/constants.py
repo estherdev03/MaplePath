@@ -84,3 +84,17 @@ ARRANGED_EMPLOYMENT_POINTS = 10
 
 # Adaptability
 ADAPTABILITY_MAX = 10
+
+
+# Settlement funds (proof of funds), by family size
+# IRCC table updated July 7, 2025
+SETTLEMENT_FUNDS = {
+    1: 15263,
+    2: 19001,
+    3: 23360,
+    4: 28362,
+    5: 32168,
+    6: 36280,
+    7: 40392,
+}
+SETTLEMENT_FUNDS_PER_ADDITIONAL_MEMBER = 4112

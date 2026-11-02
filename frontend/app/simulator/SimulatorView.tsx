@@ -8,6 +8,7 @@ import {
   type SimProfile,
 } from "@/lib/crs";
 import { CRS_TOTAL_MAX } from "@/lib/crs-maxes";
+import { LATEST_DRAW } from "@/lib/latest-draw";
 
 const EDU_OPTIONS: EducationLevel[] = [
   "secondary",
@@ -19,7 +20,6 @@ const EDU_OPTIONS: EducationLevel[] = [
   "phd",
 ];
 
-const LAST_CEC_CUTOFF = 521;
 
 export default function SimulatorView({
   initial,
@@ -138,10 +138,11 @@ export default function SimulatorView({
       : d < 0
         ? "text-[#cfd3e5]"
         : "text-[rgba(233,233,237,.5)]";
+  const drawLabel = `the latest draw (${LATEST_DRAW.stream.toLowerCase()}, ${LATEST_DRAW.date})`;
   const verdict =
-    now.total >= LAST_CEC_CUTOFF
-      ? `Above the last CEC cut-off by ${now.total - LAST_CEC_CUTOFF} points. A profile at this score would have been invited in the most recent round.`
-      : `Below the last CEC cut-off by ${LAST_CEC_CUTOFF - now.total} points. This score would not have been invited in the most recent round.`;
+    now.total >= LATEST_DRAW.cutoff
+      ? `Above the cut-off of ${drawLabel} by ${now.total - LATEST_DRAW.cutoff} points. It was a category-based draw, so an invitation also required eligibility for that category.`
+      : `Below the cut-off of ${drawLabel} by ${LATEST_DRAW.cutoff - now.total} points. This score would not have been invited in that round.`;
 
   return (
     <div className="mx-auto max-w-[1040px] px-[26px] pt-[34px] pb-20">
@@ -219,7 +220,7 @@ export default function SimulatorView({
                 onChange={(e) => setField("canStudy", e.target.checked)}
               />
               <span className="dot" />
-              Canadian post-secondary credential, 2+ years (+30)
+              Canadian post-secondary credential, 3+ years (+30)
             </label>
           </div>
           <button
@@ -250,7 +251,7 @@ export default function SimulatorView({
               />
               <div
                 className="absolute -top-[5px] -bottom-[5px] w-px bg-[#e9e9ed]"
-                style={{ left: `${(LAST_CEC_CUTOFF / CRS_TOTAL_MAX) * 100}%` }}
+                style={{ left: `${(LATEST_DRAW.cutoff / CRS_TOTAL_MAX) * 100}%` }}
               />
             </div>
             <div className="mt-2 flex justify-between text-[11.5px] text-[rgba(233,233,237,.55)]">
@@ -259,7 +260,7 @@ export default function SimulatorView({
                   ? `Confirmed profile: ${confirmedTotal}`
                   : "No profile confirmed yet"}
               </span>
-              <span>Last CEC cut-off: {LAST_CEC_CUTOFF}</span>
+              <span>Latest draw cut-off: {LATEST_DRAW.cutoff}</span>
             </div>
             <div className="mt-4 text-[13.5px] text-[rgba(233,233,237,.78)]">
               {verdict}

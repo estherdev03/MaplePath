@@ -24,6 +24,7 @@ export function profileToSimProfile(profile: UserProfile | undefined): SimProfil
     edu: profile.education?.level ?? BASE_PROFILE.edu,
     pnp: profile.provincial_nomination,
     sibling: profile.sibling_in_can,
-    canStudy: (profile.canada_education?.completed ?? false) && (profile.canada_education?.credential_years ?? 0) >= 2,
+    frenchFirst: french?.is_first_language ?? false,
+    canStudy: (profile.canada_education?.completed ?? false) && (profile.canada_education?.credential_years ?? 0) >= 3,
   };
 }

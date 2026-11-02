@@ -101,6 +101,7 @@ class TransferabilityService:
             return EDUCATION_CAN_EXP[profile.education.level][0]
         elif can_exp > 1:
             return EDUCATION_CAN_EXP[profile.education.level][1]
+        return 0
 
     def foreign_exp_lang_points_calc(self, profile: UserProfile) -> int:
         _, all_clb7, all_clb9 = self._language_range(profile)

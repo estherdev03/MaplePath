@@ -161,6 +161,9 @@ class SpouseProfile(BaseModel):
     education: Education | None = None
     languages: Languages | None = None
     canadian_experience: float = 0
+    canada_study_years: float = Field(
+        default=0, ge=0
+    )  # full-time study in Canada, for FSW adaptability
     relative_in_can: bool = False
 
 
@@ -223,6 +226,8 @@ class ProfileConfirmFormPayload(BaseModel):
     relative_in_can: bool  # parents, grandparents, etc
     spouse: SpouseProfile
     current_available_funds: float
+    authorized_to_work_in_canada: bool = False  # with a job offer, waives proof of funds
+    dependent_children: int = Field(default=0, ge=0)  # counts toward family size
 
     @model_validator(mode="after")
     def validate_spouse(self):
@@ -253,6 +258,8 @@ class ProfileDraft(BaseModel):
     marital_status: MaritalStatus | None = None
     spouse: SpouseProfile | None = None
     current_available_funds: float | None = None
+    authorized_to_work_in_canada: bool = False
+    dependent_children: int = Field(default=0, ge=0)
 
     missing_fields: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)

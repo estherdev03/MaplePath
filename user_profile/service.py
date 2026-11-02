@@ -109,6 +109,11 @@ class ProfileService:
         ## Family in Canada
         Extract sibling_in_can (true only if a sibling in Canada is explicitly mentioned) and relative_in_can (true only if another relative, e.g. parent, grandparent, aunt, uncle, cousin, in Canada is explicitly mentioned). Default to false, not null, if not mentioned — do not add a missing field or warning for these unless the text is ambiguous about who the relative is.
 
+        ## Work Authorization and Dependents
+        Extract authorized_to_work_in_canada (true only if the user currently holds a work permit or is otherwise explicitly authorized to work in Canada) and dependent_children (the number of dependent children of the user or their spouse, only if explicitly stated). Default to false and 0 if not mentioned — do not add a missing field or warning for these.
+
+        For a spouse, extract spouse.canada_study_years only if the spouse's full-time study in Canada is explicitly stated, otherwise 0.
+
         ## Settlement Funds
         Extract current_available_funds only if a specific CAD (or convertible) amount of available/settlement funds or savings is explicitly stated. If not provided, return null, add missing fields and warnings.
 
@@ -174,6 +179,8 @@ class ProfileService:
             relative_in_can=profile.relative_in_can,
             spouse=profile.spouse,
             current_available_funds=profile.current_available_funds,
+            authorized_to_work_in_canada=profile.authorized_to_work_in_canada,
+            dependent_children=profile.dependent_children,
         )
         return user
 
@@ -393,6 +400,8 @@ class ProfileService:
         Relative in Canada: {user.relative_in_can}
         Spouse Profile: {user.spouse}
         Current Available Settlement Funds: {user.current_available_funds}
+        Authorized to Work in Canada: {user.authorized_to_work_in_canada}
+        Dependent Children: {user.dependent_children}
 
         # CRS Score
         {user.crs_score}

@@ -167,6 +167,18 @@ def test_education_can_exp_points_no_work_experience_returns_zero(
     assert transferability_service.education_can_exp_points_calc(profile) == 0
 
 
+def test_education_can_exp_points_under_one_year_returns_zero(
+    transferability_service,
+):
+    """Under 1 year of Canadian experience scores 0 instead of returning None,
+    which used to break the skill transferability sum."""
+    profile = UserProfile(
+        education=Education(level=EducationLevel.MASTERS, from_canada=True),
+        work_experience=Experience(canada_years=0.5),
+    )
+    assert transferability_service.education_can_exp_points_calc(profile) == 0
+
+
 def test_education_can_exp_points_invalid_education_returns_zero(
     transferability_service,
 ):

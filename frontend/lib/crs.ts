@@ -57,6 +57,7 @@ export interface SimProfile {
   pnp: boolean;
   sibling: boolean;
   canStudy: boolean;
+  frenchFirst: boolean;
 }
 
 export const BASE_PROFILE: SimProfile = {
@@ -69,6 +70,7 @@ export const BASE_PROFILE: SimProfile = {
   pnp: false,
   sibling: false,
   canStudy: false,
+  frenchFirst: false,
 };
 
 export interface CrsBreakdown {
@@ -88,18 +90,33 @@ export interface CrsBreakdown {
 export function calculateCrs(s: SimProfile): CrsBreakdown {
   const age = AGE_SINGLE[s.age] || 0;
   const education = EDU_SINGLE[s.edu];
-  const first = (FIRST[s.clb] || 0) * 4;
-  const second = s.nclc >= 5 ? (SECOND[s.nclc] || 0) * 4 : 0;
+  // French is the first official language when chosen as such, or when there's no English test
+  const frenchFirst = s.nclc > 0 && (s.frenchFirst || s.clb === 0);
+  const firstLevel = frenchFirst ? s.nclc : s.clb;
+  const secondLevel = frenchFirst ? s.clb : s.nclc;
+  const first = (FIRST[firstLevel] || 0) * 4;
+  const second = secondLevel >= 5 ? (SECOND[secondLevel] || 0) * 4 : 0;
   const canadian_experience = s.canYears >= 1 ? CANEXP[Math.min(s.canYears, 5)] : 0;
 
   const t = TIER[s.edu];
-  const lvl = s.clb >= 9 ? 1 : s.clb >= 7 ? 0 : -1;
+  const lvl = firstLevel >= 9 ? 1 : firstLevel >= 7 ? 0 : -1;
   const eduLang = lvl < 0 ? 0 : t[lvl] ?? 0;
   const eduCan = s.canYears >= 2 ? t[1] : s.canYears >= 1 ? t[0] : 0;
   const fTier = s.foreignYears >= 3 ? 1 : s.foreignYears >= 1 ? 0 : -1;
   const fLang = fTier < 0 || lvl < 0 ? 0 : lvl === 1 && fTier === 1 ? 50 : fTier === 1 ? 25 : lvl === 1 ? 25 : 13;
-  const fCan = fTier < 0 || s.canYears < 1 ? 0 : fTier === 1 && s.canYears >= 2 ? 50 : 25;
-  const skill_transferability = Math.min(eduLang + eduCan + fLang + fCan, 100);
+  const fCan =
+    fTier < 0 || s.canYears < 1
+      ? 0
+      : fTier === 1 && s.canYears >= 2
+        ? 50
+        : fTier === 1 || s.canYears >= 2
+          ? 25
+          : 13;
+  // education and foreign work experience groups are each capped at 50
+  const skill_transferability = Math.min(
+    Math.min(eduLang + eduCan, 50) + Math.min(fLang + fCan, 50),
+    100,
+  );
 
   const french_bonus = s.nclc >= 7 ? (s.clb >= 5 ? 50 : 25) : 0;
   const provincial_nomination = s.pnp ? 600 : 0;

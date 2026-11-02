@@ -138,9 +138,12 @@ export function buildConfirmPayload(formData: FormData): ProfileConfirmFormPaylo
       education: null,
       languages: null,
       canadian_experience: 0,
+      canada_study_years: 0,
       relative_in_can: false,
     },
     current_available_funds: requiredNum(formData, "current_available_funds", "Settlement funds"),
+    authorized_to_work_in_canada: bool(formData, "authorized_to_work_in_canada"),
+    dependent_children: num(formData, "dependent_children"),
   };
 
   if (isMarried) {
@@ -162,6 +165,7 @@ export function buildConfirmPayload(formData: FormData): ProfileConfirmFormPaylo
         : null,
       languages: hasSpouseLanguage ? buildLanguages(formData, "spouse_") : null,
       canadian_experience: num(formData, "spouse_canadian_experience"),
+      canada_study_years: num(formData, "spouse_canada_study_years"),
       relative_in_can: bool(formData, "spouse_relative_in_can"),
     };
   }

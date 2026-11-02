@@ -179,6 +179,35 @@ def test_second_language_points_french_second_language(crs_service):
     assert result == 3 * 4
 
 
+def test_second_language_points_cap_depends_on_marital_status(crs_service):
+    """NCLC 9+ in all four abilities is 24 points, capped at 22 with a spouse."""
+    fr_score = LanguageScore(speaking=18, writing=18, listening=600, reading=600)
+    eng_score = LanguageScore(speaking=7.5, writing=7.5, listening=8.5, reading=8.0)
+
+    def profile(marital_status, spouse=None):
+        return UserProfile(
+            marital_status=marital_status,
+            spouse=spouse,
+            languages=Languages(
+                english=EnglishScore(
+                    test_name=EnglishTest.IELTS,
+                    detail_scores=eng_score,
+                    is_first_language=True,
+                ),
+                french=FrenchScore(
+                    test_name=FrenchTest.TCF,
+                    detail_scores=fr_score,
+                    is_first_language=False,
+                ),
+            ),
+        )
+
+    single = profile(MaritalStatus.SINGLE)
+    married = profile(MaritalStatus.MARRIED, SpouseProfile())
+    assert crs_service._second_language_points(single) == 24
+    assert crs_service._second_language_points(married) == 22
+
+
 def test_second_language_points_no_second_language_returns_zero(crs_service):
     score = LanguageScore(speaking=7.5, writing=7.5, listening=8.5, reading=8.0)
     profile = UserProfile(
@@ -366,6 +395,35 @@ def test_spouse_points_returns_correct_total_and_breakdown(crs_service):
     )
 
 
+def test_spouse_points_scores_first_official_language(crs_service):
+    """The spouse's first official language is scored, even when English is
+    also present: French NCLC 9 (5 x 4) instead of English CLB 5/4."""
+    profile = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(
+            languages=Languages(
+                english=EnglishScore(
+                    test_name=EnglishTest.IELTS,
+                    detail_scores=LanguageScore(
+                        speaking=5, writing=5, listening=5, reading=4
+                    ),
+                ),
+                french=FrenchScore(
+                    test_name=FrenchTest.TCF,
+                    is_first_language=True,
+                    detail_scores=LanguageScore(
+                        speaking=14, writing=14, listening=523, reading=524
+                    ),
+                ),
+            )
+        ),
+    )
+    _, breakdown = crs_service._spouse_points(profile)
+    assert breakdown.language == 5 * 4
+    # both tests are converted, the second one for FSW adaptability
+    assert profile.spouse.languages.english.clb_scores is not None
+
+
 # =========== _skill_transferability_points ===========
 def test_skill_transferability_points_sums_all_five_components(crs_service):
     score = LanguageScore(speaking=6.0, writing=6.0, listening=6.0, reading=6.0)  # CLB7
@@ -407,6 +465,25 @@ def test_skill_transferability_points_capped_at_100(crs_service):
     assert result == 100
 
 
+def test_skill_transferability_points_education_group_capped_at_50(crs_service):
+    """Education + language and education + Canadian experience share one 50-point
+    cap, even when the section total is under 100."""
+    score = LanguageScore(speaking=8.0, writing=7.5, listening=8.5, reading=8.0)  # CLB10
+    profile = UserProfile(
+        languages=Languages(
+            english=EnglishScore(
+                test_name=EnglishTest.IELTS, detail_scores=score, is_first_language=True
+            ),
+            french=None,
+        ),
+        education=Education(level=EducationLevel.MASTERS, from_canada=True),
+        work_experience=Experience(canada_years=1, foreign_years=0),
+    )
+    result = crs_service._skill_transferability_points(profile)
+    # education_language=50 + education_can_exp=25 -> capped at 50, no foreign work
+    assert result == 50
+
+
 # =========== _canadian_study_points ===========
 def test_canadian_study_points_no_canada_education_returns_zero(crs_service):
     assert crs_service._canadian_study_points(UserProfile(canada_education=None)) == 0
@@ -435,6 +512,21 @@ def test_canadian_study_points_two_years_or_less_returns_15(crs_service):
     )
     assert crs_service._canadian_study_points(one_year) == 15
     assert crs_service._canadian_study_points(two_years) == 15
+
+
+def test_canadian_study_points_under_one_year_returns_zero(crs_service):
+    profile = UserProfile(
+        canada_education=CanadaEducation(completed=True, credential_years=0.5)
+    )
+    assert crs_service._canadian_study_points(profile) == 0
+
+
+def test_canadian_study_points_between_two_and_three_years_returns_15(crs_service):
+    """Only a credential of 3 years or longer earns 30."""
+    profile = UserProfile(
+        canada_education=CanadaEducation(completed=True, credential_years=2.5)
+    )
+    assert crs_service._canadian_study_points(profile) == 15
 
 
 def test_canadian_study_points_more_than_two_years_returns_30(crs_service):

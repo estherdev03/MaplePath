@@ -104,15 +104,62 @@ def test_calculate_fsw_spouse_language(eligibility_service):
     assert breakdown_french.adaptability_pts == 5
 
 
-def test_calculate_fsw_spouse_education(eligibility_service):
-    user = UserProfile(
+def test_calculate_fsw_spouse_canadian_study(eligibility_service):
+    """Adaptability counts the spouse's 2+ years of full-time study in Canada,
+    not the spouse's education level."""
+    studied_in_canada = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(canada_study_years=2),
+    )
+    one_year_only = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(canada_study_years=1),
+    )
+    degree_abroad = UserProfile(
         marital_status=MaritalStatus.MARRIED,
         spouse=SpouseProfile(
-            education=Education(level=EducationLevel.BACHELOR, from_canada=True)
+            education=Education(level=EducationLevel.BACHELOR, from_canada=False)
         ),
     )
-    _, breakdown = eligibility_service._calculate_fsw(user)
-    assert breakdown.adaptability_pts == 5
+    _, b_studied = eligibility_service._calculate_fsw(studied_in_canada)
+    _, b_one_year = eligibility_service._calculate_fsw(one_year_only)
+    _, b_abroad = eligibility_service._calculate_fsw(degree_abroad)
+    assert b_studied.adaptability_pts == 5
+    assert b_one_year.adaptability_pts == 0
+    assert b_abroad.adaptability_pts == 0
+
+
+def test_calculate_fsw_spouse_language_either_official_language(eligibility_service):
+    """Spouse adaptability accepts CLB/NCLC 4+ in either language, and a spouse
+    test with no scores earns nothing instead of crashing."""
+    second_language_only = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(
+            languages=Languages(
+                english=EnglishScore(
+                    test_name=EnglishTest.IELTS,
+                    is_first_language=True,
+                    clb_scores=CLBScore(speaking=3, writing=3, listening=3, reading=3),
+                ),
+                french=FrenchScore(
+                    test_name=FrenchTest.TEF,
+                    nclc_scores=NCLCScore(speaking=4, writing=4, listening=4, reading=4),
+                ),
+            )
+        ),
+    )
+    no_scores = UserProfile(
+        marital_status=MaritalStatus.MARRIED,
+        spouse=SpouseProfile(
+            languages=Languages(
+                english=None, french=FrenchScore(test_name=FrenchTest.TEF)
+            )
+        ),
+    )
+    _, b_second = eligibility_service._calculate_fsw(second_language_only)
+    _, b_no_scores = eligibility_service._calculate_fsw(no_scores)
+    assert b_second.adaptability_pts == 5
+    assert b_no_scores.adaptability_pts == 0
 
 
 def test_calculate_fsw_spouse_can_exp(eligibility_service):
@@ -138,13 +185,42 @@ def test_calculate_fsw_work_exp_with_fractional_years_does_not_raise_error(
     assert breakdown.work_exp_pts == 11  # WORK_EXPERIENCE_POINTS[int(2.5) == 2]
 
 
-def test_calculate_fsw_age_points_capped_and_below_18(eligibility_service):
+def test_calculate_fsw_age_points_outside_18_to_46(eligibility_service):
+    """Only ages 18-46 earn age points, IRCC gives 0 below 18 and at 47+."""
     below = UserProfile(age=17, occupation=_occ(have_canada_job_offer=False))
-    capped = UserProfile(age=60, occupation=_occ(have_canada_job_offer=False))
+    last_scored = UserProfile(age=46, occupation=_occ(have_canada_job_offer=False))
+    over = UserProfile(age=47, occupation=_occ(have_canada_job_offer=False))
     _, b_below = eligibility_service._calculate_fsw(below)
-    _, b_capped = eligibility_service._calculate_fsw(capped)
+    _, b_last_scored = eligibility_service._calculate_fsw(last_scored)
+    _, b_over = eligibility_service._calculate_fsw(over)
     assert b_below.age_pts == 0
-    assert b_capped.age_pts == 1  # AGE_POINTS[46] via the min(age, 46) cap
+    assert b_last_scored.age_pts == 1
+    assert b_over.age_pts == 0
+
+
+def test_calculate_fsw_work_exp_under_one_year_scores_zero(eligibility_service):
+    """A combined total under 1 year earns no experience points instead of
+    raising a KeyError on WORK_EXPERIENCE_POINTS[0]."""
+    user = UserProfile(
+        work_experience=Experience(canada_years=0.5, foreign_years=0.25),
+        occupation=_occ(have_canada_job_offer=False),
+    )
+    _, breakdown = eligibility_service._calculate_fsw(user)
+    assert breakdown.work_exp_pts == 0
+
+
+def test_calculate_fsw_canadian_study_needs_two_years(eligibility_service):
+    """Past study in Canada earns adaptability only after 2 academic years."""
+    one_year = UserProfile(
+        canada_education=CanadaEducation(completed=True, credential_years=1)
+    )
+    two_years = UserProfile(
+        canada_education=CanadaEducation(completed=True, credential_years=2)
+    )
+    _, b_one = eligibility_service._calculate_fsw(one_year)
+    _, b_two = eligibility_service._calculate_fsw(two_years)
+    assert b_one.adaptability_pts == 0
+    assert b_two.adaptability_pts == 5
 
 
 def test_calculate_fsw_employment_and_adaptability_capped(eligibility_service):
@@ -203,18 +279,30 @@ def test_fsw_teer_language_and_education_gates(eligibility_service):
 
 
 def test_fsw_settlement_funds_thresholds_and_job_offer_bypass(eligibility_service):
-    """Settlement funds threshold single: 15263; with spouse: 19001. Client bypasses
-    when there is a job offer."""
+    """Settlement funds threshold single: 15263; with spouse: 19001. Funds are
+    waived only with a job offer and authorization to work in Canada."""
     no_spouse = UserProfile(
         current_available_funds=15263, occupation=_occ(have_canada_job_offer=False)
     )
     with_spouse = UserProfile(
         current_available_funds=19001,
+        marital_status=MaritalStatus.MARRIED,
         spouse=SpouseProfile(),
         occupation=_occ(have_canada_job_offer=False),
     )
     job_offer = UserProfile(
+        current_available_funds=0,
+        authorized_to_work_in_canada=True,
+        occupation=_occ(have_canada_job_offer=True),
+    )
+    job_offer_not_authorized = UserProfile(
         current_available_funds=0, occupation=_occ(have_canada_job_offer=True)
+    )
+    assert (
+        eligibility_service._evaluate_federal_skilled_worker(
+            job_offer_not_authorized
+        ).settlement_funds_required
+        is True
     )
 
     assert (
@@ -231,6 +319,37 @@ def test_fsw_settlement_funds_thresholds_and_job_offer_bypass(eligibility_servic
     )
     result = eligibility_service._evaluate_federal_skilled_worker(job_offer)
     assert result.settlement_funds_required is False
+
+
+def test_settlement_funds_needed_by_family_size(eligibility_service):
+    """Family size counts the applicant, a spouse, and dependent children, with
+    $4,112 per member beyond 7."""
+    needed = eligibility_service._settlement_funds_needed
+    assert needed(UserProfile()) == 15263
+    assert (
+        needed(
+            UserProfile(
+                marital_status=MaritalStatus.MARRIED,
+                spouse=SpouseProfile(),
+                dependent_children=2,
+            )
+        )
+        == 28362
+    )
+    assert needed(UserProfile(dependent_children=8)) == 40392 + 4112 * 2
+
+    # a family of 3 with 19,001 in funds no longer meets the threshold
+    family = UserProfile(
+        current_available_funds=19001,
+        dependent_children=2,
+        occupation=_occ(have_canada_job_offer=False),
+    )
+    assert (
+        eligibility_service._evaluate_federal_skilled_worker(
+            family
+        ).settlement_funds_met
+        is False
+    )
 
 
 def test_fsw_selection_factor_passed_at_exactly_67(eligibility_service):
@@ -292,6 +411,45 @@ def test_fsw_language_french_first_language(eligibility_service):
     assert (
         eligibility_service._evaluate_federal_skilled_worker(
             profile
+        ).language_requirement_met
+        is True
+    )
+
+
+def test_fsw_language_first_language_only_no_second_language_required(
+    eligibility_service,
+):
+    """FSW requires CLB 7 in the first official language only, a candidate
+    with no second-language test still meets the language requirement."""
+    english_only = UserProfile(
+        languages=Languages(
+            english=EnglishScore(
+                test_name=EnglishTest.IELTS,
+                is_first_language=True,
+                clb_scores=CLBScore(speaking=7, reading=7, writing=7, listening=7),
+            ),
+            french=None,
+        )
+    )
+    french_only = UserProfile(
+        languages=Languages(
+            english=None,
+            french=FrenchScore(
+                test_name=FrenchTest.TEF,
+                is_first_language=True,
+                nclc_scores=NCLCScore(speaking=7, reading=7, writing=7, listening=7),
+            ),
+        )
+    )
+    assert (
+        eligibility_service._evaluate_federal_skilled_worker(
+            english_only
+        ).language_requirement_met
+        is True
+    )
+    assert (
+        eligibility_service._evaluate_federal_skilled_worker(
+            french_only
         ).language_requirement_met
         is True
     )
@@ -406,7 +564,10 @@ def test_fst_language_and_job_offer_or_certificate(eligibility_service):
         result.valid_job_offer_or_certificate_met is True
     )  # via has_COQ, no job offer needed
 
-    job_offer_user = UserProfile(occupation=_occ(have_canada_job_offer=True))
+    job_offer_user = UserProfile(
+        authorized_to_work_in_canada=True,
+        occupation=_occ(have_canada_job_offer=True),
+    )
     result2 = eligibility_service._evaluate_federal_skilled_trades(job_offer_user)
     assert result2.valid_job_offer_or_certificate_met is True
     assert result2.settlement_funds_required is False

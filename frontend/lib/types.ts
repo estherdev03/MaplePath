@@ -82,6 +82,7 @@ export interface SpouseProfile {
   education: Education | null;
   languages: Languages | null;
   canadian_experience: number;
+  canada_study_years: number;
   relative_in_can: boolean;
 }
 
@@ -193,6 +194,8 @@ export interface UserProfile {
   crs_score: CRSScore | null;
   eligibility: ExpressEntryEligibility | null;
   current_available_funds: number;
+  authorized_to_work_in_canada: boolean;
+  dependent_children: number;
   advice: string | null;
   created_at: string;
   updated_at: string;
@@ -212,6 +215,8 @@ export interface ProfileDraft {
   marital_status: MaritalStatus | null;
   spouse: SpouseProfile | null;
   current_available_funds: number | null;
+  authorized_to_work_in_canada: boolean;
+  dependent_children: number;
   missing_fields: string[];
   warnings: string[];
 }
@@ -231,6 +236,8 @@ export interface ProfileConfirmFormPayload {
   relative_in_can: boolean;
   spouse: SpouseProfile;
   current_available_funds: number;
+  authorized_to_work_in_canada: boolean;
+  dependent_children: number;
 }
 
 // [ndcg, hit_rate]

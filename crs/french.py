@@ -271,6 +271,8 @@ class FrenchService:
                 if scores.listening >= 5
                 else 0
             )
+            # combined max is 22 with a spouse or common-law partner, 24 without
             return min(
-                writing_points + reading_points + speaking_points + listening_points, 22
+                writing_points + reading_points + speaking_points + listening_points,
+                22 if is_married else 24,
             )

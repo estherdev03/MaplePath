@@ -9,6 +9,8 @@ from eligibility.constants import (
     FIRST_LANGUAGE_POINTS,
     FSW_PASS_SCORE,
     SECOND_LANGUAGE_POINTS,
+    SETTLEMENT_FUNDS,
+    SETTLEMENT_FUNDS_PER_ADDITIONAL_MEMBER,
     WORK_EXPERIENCE_POINTS,
 )
 from graph.state.eligibility import (
@@ -19,11 +21,32 @@ from graph.state.eligibility import (
     FederalSkilledTradesEligibility,
     FederalSkilledWorkerEligibility,
 )
-from graph.state.profile import EducationLevel, MaritalStatus
+from graph.state.profile import MaritalStatus
 from graph.state.shared import UserProfile
 
 
 class EligibilityService:
+    def _settlement_funds_needed(self, user: UserProfile) -> int:
+        # family = applicant + spouse + dependent children (theirs or the spouse's)
+        family_size = (
+            1
+            + (1 if user.marital_status == MaritalStatus.MARRIED else 0)
+            + user.dependent_children
+        )
+        if family_size in SETTLEMENT_FUNDS:
+            return SETTLEMENT_FUNDS[family_size]
+        return SETTLEMENT_FUNDS[7] + SETTLEMENT_FUNDS_PER_ADDITIONAL_MEMBER * (
+            family_size - 7
+        )
+
+    def _settlement_funds_waived(self, user: UserProfile) -> bool:
+        # no proof of funds needed when authorized to work in Canada with a valid job offer
+        return bool(
+            user.authorized_to_work_in_canada
+            and user.occupation
+            and user.occupation.have_canada_job_offer
+        )
+
     def _calculate_fsw(self, user: UserProfile) -> Tuple[int, FSWScoreBreakdown]:
         fsw_score = FSWScoreBreakdown()
 
@@ -64,7 +87,7 @@ class EligibilityService:
         if (
             user.work_experience
             and user.work_experience.canada_years + user.work_experience.foreign_years
-            > 0
+            >= 1
         ):
 
             fsw_score.work_exp_pts = WORK_EXPERIENCE_POINTS[
@@ -78,8 +101,8 @@ class EligibilityService:
             ]
 
         # age
-        if user.age and user.age >= 18:
-            fsw_score.age_pts = AGE_POINTS[min(user.age, 46)]
+        if user.age and 18 <= user.age <= 46:
+            fsw_score.age_pts = AGE_POINTS[user.age]
 
         # employment
         if user.occupation and user.occupation.have_canada_job_offer:
@@ -88,39 +111,29 @@ class EligibilityService:
         # Adaptability
         adapt_pts = 0
         if user.spouse:
-            # spouse languages
-            if (
-                user.spouse.languages
-                and user.spouse.languages.english
-                and user.spouse.languages.english.is_first_language
-            ):
-                if all(
-                    score >= 4
-                    for score in user.spouse.languages.english.clb_scores.model_dump().values()
+            # spouse languages, CLB/NCLC 4+ in all abilities in either official language
+            if user.spouse.languages:
+                spouse_english = user.spouse.languages.english
+                spouse_french = user.spouse.languages.french
+                spouse_scores = [
+                    spouse_english.clb_scores if spouse_english else None,
+                    spouse_french.nclc_scores if spouse_french else None,
+                ]
+                if any(
+                    scores
+                    and all(score >= 4 for score in scores.model_dump().values())
+                    for scores in spouse_scores
                 ):
                     adapt_pts += 5
-            elif (
-                user.spouse.languages
-                and user.spouse.languages.french
-                and user.spouse.languages.french.is_first_language
-            ):
-                if all(
-                    score >= 4
-                    for score in user.spouse.languages.french.nclc_scores.model_dump().values()
-                ):
-                    adapt_pts += 5
-            # spouse education
-            if (
-                user.spouse.education
-                and user.spouse.education.level != EducationLevel.SECONDARY
-                and user.spouse.education.level != EducationLevel.ONE_YEAR
-            ):
+            # spouse past study in Canada, at least 2 academic years full-time
+            if user.spouse.canada_study_years >= 2:
                 adapt_pts += 5
             # spouse work exp
             if user.spouse.canadian_experience >= 1:
                 adapt_pts += 5
 
-        if user.canada_education and user.canada_education.credential_years >= 1:
+        # at least 2 academic years of full-time study in Canada
+        if user.canada_education and user.canada_education.credential_years >= 2:
             adapt_pts += 5
         if (
             user.work_experience
@@ -154,39 +167,22 @@ class EligibilityService:
         ):
             skilled_worker_eligibility.continuous_work_experience_met = True
 
-        # Languages
+        # Languages: CLB/NCLC 7 in the first official language only, a second
+        # language is not required (it only adds selection points)
         if user.languages:
-            # english is first language and french is second language
-            if (
-                user.languages.english and user.languages.english.is_first_language
-            ) and (
-                user.languages.french and not user.languages.french.is_first_language
-            ):
+            if user.languages.english and user.languages.english.is_first_language:
                 clb7_or_more = all(
                     score >= 7
                     for score in user.languages.english.clb_scores.model_dump().values()
                 )
-                nclc5_or_more = all(
-                    score >= 5
-                    for score in user.languages.french.nclc_scores.model_dump().values()
-                )
-                if clb7_or_more and nclc5_or_more:
+                if clb7_or_more:
                     skilled_worker_eligibility.language_requirement_met = True
-            # french is first language and english is second language
-            elif (
-                user.languages.french and user.languages.french.is_first_language
-            ) and (
-                user.languages.english and not user.languages.english.is_first_language
-            ):
+            elif user.languages.french and user.languages.french.is_first_language:
                 nclc7_or_more = all(
                     score >= 7
                     for score in user.languages.french.nclc_scores.model_dump().values()
                 )
-                clb5_or_more = all(
-                    score >= 5
-                    for score in user.languages.english.clb_scores.model_dump().values()
-                )
-                if nclc7_or_more and clb5_or_more:
+                if nclc7_or_more:
                     skilled_worker_eligibility.language_requirement_met = True
 
         # Education
@@ -196,17 +192,12 @@ class EligibilityService:
             skilled_worker_eligibility.education_requirement_met = True
 
         # Job offer and funds
-        if user.occupation and user.occupation.have_canada_job_offer:
+        if self._settlement_funds_waived(user):
             skilled_worker_eligibility.settlement_funds_required = False
         else:
-            if user.marital_status == MaritalStatus.MARRIED:
-                skilled_worker_eligibility.settlement_funds_met = (
-                    user.current_available_funds >= 19001
-                )
-            else:
-                skilled_worker_eligibility.settlement_funds_met = (
-                    user.current_available_funds >= 15263
-                )
+            skilled_worker_eligibility.settlement_funds_met = (
+                user.current_available_funds >= self._settlement_funds_needed(user)
+            )
 
         # FSW score
         score, breakdown = self._calculate_fsw(user)
@@ -332,17 +323,12 @@ class EligibilityService:
             skilled_trade_eligilibility.valid_job_offer_or_certificate_met = True
 
         # Proof of funds
-        if user.occupation and user.occupation.have_canada_job_offer:
+        if self._settlement_funds_waived(user):
             skilled_trade_eligilibility.settlement_funds_required = False
         else:
-            if user.marital_status == MaritalStatus.MARRIED:
-                skilled_trade_eligilibility.settlement_funds_met = (
-                    user.current_available_funds >= 19001
-                )
-            else:
-                skilled_trade_eligilibility.settlement_funds_met = (
-                    user.current_available_funds >= 15263
-                )
+            skilled_trade_eligilibility.settlement_funds_met = (
+                user.current_available_funds >= self._settlement_funds_needed(user)
+            )
         return skilled_trade_eligilibility
 
     def evaluate_express_entry(self, user: UserProfile) -> ExpressEntryEligibility:

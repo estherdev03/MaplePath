@@ -148,6 +148,7 @@ class CRSService:
         return 0
 
     def _second_language_points(self, profile: UserProfile) -> int:
+        is_married = profile.marital_status == MaritalStatus.MARRIED
         if (
             profile.languages.english
             and not profile.languages.english.is_first_language
@@ -158,7 +159,7 @@ class CRSService:
                 test_name, scores
             )
             return self.english_service.clb_to_points(
-                scores=profile.languages.english.clb_scores
+                scores=profile.languages.english.clb_scores, is_married=is_married
             )
         elif (
             profile.languages.french and not profile.languages.french.is_first_language
@@ -169,7 +170,7 @@ class CRSService:
                 test_name, scores
             )
             return self.french_service.nclc_to_points(
-                scores=profile.languages.french.nclc_scores
+                scores=profile.languages.french.nclc_scores, is_married=is_married
             )
         return 0
 
@@ -193,74 +194,34 @@ class CRSService:
         else:
             education_points = SPOUSE_EDUCATION[profile.spouse.education.level]
 
-        if not profile.spouse.languages:
+        spouse_languages = profile.spouse.languages
+        english = spouse_languages.english if spouse_languages else None
+        french = spouse_languages.french if spouse_languages else None
+        # convert every spouse test, FSW adaptability accepts either official language
+        if english and english.test_name and english.detail_scores:
+            english.clb_scores = self.english_service.english_to_clb(
+                english.test_name, english.detail_scores
+            )
+        if french and french.test_name and french.detail_scores:
+            french.nclc_scores = self.french_service.french_to_nclc(
+                french.test_name, french.detail_scores
+            )
+
+        # CRS scores the spouse's first official language only
+        if english and english.is_first_language:
+            first_language_scores = english.clb_scores
+        elif french and french.is_first_language:
+            first_language_scores = french.nclc_scores
+        else:
+            first_language_scores = None
+
+        if first_language_scores:
+            language_points = sum(
+                SPOUSE_LANGUAGE_POINTS[min(score, 10)] if score >= 4 else 0
+                for score in first_language_scores.model_dump().values()
+            )
+        else:
             language_points = 0
-        elif profile.spouse.languages.english:
-            english = profile.spouse.languages.english
-            if english.test_name and english.detail_scores:
-                clb_score = self.english_service.english_to_clb(
-                    english.test_name, english.detail_scores
-                )
-                english.clb_scores = clb_score
-                writing_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(clb_score.writing, 10)]
-                    if clb_score.writing >= 4
-                    else 0
-                )
-                reading_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(clb_score.reading, 10)]
-                    if clb_score.reading >= 4
-                    else 0
-                )
-                speaking_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(clb_score.speaking, 10)]
-                    if clb_score.speaking >= 4
-                    else 0
-                )
-                listening_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(clb_score.listening, 10)]
-                    if clb_score.listening >= 4
-                    else 0
-                )
-
-                language_points = (
-                    writing_points + reading_points + speaking_points + listening_points
-                )
-            else:
-                language_points = 0
-        elif profile.spouse.languages.french:
-            french = profile.spouse.languages.french
-            if french.test_name and french.detail_scores:
-                nclc_score = self.french_service.french_to_nclc(
-                    french.test_name, french.detail_scores
-                )
-                french.nclc_scores = nclc_score
-                writing_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(nclc_score.writing, 10)]
-                    if nclc_score.writing >= 4
-                    else 0
-                )
-                reading_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(nclc_score.reading, 10)]
-                    if nclc_score.reading >= 4
-                    else 0
-                )
-                speaking_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(nclc_score.speaking, 10)]
-                    if nclc_score.speaking >= 4
-                    else 0
-                )
-                listening_points = (
-                    SPOUSE_LANGUAGE_POINTS[min(nclc_score.listening, 10)]
-                    if nclc_score.listening >= 4
-                    else 0
-                )
-
-                language_points = (
-                    writing_points + reading_points + speaking_points + listening_points
-                )
-            else:
-                language_points = 0
 
         can_exp_points = SPOUSE_CANADIAN_EXPERIENCE[
             min(int(profile.spouse.canadian_experience), 5)
@@ -289,12 +250,12 @@ class CRSService:
             self.transferability_service.foreign_can_exp_points_calc(profile)
         )
         trade_lang_points = self.transferability_service.trade_lang_points_calc(profile)
+        # each group (education, foreign work experience, certificate of
+        # qualification) is capped at 50, the section at 100
         return min(
-            education_lang_point
-            + education_can_exp_points
-            + foreign_exp_lang_points
-            + foreign_can_exp_points
-            + trade_lang_points,
+            min(education_lang_point + education_can_exp_points, 50)
+            + min(foreign_exp_lang_points + foreign_can_exp_points, 50)
+            + min(trade_lang_points, 50),
             100,
         )
 
@@ -302,11 +263,12 @@ class CRSService:
         if (
             not profile.canada_education
             or not profile.canada_education.completed
-            or profile.canada_education.credential_years == 0
+            or profile.canada_education.credential_years < 1
         ):
             return 0
         else:
-            if profile.canada_education.credential_years <= 2:
+            # 1-2 year credential -> 15, 3+ year credential -> 30
+            if profile.canada_education.credential_years < 3:
                 return 15
             else:
                 return 30
