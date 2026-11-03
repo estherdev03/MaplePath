@@ -2,7 +2,7 @@
 
 **An AI-powered Express Entry assistant for Canada’s skilled immigration system.**
 
-**Live demo:** [maple-path-black.vercel.app](https://maple-path-black.vercel.app/)
+**Live demo:** [maplepath.net](https://maplepath.net)
 
 **Watch:** a one-minute walkthrough of how MaplePath is built, from profile intake to scoring.
 
@@ -16,6 +16,7 @@ Built as a production-oriented **Python** backend: **LangGraph** orchestration, 
 
 ## Recent changes
 
+- **MaplePath now runs on AWS at [maplepath.net](https://maplepath.net).** The frontend, backend, and database moved from Vercel and Railway to a single EC2 instance running Docker Compose, with Caddy serving HTTPS. Only Caddy is public, the frontend calls the API over Docker's private network, so the backend and database are no longer reachable from the internet.
 - **The score simulator now uses the backend's CRS engine for every change.** It used to recalculate in the browser with a single-applicant copy of the rules, so married applicants saw a different score there than on the results page. Each move now sends the edited profile to `POST /crs/simulate`, so the simulator and the results page can no longer disagree. The simulator also gained a marital status toggle and spouse controls (education, language, Canadian work experience), so it covers every CRS factor. To support it, `/crs/simulate` accepts CLB/NCLC levels directly when no raw test scores are sent.
 - **CEC work experience now counts only when the occupation is TEER 0–3.** Applicants aren't asked the TEER of past work, so the classified occupation stands in for it.
 - **Clearer confirm form.** Required fields are marked, the work experience section is grouped by inside and outside Canada, and each field has a hint explaining what counts (fulltime vs part-time, and work that doesn't count for Express Entry).
@@ -25,9 +26,10 @@ Built as a production-oriented **Python** backend: **LangGraph** orchestration, 
   - The skill-transferability groups are capped at 50 each.
   - Spouse points use the spouse's first official language.
   - Canadian study points follow IRCC's 1–2 year and 3+ year bands.
-  - Proof of funds now scales with family size (spouse and dependent children) and is waived only with a job offer *and* work authorization.
-  
+  - Proof of funds now scales with family size (spouse and dependent children) and is waived only with a job offer _and_ work authorization.
+
   The profile, AI parser, and confirm form gained the fields these rules need.
+
 - **Occupation classification now uses pgvector semantic search instead of the reranked hybrid pipeline.** On the expanded labelled set, vector search scored higher NDCG@10 than hybrid (0.609 vs 0.583) with a 99% top-10 hit rate, so `/profile/complete` now retrieves NOC candidates with `noc_semantic_search`. BM25, RRF, and hybrid remain in `noc/` for comparison in the benchmark.
 - **Labelled evaluation set grew from 9 to 300 job descriptions** (`data/noc_eval_labels.csv`), and hit rate is now strictly top-10. A bug had counted a match anywhere in the result list.
 - **Frontend styling moved from inline styles to Tailwind CSS.** The design-system rules in `frontend/app/globals.css` now sit in CSS layers so utility classes can override them.
@@ -43,14 +45,14 @@ Express Entry decisions depend on occupation codes, language conversions, and pr
 
 ## Capabilities
 
-| Area                     | What it delivers                                                                                                                                     |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Profile intelligence** | Converts unstructured text into a validated applicant profile, flagging missing or ambiguous fields instead of inventing data                        |
-| **Occupation matching**  | pgvector semantic search retrieves official NOC 2021 profiles, an LLM then picks a unit group, TEER, and confidence score from those candidates only |
-| **CRS scoring**          | Full Comprehensive Ranking System breakdown: core human capital, spouse factors, skill transferability, and additional points                        |
+| Area                     | What it delivers                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Profile intelligence** | Converts unstructured text into a validated applicant profile, flagging missing or ambiguous fields instead of inventing data                                       |
+| **Occupation matching**  | pgvector semantic search retrieves official NOC 2021 profiles, an LLM then picks a unit group, TEER, and confidence score from those candidates only                |
+| **CRS scoring**          | Full Comprehensive Ranking System breakdown: core human capital, spouse factors, skill transferability, and additional points                                       |
 | **Score simulator**      | Adjust age, languages, work experience, education, marital status, spouse factors and additional points, and see the CRS rescored by the same engine as the results |
-| **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks by family size                |
-| **Personalized advice**  | An LLM turns the computed CRS breakdown and eligibility results into ranked, profile-specific recommendations, without recalculating scores          |
+| **Program eligibility**  | Requirement-level results for FSW, CEC, and FST, including the FSW 67-point selection grid and settlement-fund checks by family size                                |
+| **Personalized advice**  | An LLM turns the computed CRS breakdown and eligibility results into ranked, profile-specific recommendations, without recalculating scores                         |
 
 **Language support:** IELTS, CELPIP, and PTE (English), TEF and TCF (French), converted to CLB / NCLC before scoring. CLB / NCLC levels can also be sent directly, which is how the simulator expresses language changes.
 
@@ -66,7 +68,8 @@ Skills this project is designed to demonstrate:
 - **LLM structured extraction** with LangChain / OpenAI, constrained to stated facts, with missing-field and warning lists
 - **Domain rule engines** for CRS and Express Entry, implemented in Python with Pydantic models (auditable point tables, not prompt-only scoring)
 - **Retrieval evaluation** using NDCG@10 and hit rate across BM25, vector, RRF, and hybrid pipelines. On the 300-query labelled set, the shipped vector pipeline scores **0.609 NDCG@10** (+0.026 over Hybrid) with a **99% top-10 hit rate**. Results are shown on the frontend's benchmark page, with a paginated per-example report
-- **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local infrastructure
+- **API and data layer**: FastAPI, SQLAlchemy, PostgreSQL, Docker Compose for local and production infrastructure
+- **Cloud deployment** on AWS EC2: multi-container Docker Compose stack behind a Caddy reverse proxy with automatic HTTPS, private-network-only backend and database, keyless access through Systems Manager, and encrypted, snapshotted storage
 - **End-to-end product surface**: a Next.js/TypeScript frontend (intake, confirmation, results, CRS simulator, NOC match, eligibility, advice, and retrieval benchmark views) calling the FastAPI backend
 - **Automated test suite** with pytest covering the graph, services, and API layer, with 100% line coverage on the CRS engine (`crs/`) and the REST API (`api/app.py`)
 
@@ -150,17 +153,17 @@ flowchart TD
     evaluate -->|"caches results"| db
 ```
 
-| Module          | Responsibility                                                                                             |
-| --------------- | ---------------------------------------------------------------------------------------------------------- |
-| `graph/`        | Workflow graph, routers, and shared application state                                                      |
-| `user_profile/` | Profile parse, occupation classification, score and eligibility orchestration                              |
-| `noc/`          | NOC ingest, keyword / semantic / hybrid search, retrieval evaluation                                       |
-| `crs/`          | CRS points, language conversion, skill transferability                                                     |
-| `eligibility/`  | FSW, CEC, and FST rule evaluation                                                                          |
-| `db/`           | SQLAlchemy models and persistence                                                                          |
-| `api/`          | REST API                                                                                                   |
+| Module          | Responsibility                                                                                            |
+| --------------- | --------------------------------------------------------------------------------------------------------- |
+| `graph/`        | Workflow graph, routers, and shared application state                                                     |
+| `user_profile/` | Profile parse, occupation classification, score and eligibility orchestration                             |
+| `noc/`          | NOC ingest, keyword / semantic / hybrid search, retrieval evaluation                                      |
+| `crs/`          | CRS points, language conversion, skill transferability                                                    |
+| `eligibility/`  | FSW, CEC, and FST rule evaluation                                                                         |
+| `db/`           | SQLAlchemy models and persistence                                                                         |
+| `api/`          | REST API                                                                                                  |
 | `frontend/`     | Next.js application (intake, confirmation, results, simulator, NOC match, eligibility, advice, benchmark) |
-| `tests/`        | pytest suite mirroring the module layout above                                                             |
+| `tests/`        | pytest suite mirroring the module layout above                                                            |
 
 ---
 
@@ -176,7 +179,7 @@ flowchart TD
 
 **Data:** PostgreSQL, pgvector, BM25 (`pg_textsearch`)
 
-**Ops:** Docker Compose, Makefile, Railway (backend + database), Vercel (frontend)
+**Ops:** Docker Compose, Caddy, AWS (EC2, Elastic IP, EBS snapshots, Systems Manager), Makefile
 
 **Testing:** pytest
 
@@ -204,12 +207,12 @@ npm install
 npm run dev   # http://localhost:3000, expects the API at http://localhost:8000 (override with API_URL)
 ```
 
-| Method | Endpoint            | Description                                                 |
-| ------ | ------------------- | ----------------------------------------------------------- |
-| `POST` | `/profile/parse`    | Extract a structured draft from free-text                   |
-| `POST` | `/profile/complete` | Confirm a profile; return occupation, CRS, and eligibility  |
+| Method | Endpoint            | Description                                                                                         |
+| ------ | ------------------- | --------------------------------------------------------------------------------------------------- |
+| `POST` | `/profile/parse`    | Extract a structured draft from free-text                                                           |
+| `POST` | `/profile/complete` | Confirm a profile; return occupation, CRS, and eligibility                                          |
 | `POST` | `/crs/simulate`     | Recalculate CRS score and eligibility for an edited profile (used by the simulator on every change) |
-| `GET`  | `/evaluate`         | Run the NOC retrieval benchmark and return its report       |
+| `GET`  | `/evaluate`         | Run the NOC retrieval benchmark and return its report                                               |
 
 NOC retrieval benchmark (labelled set in `data/noc_eval_labels.csv`): call `GET /evaluate`, open the frontend's `/benchmark` page, or run it directly:
 
@@ -227,43 +230,42 @@ Stop the database with `make pgdown` (add `make pgdownvol` to drop the volume). 
 
 ## Deployment
 
-Live at **https://maple-path-black.vercel.app/**.
+Live at **https://maplepath.net**.
 
-The backend and database run as two Railway services; the frontend is hosted on Vercel. The backend builds from the root `Dockerfile` (configured in `railway.json`).
-
-**1. Database service:** New → Docker Image → `timescale/timescaledb-ha:pg18` (Railway's built-in Postgres lacks `pg_textsearch`). Name it `postgres`, attach a volume at `/home/postgres/pgdata`, and set:
+The whole stack runs on one AWS EC2 instance with Docker Compose (`docker-compose.prod.yaml`):
 
 ```
-POSTGRES_PASSWORD=<random password>
-POSTGRES_DB=maplepath
-RAILWAY_RUN_UID=0
+Browser ──HTTPS──▶ EC2 instance
+                    ├─ caddy     ports 80/443, automatic HTTPS (Let's Encrypt), the only public service
+                    ├─ frontend  Next.js standalone server, port 3000, internal only
+                    ├─ backend   FastAPI, port 8000, internal only
+                    └─ postgres  timescaledb-ha:pg18 (pgvector + pg_textsearch), internal only, encrypted EBS
 ```
 
-**2. Backend service:** New → GitHub Repo → this repo. Set the variables below, then Settings → Networking → Generate Domain.
+- **Images:** the backend builds from the root `Dockerfile`; the frontend builds from `frontend/Dockerfile` (multi-stage, `output: "standalone"`, runs as a non-root user).
+- **Routing:** Caddy (`Caddyfile`) terminates TLS for the domain in `API_DOMAIN` and proxies to `frontend:3000`. The frontend's server components and actions call the API at `http://backend:8000` with the `X-API-Key` header.
+- **Network:** the security group allows only 80 and 443. There's no SSH: the instance is administered through AWS Systems Manager Session Manager.
+- **Data:** the instance's EBS volume is encrypted and snapshotted daily by a Data Lifecycle Manager policy.
 
-```
-OPENAI_API_KEY=...
-COHERE_API_KEY=...
-API_KEY=<random secret>
-DB_URL=postgresql://postgres:${{postgres.POSTGRES_PASSWORD}}@${{postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{postgres.POSTGRES_DB}}
-```
-
-**3. Seed the database (once):**
+**Deploy or update:**
 
 ```bash
-railway link
-railway ssh --service backend
-nohup python init_db.py > init_db.log 2>&1 &   # then: tail -f init_db.log
+git pull
+docker build -t maplepath-backend .
+docker build -t maplepath-frontend frontend
+docker compose -f docker-compose.prod.yaml up -d postgres
+docker compose -f docker-compose.prod.yaml run --rm backend python init_db.py   # first deploy only
+docker compose -f docker-compose.prod.yaml up -d
 ```
 
-**4. Frontend (Vercel):** import the repo with `frontend/` as the root directory, then set `API_URL=https://<backend-domain>` and `API_KEY` to the same value as the backend. When `API_KEY` is set, the backend rejects any request without a matching `X-API-Key` header; leave it unset locally.
+The server's `.env` holds `OPENAI_API_KEY`, `COHERE_API_KEY`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `API_KEY`, and `API_DOMAIN` (see `example.env`). `DB_URL` is built by the compose file. When `API_KEY` is set, the backend rejects any request without a matching `X-API-Key` header; leave it unset locally.
 
 ---
 
 ## Roadmap
 
 **Current (v1)**  
-AI profile extraction · benchmarked semantic NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite · containerized deployment (Railway + Vercel)
+AI profile extraction · benchmarked semantic NOC search · RAG occupation classification · CRS calculator · Express Entry eligibility · retrieval evaluation · Next.js frontend · automated test suite · containerized deployment (AWS EC2 + Docker Compose + Caddy)
 
 **Next**  
 IRCC's November 3, 2026 CRS changes (one combined factor for Canadian work experience and job offers, with high-wage occupation points) · Policy Q&A with cited IRCC sources · Alberta (AAIP) pathways · journey planning · policy monitoring and notifications

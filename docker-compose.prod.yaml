@@ -53,7 +53,6 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      # A domain (api.example.com) gets automatic HTTPS, ":80" serves plain HTTP behind CloudFront
       API_DOMAIN: ${API_DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
