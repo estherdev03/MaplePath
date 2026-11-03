@@ -20,3 +20,5 @@ wheels/
 .coverage
 
 init_db.log
+
+DEPLOY-AWS.md

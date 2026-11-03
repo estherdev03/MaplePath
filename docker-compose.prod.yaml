@@ -1,0 +1,68 @@
+# Production stack for a single EC2 instance (see DEPLOY-AWS.md).
+# Only Caddy publishes ports; Postgres and the backend stay on the internal network.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  postgres:
+    # Same image as local dev and Railway: ships pgvector and pg_textsearch (BM25)
+    image: timescale/timescaledb-ha:pg18
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/home/postgres/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging: *logging
+
+  backend:
+    # Built on the instance with `docker build -t maplepath-backend .`
+    image: maplepath-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Overrides DB_URL from .env so it always points at the postgres service
+      DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *logging
+
+  frontend:
+    image: maplepath-frontend
+    restart: unless-stopped
+    environment:
+      API_URL: http://backend:8000
+      API_KEY: ${API_KEY}
+    depends_on:
+      - backend
+    logging: *logging
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    logging: *logging
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
